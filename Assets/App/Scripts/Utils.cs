@@ -7,6 +7,22 @@ using System.Linq;
 
 public static class Utils
 {
+    #region QUATERNION
+    public static Quaternion QuaternionSmoothDamp(Quaternion current, Quaternion target, ref Vector3 currentVelocity, float smoothTime)
+    {
+        if (Time.deltaTime == 0) return current;
+        if (smoothTime == 0) return target;
+
+        Vector3 c = current.eulerAngles;
+        Vector3 t = target.eulerAngles;
+        return Quaternion.Euler(
+          Mathf.SmoothDampAngle(c.x, t.x, ref currentVelocity.x, smoothTime),
+          Mathf.SmoothDampAngle(c.y, t.y, ref currentVelocity.y, smoothTime),
+          Mathf.SmoothDampAngle(c.z, t.z, ref currentVelocity.z, smoothTime)
+        );
+    }
+    #endregion
+
     #region IENUMERABLE
     public static T GetRandom<T>(this IEnumerable<T> elems)
     {
@@ -57,5 +73,16 @@ public static class Utils
 
         action.Invoke();
     }
+    #endregion
+
+    #region DOTWEEN
+    //public static void BumpVisual(this Transform t)
+    //{
+    //    t.DOKill();
+    //    t.DOScale(1.1f, .06f).OnComplete(() =>
+    //    {
+    //        t.DOScale(1, .08f);
+    //    });
+    //}
     #endregion
 }
