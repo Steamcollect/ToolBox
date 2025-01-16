@@ -61,6 +61,8 @@ public class AudioManager : MonoBehaviour
         float volumMultiplier = Mathf.Clamp(sound.volumMultiplier, 0, 1);
         tmpAudioSource.volume = volumMultiplier;
 
+        tmpAudioSource.spatialBlend = sound.spatialBlend;
+
         // Set the clip
         tmpAudioSource.clip = sound.clips.GetRandom();
         tmpAudioSource.Play();
