@@ -5,8 +5,6 @@ using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
-    [SerializeField] Playlist[] playlists;
-
     [Header("References")]
     [SerializeField] AudioMixerGroup musicMixerGroup;
     [SerializeField] AudioMixerGroup soundMixerGroup;
@@ -33,8 +31,6 @@ public class AudioManager : MonoBehaviour
     private void Start()
     {
         SetupParent();
-
-        SetupPlaylist();
 
         // Create Audio Object
         for (int i = 0; i < startingAudioObjectsCount; i++)
@@ -84,7 +80,7 @@ public class AudioManager : MonoBehaviour
         return tmpAudioSource;
     }
 
-    void SetupPlaylist()
+    public void SetupPlaylist(Playlist[] playlists)
     {
         foreach (Playlist playlist in playlists)
         {
