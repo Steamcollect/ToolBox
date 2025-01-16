@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7319583775227666431}
   - component: {fileID: 8800516172224025859}
+  - component: {fileID: 9126565655459505062}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -44,10 +45,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2544b385c079fa749a778e59c8150742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playlists: []
   musicMixerGroup: {fileID: -134585982228756251, guid: 2627c2080fb0a2b488ae734d16cc292e,
     type: 2}
   soundMixerGroup: {fileID: -557349572666451718, guid: 2627c2080fb0a2b488ae734d16cc292e,
     type: 2}
   startingAudioObjectsCount: 30
   rsePlayClipAt: {fileID: 11400000, guid: eb8f82a3b87a0d64caa32d0e95498bf3, type: 2}
+--- !u!114 &9126565655459505062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8050181911136975895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4b52ec97edf46a488a3d4a1bc926193, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playlists: []
+  audioManager: {fileID: 8800516172224025859}
