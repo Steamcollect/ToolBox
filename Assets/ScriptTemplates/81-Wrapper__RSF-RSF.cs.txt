@@ -2,8 +2,5 @@ using UnityEngine;
 
     #ROOTNAMESPACEBEGIN#
 [CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "RSF/_/#SCRIPTNAME#")]
-public class #SCRIPTNAME# : ScriptableObject
-{
-
-}
+public class #SCRIPTNAME# : BT.ScriptablesObject.RuntimeScriptableFunction<>{}
 #ROOTNAMESPACEEND#

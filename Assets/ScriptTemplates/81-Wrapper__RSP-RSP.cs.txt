@@ -1,6 +1,0 @@
-using UnityEngine;
-
-    #ROOTNAMESPACEBEGIN#
-[CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "RSP/_/#SCRIPTNAME#")]
-public class #SCRIPTNAME# : BT.ScriptablesObject.RuntimeScriptablePointer<>{}
-#ROOTNAMESPACEEND#
