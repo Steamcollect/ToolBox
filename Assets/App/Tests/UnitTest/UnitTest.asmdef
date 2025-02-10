@@ -1,10 +1,11 @@
 {
-    "name": "Tests",
+    "name": "UnitTest",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "AudioAssembly"
+        "AudioAssembly",
+        "UtilsAssembly"
     ],
     "includePlatforms": [
         "Editor"

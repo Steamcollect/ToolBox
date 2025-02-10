@@ -15,6 +15,9 @@ namespace BT.Audio
 
         private Transform _playlistParent, _soundParent;
 
+        public bool a;
+        
+
         [Header("System References")]
         [SerializeField, Tooltip("Number of GameObject create on start for the sound")]
         private int startingAudioObjectsCount = 30;
@@ -34,6 +37,7 @@ namespace BT.Audio
         private void Start()
         {
             SetupParent();
+            a = true;
 
             // Create Audio Object
             for (int i = 0; i < startingAudioObjectsCount; i++)
@@ -76,8 +80,6 @@ namespace BT.Audio
             AudioSource tmpAudioSource = new GameObject("Audio Go").AddComponent<AudioSource>();
             tmpAudioSource.transform.SetParent(_soundParent);
             tmpAudioSource.outputAudioMixerGroup = soundMixerGroup;
-            _soundsGo.Enqueue(tmpAudioSource);
-
             return tmpAudioSource;
         }
 
