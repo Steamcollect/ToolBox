@@ -1,10 +1,7 @@
 {
-    "name": "AudioAssembly",
+    "name": "UtilsRuntimeAssembly",
     "rootNamespace": "",
-    "references": [
-        "WrapperAssembly",
-        "UtilsRuntimeAssembly"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

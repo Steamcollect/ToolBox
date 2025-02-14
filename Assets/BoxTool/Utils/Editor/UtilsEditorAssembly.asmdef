@@ -1,11 +1,10 @@
 {
-    "name": "AudioAssembly",
+    "name": "UtilsEditorAssembly",
     "rootNamespace": "",
-    "references": [
-        "WrapperAssembly",
-        "UtilsRuntimeAssembly"
+    "references": [],
+    "includePlatforms": [
+        "Editor"
     ],
-    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

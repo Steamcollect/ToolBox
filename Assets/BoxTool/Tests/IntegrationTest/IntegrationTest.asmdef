@@ -5,7 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "AudioAssembly",
-        "UtilsAssembly"
+        "UtilsRuntimeAssembly"
     ],
     "includePlatforms": [],
     "excludePlatforms": [
