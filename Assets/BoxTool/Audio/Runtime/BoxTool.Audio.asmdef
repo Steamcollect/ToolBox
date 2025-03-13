@@ -1,0 +1,17 @@
+{
+    "name": "BoxTool.Audio",
+    "rootNamespace": "BoxTool.Audio",
+    "references": [
+        "BoxTool.Utils",
+        "BoxTool.Wrapper"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

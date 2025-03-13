@@ -1,0 +1,19 @@
+{
+  "name": "com.boxtool.audio",
+  "version": "1.0.0",
+  "displayName": "Audio Extension",
+  "description": "Audio Component for manage sounds",
+  "unity": "2022",
+  "dependencies": {
+    "com.boxtool.wrapper": "1.0.0",
+    "com.boxtool.utils": "1.0.0"
+  },
+
+  "samples": [
+    {
+      "displayName": "Audio Prefabs",
+      "description": "Contains audio prefabs to include directly in your scene.",
+      "path": "Samples"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "name": "BoxTool.Utils.Editor",
+    "rootNamespace": "BoxTool.Utils.Editor",
+    "references": [
+        "BoxTool.Utils"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,9 @@
+{
+  "name": "com.boxtool.utils",
+  "version": "1.0.0",
+  "displayName": "Utils",
+  "description": "Some Utils Extension for helping you to develop your game.",
+  "unity": "2022",
+  "dependencies": {
+  }
+}

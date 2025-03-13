@@ -1,0 +1,14 @@
+{
+    "name": "BoxTool.Wrapper",
+    "rootNamespace": "BoxTool.Wrapper",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

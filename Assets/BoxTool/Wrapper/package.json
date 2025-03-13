@@ -1,0 +1,9 @@
+{
+  "name": "com.boxtool.wrapper",
+  "version": "1.0.0",
+  "displayName": "Wrappers",
+  "description": "Wrappers ScriptableObject for BoxTool.",
+  "unity": "2022",
+  "dependencies": {
+  }
+}

@@ -45,9 +45,7 @@ namespace BT.Tools
         {
             string[] packages =
             {
-                "com.unity/textmeshpro",
-                "com.unity.render-pipelines.universal",
-                "com.unity.inputsystem",
+                "com.unity.textmeshpro"
             };
             
             Package.InstallPackages(packages);
@@ -104,12 +102,12 @@ namespace BT.Tools
                 foreach (var folder in folders)
                 {
                     if (Directory.Exists(Path.Combine(path, folder)))
-		    {
+		            {
 
                         Directory.Move(Path.Combine(path,folder),Path.Combine(fullPath,folder));
                         Directory.Delete(Path.Combine(path,folder));
                     }
-		    else Directory.CreateDirectory(Path.Combine(fullPath,folder));
+		            else Directory.CreateDirectory(Path.Combine(fullPath,folder));
                 }
                 
                 AssetDatabase.Refresh();
