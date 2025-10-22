@@ -13,13 +13,11 @@ public static class HierarchyToggleEditor
     {
         // Récupérer le GameObject associé
         GameObject obj = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+        Rect toggleRect = new Rect(selectionRect.x - 20, selectionRect.y, 18, 18);
 
-        Rect detectionCheckBox = new Rect(selectionRect.x - 20, selectionRect.y, 30, 18);
-
-        if (obj != null && detectionCheckBox.Contains(Event.current.mousePosition))
+        if (obj != null && 
+            (selectionRect.Contains(Event.current.mousePosition) || toggleRect.Contains(Event.current.mousePosition)))
         {
-            Rect toggleRect = new Rect(selectionRect.x - 20, selectionRect.y, 18, 18);
-
             bool newActive = GUI.Toggle(toggleRect, obj.activeSelf, GUIContent.none);
 
             if (newActive != obj.activeSelf)

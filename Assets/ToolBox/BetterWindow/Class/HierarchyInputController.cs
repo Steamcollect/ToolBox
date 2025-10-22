@@ -27,6 +27,16 @@ public static class HierarchyInputController
 
                 PopupWindow.Show(popUpRect, new SceneBrowserPopUp());
             }
+            else
+            {
+                if (e.alt)
+                {
+                    Rect popUpRect = new Rect();
+                    popUpRect.x = selectionRect.x + selectionRect.width;
+
+                    PopupWindow.Show(popUpRect, new GameObjectVisualSetupPopUp());
+                }
+            }
         }
     }
 }
