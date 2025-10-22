@@ -23,7 +23,7 @@ public static class HierarchyInputController
             {
                 Rect popUpRect = new Rect();
                 popUpRect.x = selectionRect.x;
-                popUpRect.y = selectionRect.y + 20;
+                popUpRect.y = selectionRect.y + 18;
 
                 PopupWindow.Show(popUpRect, new SceneBrowserPopUp());
             }
