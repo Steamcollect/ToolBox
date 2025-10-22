@@ -4,24 +4,70 @@ using UnityEngine;
 
 public class SceneBrowserPopUp : PopupWindowContent
 {
-    static int buttonHeight = 16;
+    static int buttonHeight = 20;
+    static int searchBarHeight = 22;
+    static int maxHeight = 300;
+
+    private Vector2 scrollPos;
+    private string searchQuery = "";
+    private (string[] path, string[] name) scenes;
+
+    public override void OnOpen()
+    {
+        scenes = GetAllScenesInAssetsRoot();
+    }
 
     public override void OnGUI(Rect rect)
     {
-        (string[] path, string[] name) scenes = GetAllScenesInAssetsRoot();
+        GUILayout.Space(2);
+        GUILayout.BeginHorizontal(EditorStyles.toolbar);
+        searchQuery = GUILayout.TextField(searchQuery, EditorStyles.toolbarSearchField);
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+
+        GUILayout.Space(4);
+
+        // --- ZONE SCROLLABLE ---
+        scrollPos = GUILayout.BeginScrollView(scrollPos);
 
         for (int i = 0; i < scenes.path.Length; i++)
         {
-            if (GUILayout.Button(scenes.name[i]))
+            // Filtrage de la recherche
+            if (!string.IsNullOrEmpty(searchQuery) &&
+                !scenes.name[i].ToLower().Contains(searchQuery.ToLower()))
+            {
+                continue;
+            }
+
+            if (GUILayout.Button(scenes.name[i], GUILayout.Height(buttonHeight)))
             {
                 UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenes.path[i]);
             }
         }
+
+        GUILayout.EndScrollView();
     }
 
     public override Vector2 GetWindowSize()
     {
-        return new Vector2(200, buttonHeight * GetSceneCountInProject());
+        // Calcule le nombre d'éléments visibles après filtrage
+        int visibleCount = 0;
+        foreach (var name in scenes.name)
+        {
+            if (string.IsNullOrEmpty(searchQuery) ||
+                name.ToLower().Contains(searchQuery.ToLower()))
+            {
+                visibleCount++;
+            }
+        }
+
+        // Hauteur théorique : barre de recherche + boutons + marges
+        float idealHeight = searchBarHeight + (visibleCount * buttonHeight + visibleCount * 2) + 12;
+
+        // On limite la hauteur max
+        float finalHeight = Mathf.Min(maxHeight, idealHeight);
+
+        return new Vector2(250, finalHeight);
     }
 
     public static int GetSceneCountInProject()
