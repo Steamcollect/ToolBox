@@ -1,0 +1,23 @@
+Property Drawer :
+	-ShowIf : show variable with condition
+	-HideIf : hide variable with condition
+	-Button : draw button on inspector
+	-SceneName : dropdown of every scene in build settings
+	-ReadOnly : show variable on inspector but cant be modified
+	-StringDropdown : show dropdown base on string array
+	-Watch : display the variable and its value on screen
+
+Class :
+	-InterfaceReference : show on inspector the interface as object reference
+
+Debug :
+	-Logger : Log message in console, create txt file if in build
+
+Utils :
+	-IEnumerableUtils
+	-CoroutineUtils
+	-RotationUtils
+
+Wrappers :
+	-Runtime Scriptable Object
+	-Runtime Scriptable Event

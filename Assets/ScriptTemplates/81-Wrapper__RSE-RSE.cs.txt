@@ -2,5 +2,5 @@ using UnityEngine;
 
     #ROOTNAMESPACEBEGIN#
 [CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "RSE/_/#SCRIPTNAME#")]
-public class #SCRIPTNAME# : BT.ScriptablesObject.RuntimeScriptableEvent<>{}
+public class #SCRIPTNAME# : RuntimeScriptableEvent<>{}
 #ROOTNAMESPACEEND#
