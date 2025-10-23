@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace ToolBox.BetterWindow
@@ -125,7 +126,7 @@ namespace ToolBox.BetterWindow
                         continue;
                     }
 
-                    var rowRect = GUILayoutUtility.GetRect(250, buttonHeight, GUILayout.ExpandWidth(true)); // Get space in GUILayout
+                    Rect rowRect = GUILayoutUtility.GetRect(250, buttonHeight, GUILayout.ExpandWidth(true)); // Get space in GUILayout
 
                     bool containsMouse = rowRect.Contains(Event.current.mousePosition);
 
@@ -134,7 +135,35 @@ namespace ToolBox.BetterWindow
 
                     if (GUI.Button(buttonRect, scene.name, leftButtonStyle))
                     {
-                        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
+                        // Vérifie si la scène actuelle est modifiée
+                        if (EditorSceneManager.GetActiveScene().isDirty)
+                        {
+                            int option = EditorUtility.DisplayDialogComplex(
+                                "Scène modifiée",
+                                "La scène actuelle a été modifiée. Voulez-vous la sauvegarder avant de changer de scène ?",
+                                "Sauvegarder",
+                                "Ne pas sauvegarder",
+                                "Annuler"
+                            );
+
+                            if (option == 0)
+                            {
+                                // Sauvegarder et changer de scène
+                                EditorSceneManager.SaveOpenScenes();
+                                EditorSceneManager.OpenScene(scene.path);
+                            }
+                            else if (option == 1)
+                            {
+                                // Changer sans sauvegarder
+                                EditorSceneManager.OpenScene(scene.path);
+                            }
+                            // Si "Annuler", ne rien faire
+                        }
+                        else
+                        {
+                            // Scène non modifiée : changer directement
+                            EditorSceneManager.OpenScene(scene.path);
+                        }
                     }
                     GUILayout.Space(2);
 
@@ -162,7 +191,11 @@ namespace ToolBox.BetterWindow
                         GUI.Label(buttonRect, "★", RightTextStyle);
                     }
                 }
+            }
 
+
+            if (favoriteScenes.Count > 0 && othersScenes.Count > 0)
+            {
                 GUILayout.Space(5);
                 GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
                 GUILayout.Space(5);
@@ -186,7 +219,35 @@ namespace ToolBox.BetterWindow
 
                 if (GUI.Button(buttonRect, scene.name, leftButtonStyle))
                 {
-                    UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
+                    // Vérifie si la scène actuelle est modifiée
+                    if (EditorSceneManager.GetActiveScene().isDirty)
+                    {
+                        int option = EditorUtility.DisplayDialogComplex(
+                            "Scène modifiée",
+                            "La scène actuelle a été modifiée. Voulez-vous la sauvegarder avant de changer de scène ?",
+                            "Sauvegarder",
+                            "Ne pas sauvegarder",
+                            "Annuler"
+                        );
+
+                        if (option == 0)
+                        {
+                            // Sauvegarder et changer de scène
+                            EditorSceneManager.SaveOpenScenes();
+                            EditorSceneManager.OpenScene(scene.path);
+                        }
+                        else if (option == 1)
+                        {
+                            // Changer sans sauvegarder
+                            EditorSceneManager.OpenScene(scene.path);
+                        }
+                        // Si "Annuler", ne rien faire
+                    }
+                    else
+                    {
+                        // Scène non modifiée : changer directement
+                        EditorSceneManager.OpenScene(scene.path);
+                    }
                 }
                 GUILayout.Space(2);
 
@@ -264,9 +325,10 @@ namespace ToolBox.BetterWindow
                         visibleCount++;
                     }
                 }
-
-                offset += 25;
             }
+
+            if (favoriteScenes.Count > 0 && othersScenes.Count > 0)
+                offset += 25;
 
             foreach (SceneBrowerData scene in othersScenes) // Other scenes
             {
