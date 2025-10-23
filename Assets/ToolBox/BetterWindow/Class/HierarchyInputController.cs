@@ -34,9 +34,12 @@ namespace ToolBox.BetterWindow
                     if (e.alt)
                     {
                         Rect popUpRect = new Rect();
-                        popUpRect.x = selectionRect.x + selectionRect.width;
 
-                        PopupWindow.Show(popUpRect, new GameObjectVisualSetupPopUp());
+
+                        popUpRect.x = e.mousePosition.x + 50;
+                        popUpRect.y = e.mousePosition.y - 50;
+
+                        PopupWindow.Show(popUpRect, new CustomGameObjectHierarchyPopUp(obj));
                     }
                 }
             }
