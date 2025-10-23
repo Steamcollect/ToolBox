@@ -1,40 +1,43 @@
 using UnityEditor;
 using UnityEngine;
 
-[InitializeOnLoad]
-public static class HierarchyInputController
+namespace ToolBox.BetterWindow
 {
-    static HierarchyInputController()
+    [InitializeOnLoad]
+    public static class HierarchyInputController
     {
-        // S’enregistre sur chaque redraw de la Hierarchy
-        EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
-    }
-
-    private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
-    {
-        if (Application.isPlaying) return;
-
-        Event e = Event.current;
-        Object obj = EditorUtility.InstanceIDToObject(instanceID);
-
-        if (e.type == EventType.MouseDown && e.button == 0 && selectionRect.Contains(e.mousePosition)) // On left click
+        static HierarchyInputController()
         {
-            if (obj == null)
-            {
-                Rect popUpRect = new Rect();
-                popUpRect.x = selectionRect.x;
-                popUpRect.y = selectionRect.y + 18;
+            // S’enregistre sur chaque redraw de la Hierarchy
+            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
+        }
 
-                PopupWindow.Show(popUpRect, new SceneBrowserPopUp());
-            }
-            else
+        private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
+        {
+            if (Application.isPlaying) return;
+
+            Event e = Event.current;
+            Object obj = EditorUtility.InstanceIDToObject(instanceID);
+
+            if (e.type == EventType.MouseDown && e.button == 0 && selectionRect.Contains(e.mousePosition)) // On left click
             {
-                if (e.alt)
+                if (obj == null)
                 {
                     Rect popUpRect = new Rect();
-                    popUpRect.x = selectionRect.x + selectionRect.width;
+                    popUpRect.x = selectionRect.x;
+                    popUpRect.y = selectionRect.y + 18;
 
-                    PopupWindow.Show(popUpRect, new GameObjectVisualSetupPopUp());
+                    PopupWindow.Show(popUpRect, new SceneBrowserPopUp());
+                }
+                else
+                {
+                    if (e.alt)
+                    {
+                        Rect popUpRect = new Rect();
+                        popUpRect.x = selectionRect.x + selectionRect.width;
+
+                        PopupWindow.Show(popUpRect, new GameObjectVisualSetupPopUp());
+                    }
                 }
             }
         }

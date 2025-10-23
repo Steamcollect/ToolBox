@@ -3,116 +3,163 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class SceneBrowserPopUp : PopupWindowContent
+namespace ToolBox.BetterWindow
 {
-    static int buttonHeight = 20;
-    static int searchBarHeight = 22;
-    static int maxHeight = 300;
-
-    private Vector2 scrollPos;
-    private string searchQuery = "";
-
-    private const string SaveKey = "SceneBrowser_Data";
-
-    Dictionary<string /*path*/, SceneBrowerData> scenesDataSaved = new();
-    List<SceneBrowerData> favoriteScenes = new(), othersScenes = new();
-
-    [System.Serializable]
-    class SceneBrowerData
+    public class SceneBrowserPopUp : PopupWindowContent
     {
-        public string path;
-        public string name;
-        public bool isFavorite;
+        static int buttonHeight = 20;
+        static int searchBarHeight = 22;
+        static int maxHeight = 300;
 
-        public SceneBrowerData(string path, string name, bool isFavorite)
+        private Vector2 scrollPos;
+        private string searchQuery = "";
+
+        private const string SaveKey = "SceneBrowser_Data";
+
+        Dictionary<string /*path*/, SceneBrowerData> scenesDataSaved = new();
+        List<SceneBrowerData> favoriteScenes = new(), othersScenes = new();
+
+        [System.Serializable]
+        class SceneBrowerData
         {
-            this.path = path;
-            this.name = name;
-            this.isFavorite = isFavorite;
+            public string path;
+            public string name;
+            public bool isFavorite;
+
+            public SceneBrowerData(string path, string name, bool isFavorite)
+            {
+                this.path = path;
+                this.name = name;
+                this.isFavorite = isFavorite;
+            }
         }
-    }
 
-    [System.Serializable]
-    class SceneBrowerDataList
-    {
-        public List<SceneBrowerData> scenes = new List<SceneBrowerData>();
-        public SceneBrowerDataList(IEnumerable<SceneBrowerData> data)
+        [System.Serializable]
+        class SceneBrowerDataList
         {
-            scenes.AddRange(data);
+            public List<SceneBrowerData> scenes = new List<SceneBrowerData>();
+            public SceneBrowerDataList(IEnumerable<SceneBrowerData> data)
+            {
+                scenes.AddRange(data);
+            }
         }
-    }
 
-    GUIStyle leftButtonStyle, RightTextStyle;
-    void SetStyles()
-    {
-        leftButtonStyle = new GUIStyle(GUI.skin.button)
+        GUIStyle leftButtonStyle, RightTextStyle;
+        void SetStyles()
         {
-            alignment = TextAnchor.MiddleLeft,
-            padding = new RectOffset(10, 10, 2, 2),
-        };
+            leftButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                padding = new RectOffset(10, 10, 2, 2),
+            };
 
-        RightTextStyle = new GUIStyle(EditorStyles.label)
-        {
-            alignment = TextAnchor.MiddleRight,
-            fontStyle = FontStyle.Bold,
-            padding = new RectOffset(10, 10, 2, 2),
-        };
-    }
-
-    public override void OnOpen()
-    {
-        SetStyles();
-
-        LoadScenesData();
-        
-        (string[] paths, string[] names) = GetAllScenesInAssetsRoot();
-
-        for (int i = 0; i < paths.Length; i++)
-        {
-            SceneBrowerData scene = new SceneBrowerData(
-                    paths[i],
-                    names[i],
-                    scenesDataSaved.ContainsKey(paths[i]) ? scenesDataSaved[paths[i]].isFavorite : false
-                );
-
-            if(scene.isFavorite) favoriteScenes.Add(scene);
-            else othersScenes.Add(scene);
+            RightTextStyle = new GUIStyle(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleRight,
+                fontStyle = FontStyle.Bold,
+                padding = new RectOffset(10, 10, 2, 2),
+            };
         }
-    }
-    public override void OnClose()
-    {
-        scenesDataSaved.Clear();
 
-        foreach (SceneBrowerData scene in favoriteScenes)
-            scenesDataSaved.Add(scene.path, scene);
-        foreach (SceneBrowerData scene in othersScenes)
-            scenesDataSaved.Add(scene.path, scene);
-
-        SaveScenesData();
-    }
-
-    public override void OnGUI(Rect rect)
-    {
-        GUILayout.Space(2);
-        GUILayout.BeginHorizontal(EditorStyles.toolbar);
-        searchQuery = GUILayout.TextField(searchQuery, EditorStyles.toolbarSearchField);
-        GUILayout.EndHorizontal();
-
-        GUILayout.Space(10);
-
-        DrawButtons();
-    }
-
-    void DrawButtons()
-    {
-        Event e = Event.current;
-
-        // --- ZONE SCROLLABLE ---
-        scrollPos = GUILayout.BeginScrollView(scrollPos);
-
-        if (favoriteScenes.Count > 0)
+        public override void OnOpen()
         {
+            SetStyles();
+
+            LoadScenesData();
+
+            (string[] paths, string[] names) = GetAllScenesInAssetsRoot();
+
+            for (int i = 0; i < paths.Length; i++)
+            {
+                SceneBrowerData scene = new SceneBrowerData(
+                        paths[i],
+                        names[i],
+                        scenesDataSaved.ContainsKey(paths[i]) ? scenesDataSaved[paths[i]].isFavorite : false
+                    );
+
+                if (scene.isFavorite) favoriteScenes.Add(scene);
+                else othersScenes.Add(scene);
+            }
+        }
+        public override void OnClose()
+        {
+            scenesDataSaved.Clear();
+
             foreach (SceneBrowerData scene in favoriteScenes)
+                scenesDataSaved.Add(scene.path, scene);
+            foreach (SceneBrowerData scene in othersScenes)
+                scenesDataSaved.Add(scene.path, scene);
+
+            SaveScenesData();
+        }
+
+        public override void OnGUI(Rect rect)
+        {
+            GUILayout.Space(2);
+            GUILayout.BeginHorizontal(EditorStyles.toolbar);
+            searchQuery = GUILayout.TextField(searchQuery, EditorStyles.toolbarSearchField);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(10);
+
+            DrawButtons();
+        }
+
+        void DrawButtons()
+        {
+            Event e = Event.current;
+
+            // --- ZONE SCROLLABLE ---
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
+
+            if (favoriteScenes.Count > 0)
+            {
+                foreach (SceneBrowerData scene in favoriteScenes)
+                {
+                    // Filtrage de la recherche
+                    if (!string.IsNullOrEmpty(searchQuery) &&
+                        !scene.name.ToLower().Contains(searchQuery.ToLower()))
+                    {
+                        continue;
+                    }
+
+                    var rowRect = GUILayoutUtility.GetRect(250, buttonHeight, GUILayout.ExpandWidth(true)); // Get space in GUILayout
+
+                    bool containsMouse = rowRect.Contains(Event.current.mousePosition);
+
+                    float buttonWidth = rowRect.width - (containsMouse ? 36 : 9);
+                    var buttonRect = new Rect(rowRect.x + 5, rowRect.y, buttonWidth, rowRect.height);
+
+                    if (GUI.Button(buttonRect, scene.name, leftButtonStyle))
+                    {
+                        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
+                    }
+                    GUILayout.Space(2);
+
+                    if (containsMouse)
+                    {
+                        Rect toggleRect = new Rect(buttonRect.xMax + 2, rowRect.y, rowRect.width - buttonWidth - 11, rowRect.height);
+
+                        if (GUI.Button(toggleRect, "★"))
+                        {
+                            scene.isFavorite = false;
+                            othersScenes.Add(scene);
+                            favoriteScenes.Remove(scene);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        GUI.Label(buttonRect, "★", RightTextStyle);
+                    }
+                }
+
+                GUILayout.Space(5);
+                GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
+                GUILayout.Space(5);
+            }
+
+            foreach (var scene in othersScenes)
             {
                 // Filtrage de la recherche
                 if (!string.IsNullOrEmpty(searchQuery) &&
@@ -138,95 +185,62 @@ public class SceneBrowserPopUp : PopupWindowContent
                 {
                     Rect toggleRect = new Rect(buttonRect.xMax + 2, rowRect.y, rowRect.width - buttonWidth - 11, rowRect.height);
 
-                    if (GUI.Button(toggleRect, "★"))
+                    if (GUI.Button(toggleRect, "☆"))
                     {
-                        scene.isFavorite = false;
-                        othersScenes.Add(scene);
-                        favoriteScenes.Remove(scene);
+                        scene.isFavorite = true;
+                        othersScenes.Remove(scene);
+                        favoriteScenes.Add(scene);
                         break;
                     }
                 }
-                else
-                {
-                    GUI.Label(buttonRect, "★", RightTextStyle);
-                }
             }
 
-            GUILayout.Space(5);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(5);
+            GUILayout.EndScrollView();
         }
 
-        foreach (var scene in othersScenes)
+        void SaveScenesData()
         {
-            // Filtrage de la recherche
-            if (!string.IsNullOrEmpty(searchQuery) &&
-                !scene.name.ToLower().Contains(searchQuery.ToLower()))
+            SceneBrowerDataList list = new SceneBrowerDataList(scenesDataSaved.Values);
+            string json = JsonUtility.ToJson(list, true);
+            EditorPrefs.SetString(SaveKey, json);
+        }
+        void LoadScenesData()
+        {
+            scenesDataSaved.Clear();
+
+            string json = EditorPrefs.GetString(SaveKey, "");
+            if (!string.IsNullOrEmpty(json))
             {
-                continue;
-            }
-
-            var rowRect = GUILayoutUtility.GetRect(250, buttonHeight, GUILayout.ExpandWidth(true)); // Get space in GUILayout
-
-            bool containsMouse = rowRect.Contains(Event.current.mousePosition);
-
-            float buttonWidth = rowRect.width - (containsMouse ? 36 : 9);
-            var buttonRect = new Rect(rowRect.x + 5, rowRect.y, buttonWidth, rowRect.height);
-
-            if (GUI.Button(buttonRect, scene.name, leftButtonStyle))
-            {
-                UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
-            }
-            GUILayout.Space(2);
-
-            if (containsMouse)
-            {
-                Rect toggleRect = new Rect(buttonRect.xMax + 2, rowRect.y, rowRect.width - buttonWidth - 11, rowRect.height);
-
-                if (GUI.Button(toggleRect, "☆"))
+                SceneBrowerDataList list = JsonUtility.FromJson<SceneBrowerDataList>(json);
+                if (list?.scenes != null)
                 {
-                    scene.isFavorite = true;
-                    othersScenes.Remove(scene);
-                    favoriteScenes.Add(scene);
-                    break;
+                    foreach (SceneBrowerData scene in list.scenes)
+                        scenesDataSaved.Add(scene.path, scene);
                 }
             }
         }
 
-        GUILayout.EndScrollView();
-    }
-
-    void SaveScenesData()
-    {
-        SceneBrowerDataList list = new SceneBrowerDataList(scenesDataSaved.Values);
-        string json = JsonUtility.ToJson(list, true);
-        EditorPrefs.SetString(SaveKey, json);
-    }
-    void LoadScenesData()
-    {
-        scenesDataSaved.Clear();
-
-        string json = EditorPrefs.GetString(SaveKey, "");
-        if (!string.IsNullOrEmpty(json))
+        public override Vector2 GetWindowSize()
         {
-            SceneBrowerDataList list = JsonUtility.FromJson<SceneBrowerDataList>(json);
-            if (list?.scenes != null)
+            // Calcule le nombre d'éléments visibles après filtrage
+            int visibleCount = 0;
+            int offset = 14;
+
+            if (favoriteScenes.Count > 0) // Favorite scenes
             {
-                foreach (SceneBrowerData scene in list.scenes)
-                    scenesDataSaved.Add(scene.path,scene);
+                foreach (SceneBrowerData scene in favoriteScenes)
+                {
+                    if (string.IsNullOrEmpty(searchQuery) ||
+                        scene.name.ToLower().Contains(searchQuery.ToLower()))
+                    {
+                        visibleCount++;
+                    }
+                }
+
+                offset += 25;
             }
-        }
-    }
 
-    public override Vector2 GetWindowSize()
-    {
-        // Calcule le nombre d'éléments visibles après filtrage
-        int visibleCount = 0;
-        int offset = 14;
-
-        if (favoriteScenes.Count > 0) // Favorite scenes
-        {
-            foreach (SceneBrowerData scene in favoriteScenes)
+            foreach (SceneBrowerData scene in othersScenes) // Other scenes
             {
                 if (string.IsNullOrEmpty(searchQuery) ||
                     scene.name.ToLower().Contains(searchQuery.ToLower()))
@@ -235,53 +249,42 @@ public class SceneBrowserPopUp : PopupWindowContent
                 }
             }
 
-            offset += 25;
+            // Hauteur théorique : barre de recherche + boutons + marges
+            float idealHeight = searchBarHeight + (visibleCount * buttonHeight + visibleCount * 2) + offset;
+
+            // On limite la hauteur max
+            float finalHeight = Mathf.Min(maxHeight, idealHeight);
+
+            return new Vector2(finalHeight == maxHeight ? 275 : 250, finalHeight);
         }
 
-        foreach (SceneBrowerData scene in othersScenes) // Other scenes
+        public static int GetSceneCountInProject()
         {
-            if (string.IsNullOrEmpty(searchQuery) ||
-                scene.name.ToLower().Contains(searchQuery.ToLower()))
-            {
-                visibleCount++;
-            }
+            return AssetDatabase.FindAssets("t:Scene").Length;
         }
-
-        // Hauteur théorique : barre de recherche + boutons + marges
-        float idealHeight = searchBarHeight + (visibleCount * buttonHeight + visibleCount * 2) + offset;
-
-        // On limite la hauteur max
-        float finalHeight = Mathf.Min(maxHeight, idealHeight);
-
-        return new Vector2(finalHeight == maxHeight ? 275 : 250, finalHeight);
-    }
-
-    public static int GetSceneCountInProject()
-    {
-        return AssetDatabase.FindAssets("t:Scene").Length;
-    }
-    public static (string[] paths, string[] names) GetAllScenesInAssetsRoot()
-    {
-        // Trouve toutes les scènes du projet
-        string[] sceneGuids = AssetDatabase.FindAssets("t:Scene");
-
-        // On utilise des listes dynamiques (plus simple à filtrer)
-        var paths = new System.Collections.Generic.List<string>();
-        var names = new System.Collections.Generic.List<string>();
-
-        foreach (string guid in sceneGuids)
+        public static (string[] paths, string[] names) GetAllScenesInAssetsRoot()
         {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
+            // Trouve toutes les scènes du projet
+            string[] sceneGuids = AssetDatabase.FindAssets("t:Scene");
 
-            // Vérifie que la scène est dans le dossier "Assets/"
-            // (FindAssets retourne parfois des assets du PackageCache ou autres)
-            if (path.StartsWith("Assets/"))
+            // On utilise des listes dynamiques (plus simple à filtrer)
+            var paths = new System.Collections.Generic.List<string>();
+            var names = new System.Collections.Generic.List<string>();
+
+            foreach (string guid in sceneGuids)
             {
-                paths.Add(path);
-                names.Add(Path.GetFileNameWithoutExtension(path));
-            }
-        }
+                string path = AssetDatabase.GUIDToAssetPath(guid);
 
-        return (paths.ToArray(), names.ToArray());
+                // Vérifie que la scène est dans le dossier "Assets/"
+                // (FindAssets retourne parfois des assets du PackageCache ou autres)
+                if (path.StartsWith("Assets/"))
+                {
+                    paths.Add(path);
+                    names.Add(Path.GetFileNameWithoutExtension(path));
+                }
+            }
+
+            return (paths.ToArray(), names.ToArray());
+        }
     }
 }

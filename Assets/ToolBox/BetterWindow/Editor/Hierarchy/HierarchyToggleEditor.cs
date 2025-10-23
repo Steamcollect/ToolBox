@@ -1,30 +1,33 @@
 using UnityEditor;
 using UnityEngine;
 
-[InitializeOnLoad]
-public static class HierarchyToggleEditor
+namespace ToolBox.BetterWindow
 {
-    static HierarchyToggleEditor()
+    [InitializeOnLoad]
+    public static class HierarchyToggleEditor
     {
-        EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
-    }
-
-    static void OnHierarchyGUI(int instanceID, Rect selectionRect)
-    {
-        // Récupérer le GameObject associé
-        GameObject obj = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
-        Rect toggleRect = new Rect(selectionRect.x - 20, selectionRect.y - 1, 18, 18);
-
-        if (obj != null && 
-            (selectionRect.Contains(Event.current.mousePosition) || toggleRect.Contains(Event.current.mousePosition)))
+        static HierarchyToggleEditor()
         {
-            bool newActive = GUI.Toggle(toggleRect, obj.activeSelf, GUIContent.none);
+            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
+        }
 
-            if (newActive != obj.activeSelf)
+        static void OnHierarchyGUI(int instanceID, Rect selectionRect)
+        {
+            // Récupérer le GameObject associé
+            GameObject obj = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+            Rect toggleRect = new Rect(selectionRect.x - 20, selectionRect.y - 1, 18, 18);
+
+            if (obj != null &&
+                (selectionRect.Contains(Event.current.mousePosition) || toggleRect.Contains(Event.current.mousePosition)))
             {
-                Undo.RecordObject(obj, "Toggle Active State");
-                obj.SetActive(newActive);
-                EditorUtility.SetDirty(obj);
+                bool newActive = GUI.Toggle(toggleRect, obj.activeSelf, GUIContent.none);
+
+                if (newActive != obj.activeSelf)
+                {
+                    Undo.RecordObject(obj, "Toggle Active State");
+                    obj.SetActive(newActive);
+                    EditorUtility.SetDirty(obj);
+                }
             }
         }
     }
