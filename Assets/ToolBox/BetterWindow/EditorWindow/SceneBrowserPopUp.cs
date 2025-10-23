@@ -42,15 +42,26 @@ public class SceneBrowserPopUp : PopupWindowContent
         }
     }
 
-    GUIStyle leftButtonStyle;
-
-    public override void OnOpen()
+    GUIStyle leftButtonStyle, RightTextStyle;
+    void SetStyles()
     {
         leftButtonStyle = new GUIStyle(GUI.skin.button)
         {
             alignment = TextAnchor.MiddleLeft,
             padding = new RectOffset(10, 10, 2, 2),
         };
+
+        RightTextStyle = new GUIStyle(EditorStyles.label)
+        {
+            alignment = TextAnchor.MiddleRight,
+            fontStyle = FontStyle.Bold,
+            padding = new RectOffset(10, 10, 2, 2),
+        };
+    }
+
+    public override void OnOpen()
+    {
+        SetStyles();
 
         LoadScenesData();
         
@@ -68,7 +79,6 @@ public class SceneBrowserPopUp : PopupWindowContent
             else othersScenes.Add(scene);
         }
     }
-
     public override void OnClose()
     {
         scenesDataSaved.Clear();
@@ -90,12 +100,17 @@ public class SceneBrowserPopUp : PopupWindowContent
 
         GUILayout.Space(10);
 
+        DrawButtons();
+    }
+
+    void DrawButtons()
+    {
         Event e = Event.current;
 
         // --- ZONE SCROLLABLE ---
         scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-        if(favoriteScenes.Count > 0)
+        if (favoriteScenes.Count > 0)
         {
             foreach (SceneBrowerData scene in favoriteScenes)
             {
@@ -106,24 +121,37 @@ public class SceneBrowserPopUp : PopupWindowContent
                     continue;
                 }
 
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button(scene.name, leftButtonStyle, GUILayout.Height(buttonHeight)))
+                var rowRect = GUILayoutUtility.GetRect(250, buttonHeight, GUILayout.ExpandWidth(true)); // Get space in GUILayout
+
+                bool containsMouse = rowRect.Contains(Event.current.mousePosition);
+
+                float buttonWidth = rowRect.width - (containsMouse ? 36 : 9);
+                var buttonRect = new Rect(rowRect.x + 5, rowRect.y, buttonWidth, rowRect.height);
+
+                if (GUI.Button(buttonRect, scene.name, leftButtonStyle))
                 {
                     UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
                 }
+                GUILayout.Space(2);
 
-                GUIContent starIcon = new GUIContent(scene.isFavorite ? "★" : "☆");
-                bool newFavorite = GUILayout.Toggle(scene.isFavorite, starIcon, "Button", GUILayout.Width(25));
-                if (newFavorite != scene.isFavorite)
+                if (containsMouse)
                 {
-                    scene.isFavorite = false;
-                    favoriteScenes.Remove(scene);
-                    othersScenes.Add(scene);
-                    break;
+                    Rect toggleRect = new Rect(buttonRect.xMax + 2, rowRect.y, rowRect.width - buttonWidth - 11, rowRect.height);
+
+                    if (GUI.Button(toggleRect, "★"))
+                    {
+                        scene.isFavorite = false;
+                        othersScenes.Add(scene);
+                        favoriteScenes.Remove(scene);
+                        break;
+                    }
                 }
-                GUILayout.EndHorizontal();
+                else
+                {
+                    GUI.Label(buttonRect, "★", RightTextStyle);
+                }
             }
-            
+
             GUILayout.Space(5);
             GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
             GUILayout.Space(5);
@@ -155,7 +183,7 @@ public class SceneBrowserPopUp : PopupWindowContent
             {
                 Rect toggleRect = new Rect(buttonRect.xMax + 2, rowRect.y, rowRect.width - buttonWidth - 11, rowRect.height);
 
-                if(GUI.Button(toggleRect, "☆"))
+                if (GUI.Button(toggleRect, "☆"))
                 {
                     scene.isFavorite = true;
                     othersScenes.Remove(scene);
@@ -207,7 +235,7 @@ public class SceneBrowserPopUp : PopupWindowContent
                 }
             }
 
-            offset += 28;
+            offset += 25;
         }
 
         foreach (SceneBrowerData scene in othersScenes) // Other scenes
