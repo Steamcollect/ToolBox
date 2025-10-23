@@ -14,10 +14,12 @@ namespace ToolBox.BetterWindow
         private Vector2 scrollPos;
         private string searchQuery = "";
 
+        Dictionary<string /*path*/, SceneBrowerData> scenesDataSaved = new();
         private const string SaveKey = "SceneBrowser_Data";
 
-        Dictionary<string /*path*/, SceneBrowerData> scenesDataSaved = new();
         List<SceneBrowerData> favoriteScenes = new(), othersScenes = new();
+
+        Stack<System.Action> undoStack = new();
 
         [System.Serializable]
         class SceneBrowerData
@@ -102,13 +104,13 @@ namespace ToolBox.BetterWindow
 
             GUILayout.Space(10);
 
-            DrawButtons();
+            Event e = Event.current;
+            DrawButtons(e);
+            CheckUndo(e);
         }
 
-        void DrawButtons()
+        void DrawButtons(Event e)
         {
-            Event e = Event.current;
-
             // --- ZONE SCROLLABLE ---
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
@@ -142,6 +144,13 @@ namespace ToolBox.BetterWindow
 
                         if (GUI.Button(toggleRect, "★"))
                         {
+                            undoStack.Push(() =>
+                            {
+                                scene.isFavorite = true;
+                                favoriteScenes.Add(scene);
+                                othersScenes.Remove(scene);
+                            });
+
                             scene.isFavorite = false;
                             othersScenes.Add(scene);
                             favoriteScenes.Remove(scene);
@@ -187,6 +196,13 @@ namespace ToolBox.BetterWindow
 
                     if (GUI.Button(toggleRect, "☆"))
                     {
+                        undoStack.Push(() =>
+                        {
+                            scene.isFavorite = false;
+                            othersScenes.Add(scene);
+                            favoriteScenes.Remove(scene);
+                        });
+
                         scene.isFavorite = true;
                         othersScenes.Remove(scene);
                         favoriteScenes.Add(scene);
@@ -196,6 +212,18 @@ namespace ToolBox.BetterWindow
             }
 
             GUILayout.EndScrollView();
+        }
+
+        void CheckUndo(Event e)
+        {
+            if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Z)
+            {
+                if (undoStack.Count > 0)
+                {
+                    undoStack.Pop().Invoke();
+                    e.Use(); // empêche la propagation
+                }
+            }
         }
 
         void SaveScenesData()
