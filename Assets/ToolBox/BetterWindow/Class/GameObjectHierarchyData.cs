@@ -5,22 +5,28 @@ using UnityEngine;
 [System.Serializable]
 public class GameObjectHierarchyData
 {
+    public string globalID;
     public string iconName;
 
-    [System.NonSerialized] public int InstanceID;
+    public int InstanceID;
     [System.NonSerialized] public GameObject GameObject;
 
     [System.NonSerialized] public Texture2D icon;
 
     //public Texture2D Icon;
 
-    public GameObjectHierarchyData(int instanceId, GameObject gameObject)
+    public GameObjectHierarchyData(int instanceId, Object obj, bool SetGlobalId)
     {
+        if(SetGlobalId)
+            globalID = GlobalObjectId.GetGlobalObjectIdSlow(obj).ToString();
+
         InstanceID = instanceId;
-        GameObject = gameObject;
+        GameObject = obj as GameObject;
 
         icon = (Texture2D)EditorGUIUtility.IconContent("GameObject Icon").image;
     }
+
+    public bool IsGlobalIdEmpty() { return string.IsNullOrEmpty(globalID); }
 
     public void SetIcon(string iconName)
     {

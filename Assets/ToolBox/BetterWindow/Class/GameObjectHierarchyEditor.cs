@@ -1,19 +1,17 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 [InitializeOnLoad]
 public static class GameObjectHierarchyEditor
 {
-    static Dictionary<int /*instanceID*/, GameObjectHierarchyData> gamObjectsData = new();
+    static Dictionary<int /*instanceID*/, GameObjectHierarchyData> gameObjectsData = new();
     private const string SaveKey = "GameObjectCustomizer_Data";
-
 
     static GameObjectHierarchyEditor()
     {
-        LoadGOData();
-
+        EditorApplication.delayCall += LoadGOData;
         EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
     }
 
@@ -33,7 +31,7 @@ public static class GameObjectHierarchyEditor
     }
     public static void SetData(int instanceID, string iconName)
     {
-        gamObjectsData[instanceID].SetIcon(iconName);
+        gameObjectsData[instanceID].SetIcon(iconName);
         SaveGOData();
 
         EditorApplication.RepaintHierarchyWindow();
@@ -41,28 +39,30 @@ public static class GameObjectHierarchyEditor
 
     static GameObjectHierarchyData GetOrCreateGOHierarchyData(int instanceId)
     {
-        Object obj = EditorUtility.InstanceIDToObject(instanceId);
-        if (obj == null) return null;
-
-        if (!gamObjectsData.TryGetValue(instanceId, out GameObjectHierarchyData go))
+        if (!gameObjectsData.TryGetValue(instanceId, out GameObjectHierarchyData newGO))
         {
-            go = new GameObjectHierarchyData(instanceId, obj as GameObject);
-            gamObjectsData[instanceId] = go;
+            UnityEngine.Object obj = EditorUtility.InstanceIDToObject(instanceId);
+            if (obj == null)
+                return null;
+
+            newGO = new GameObjectHierarchyData(instanceId, obj, true);
+            gameObjectsData.Add(instanceId, newGO);
         }
 
-        return go;
+        return newGO;
     }
 
     public static void SaveGOData()
     {
-        GameObjectHierarchyList list = new GameObjectHierarchyList(gamObjectsData.Values);
+        GameObjectHierarchyList list = new GameObjectHierarchyList(gameObjectsData.Values);
         string json = JsonUtility.ToJson(list, true);
         EditorPrefs.SetString(SaveKey, json);
     }
 
     static void LoadGOData()
     {
-        gamObjectsData.Clear();
+        gameObjectsData.Clear();
+
         string json = EditorPrefs.GetString(SaveKey, "");
         if (!string.IsNullOrEmpty(json))
         {
@@ -70,7 +70,28 @@ public static class GameObjectHierarchyEditor
             if (list?.items != null)
             {
                 foreach (var item in list.items)
-                    gamObjectsData[item.InstanceID] = item;
+                {
+                    if (item.IsGlobalIdEmpty())
+                        continue;
+
+                    if(GlobalObjectId.TryParse(item.globalID, out GlobalObjectId id))
+                    {
+                        UnityEngine.Object obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
+                        int instanceID = obj.GetInstanceID();
+
+                        GameObjectHierarchyData newItem = new GameObjectHierarchyData(instanceID, obj, false);
+
+                        if (gameObjectsData.ContainsKey(instanceID))
+                            continue;
+
+                        if (!string.IsNullOrEmpty(item.iconName))
+                            newItem.SetIcon(item.iconName);
+
+                        gameObjectsData.Add(instanceID, newItem);
+                    }
+                }
+
+                EditorApplication.RepaintHierarchyWindow();
             }
         }
     }

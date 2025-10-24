@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -49,7 +50,23 @@ namespace ToolBox.BetterWindow
 
         public CustomGameObjectHierarchyPopUp(Object obj)
         {
+            if (obj == null)
+            {
+                UnityEngine.Debug.LogWarning("Popup opened with a null object reference.");
+                return;
+            }
+
             objId = obj.GetInstanceID();
+
+            GameObjectHierarchyData data = GameObjectHierarchyEditor.GetData(objId);
+            if (data == null || data.GameObject == null)
+            {
+                UnityEngine.Debug.LogWarning($"No GameObjectHierarchyData found for {obj.name} (InstanceID: {objId}).");
+                return;
+            }
+
+            UnityEngine.Debug.Log($"Popup Opened for: {obj.name}");
+            UnityEngine.Debug.Log($"GlobalID: {data.globalID}");
         }
 
         public override void OnGUI(Rect rect)
