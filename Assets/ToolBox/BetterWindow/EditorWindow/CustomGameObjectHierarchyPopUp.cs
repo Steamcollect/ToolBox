@@ -31,6 +31,7 @@ namespace ToolBox.BetterWindow
         };
         string[] yellow = new string[] {
             "Light Icon",
+            "DirectionalLight Icon",
             "LightmapParameters Icon",
             "AudioSource Icon",
             "AudioClip Icon",
