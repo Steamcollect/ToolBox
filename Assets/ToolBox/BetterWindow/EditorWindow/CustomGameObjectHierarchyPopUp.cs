@@ -60,28 +60,16 @@ namespace ToolBox.BetterWindow
             GUILayout.Space(10);
 
             DrawIcons(utilities, iconsPerRow);
-
-            GUILayout.Space(3);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(3);
+            DrawLine();
 
             DrawIcons(components, iconsPerRow);
+            DrawLine();
 
-            GUILayout.Space(3);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(3); 
-            
             DrawIcons(physics, iconsPerRow);
-
-            GUILayout.Space(3);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(3);
+            DrawLine();
 
             DrawIcons(yellow, iconsPerRow);
-
-            GUILayout.Space(3);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(3);
+            DrawLine();
 
             DrawIcons(grey, iconsPerRow);
 
@@ -104,7 +92,6 @@ namespace ToolBox.BetterWindow
 
                 if (GUILayout.Button(iconContent, GUIStyle.none, GUILayout.Width(18), GUILayout.Height(18)))
                 {
-                    // Applique la nouvelle icône
                     GameObjectHierarchyEditor.SetData(objId, icons[i]);
                 }
 
@@ -124,6 +111,12 @@ namespace ToolBox.BetterWindow
             }
 
             GUILayout.EndHorizontal();
+        }
+        void DrawLine()
+        {
+            GUILayout.Space(3);
+            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
+            GUILayout.Space(3);
         }
 
         public override Vector2 GetWindowSize()
