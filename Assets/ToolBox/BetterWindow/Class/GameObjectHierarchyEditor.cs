@@ -6,8 +6,9 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class GameObjectHierarchyEditor
 {
-    static Dictionary<int /*instanceID*/, GameObjectHierarchyData> objectsData = new();
+    static Dictionary<int /*instanceID*/, GameObjectHierarchyData> gamObjectsData = new();
     private const string SaveKey = "GameObjectCustomizer_Data";
+
 
     static GameObjectHierarchyEditor()
     {
@@ -23,26 +24,16 @@ public static class GameObjectHierarchyEditor
         if (data == null || data.GameObject == null)
             return;
 
-        // Détermine la couleur du fond selon le thème et la sélection
-        bool isSelected = Selection.instanceIDs.Contains(instanceID);
-        Color bgColor = isSelected
-            ? new Color(0.172549f, .3647059f, .5294118f)
-            : (EditorGUIUtility.isProSkin
-                ? new Color(0.219f, 0.219f, 0.219f)
-                : new Color(0.76f, 0.76f, 0.76f));
-
-        Rect iconRect = new Rect(selectionRect.x - 1, selectionRect.y, 16, 16);
-        EditorGUI.DrawRect(iconRect, bgColor);
-        GUI.DrawTexture(iconRect, data.icon, ScaleMode.ScaleToFit);
+        data.Draw(selectionRect);
     }
 
     public static GameObjectHierarchyData GetData(int instanceID)
     {
         return GetOrCreateGOHierarchyData(instanceID);
     }
-    public static void SetData(int instanceID, Texture2D icon)
+    public static void SetData(int instanceID, string iconName)
     {
-        objectsData[instanceID].icon = icon;
+        gamObjectsData[instanceID].SetIcon(iconName);
         SaveGOData();
 
         EditorApplication.RepaintHierarchyWindow();
@@ -53,10 +44,10 @@ public static class GameObjectHierarchyEditor
         Object obj = EditorUtility.InstanceIDToObject(instanceId);
         if (obj == null) return null;
 
-        if (!objectsData.TryGetValue(instanceId, out GameObjectHierarchyData go))
+        if (!gamObjectsData.TryGetValue(instanceId, out GameObjectHierarchyData go))
         {
             go = new GameObjectHierarchyData(instanceId, obj as GameObject);
-            objectsData[instanceId] = go;
+            gamObjectsData[instanceId] = go;
         }
 
         return go;
@@ -64,14 +55,14 @@ public static class GameObjectHierarchyEditor
 
     public static void SaveGOData()
     {
-        GameObjectHierarchyList list = new GameObjectHierarchyList(objectsData.Values);
+        GameObjectHierarchyList list = new GameObjectHierarchyList(gamObjectsData.Values);
         string json = JsonUtility.ToJson(list, true);
         EditorPrefs.SetString(SaveKey, json);
     }
 
     static void LoadGOData()
     {
-        objectsData.Clear();
+        gamObjectsData.Clear();
         string json = EditorPrefs.GetString(SaveKey, "");
         if (!string.IsNullOrEmpty(json))
         {
@@ -79,7 +70,7 @@ public static class GameObjectHierarchyEditor
             if (list?.items != null)
             {
                 foreach (var item in list.items)
-                    objectsData[item.InstanceID] = item;
+                    gamObjectsData[item.InstanceID] = item;
             }
         }
     }

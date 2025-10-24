@@ -45,8 +45,6 @@ namespace ToolBox.BetterWindow
             "Toggle Icon",
         };
 
-        Stack<System.Action> undoStack = new();
-
         int objId;
 
         public CustomGameObjectHierarchyPopUp(Object obj)
@@ -106,16 +104,8 @@ namespace ToolBox.BetterWindow
 
                 if (GUILayout.Button(iconContent, GUIStyle.none, GUILayout.Width(18), GUILayout.Height(18)))
                 {
-                    Texture2D previousIcon = GameObjectHierarchyEditor.GetData(objId).icon;
-                    Texture2D newIcon = (Texture2D)iconContent.image;
-
-                    // Push dans la pile d'Undo
-                    undoStack.Push(() => {
-                        GameObjectHierarchyEditor.SetData(objId, previousIcon);
-                    });
-
                     // Applique la nouvelle icône
-                    GameObjectHierarchyEditor.SetData(objId, newIcon);
+                    GameObjectHierarchyEditor.SetData(objId, icons[i]);
                 }
 
                 if (i < icons.Length - 1)
@@ -134,21 +124,6 @@ namespace ToolBox.BetterWindow
             }
 
             GUILayout.EndHorizontal();
-
-            Event e = Event.current;
-            CheckUndo(e);
-        }
-
-        void CheckUndo(Event e)
-        {
-            if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Z)
-            {
-                if (undoStack.Count > 0)
-                {
-                    undoStack.Pop().Invoke();
-                    e.Use(); // Empêche la propagation
-                }
-            }
         }
 
         public override Vector2 GetWindowSize()
