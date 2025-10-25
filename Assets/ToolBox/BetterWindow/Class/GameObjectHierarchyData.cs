@@ -13,8 +13,6 @@ public class GameObjectHierarchyData
 
     [System.NonSerialized] public Texture2D icon;
 
-    //public Texture2D Icon;
-
     public GameObjectHierarchyData(int instanceId, Object obj, bool SetGlobalId)
     {
         if(SetGlobalId)

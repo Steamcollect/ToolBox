@@ -47,8 +47,9 @@ namespace ToolBox.BetterWindow
         };
 
         int objId;
+        string sceneID;
 
-        public CustomGameObjectHierarchyPopUp(Object obj)
+        public CustomGameObjectHierarchyPopUp(Object obj, string currentSceneID)
         {
             if (obj == null)
             {
@@ -56,17 +57,18 @@ namespace ToolBox.BetterWindow
                 return;
             }
 
+            sceneID = currentSceneID;
             objId = obj.GetInstanceID();
 
-            GameObjectHierarchyData data = GameObjectHierarchyEditor.GetData(objId);
+            GameObjectHierarchyData data = GameObjectHierarchyEditor.GetData(sceneID, objId);
             if (data == null || data.GameObject == null)
             {
                 UnityEngine.Debug.LogWarning($"No GameObjectHierarchyData found for {obj.name} (InstanceID: {objId}).");
                 return;
             }
 
-            UnityEngine.Debug.Log($"Popup Opened for: {obj.name}");
-            UnityEngine.Debug.Log($"GlobalID: {data.globalID}");
+            //UnityEngine.Debug.Log($"Popup Opened for: {obj.name}");
+            //UnityEngine.Debug.Log($"GlobalID: {data.globalID}");
         }
 
         public override void OnGUI(Rect rect)
@@ -109,7 +111,7 @@ namespace ToolBox.BetterWindow
 
                 if (GUILayout.Button(iconContent, GUIStyle.none, GUILayout.Width(18), GUILayout.Height(18)))
                 {
-                    GameObjectHierarchyEditor.SetData(objId, icons[i]);
+                    GameObjectHierarchyEditor.SetData( sceneID, objId, icons[i]);
                 }
 
                 if (i < icons.Length - 1)

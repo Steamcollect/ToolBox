@@ -1,5 +1,7 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem.XR.Haptics;
+using UnityEngine.SceneManagement;
 
 namespace ToolBox.BetterWindow
 {
@@ -35,11 +37,16 @@ namespace ToolBox.BetterWindow
                     {
                         Rect popUpRect = new Rect();
 
-
                         popUpRect.x = e.mousePosition.x + 50;
                         popUpRect.y = e.mousePosition.y - 50;
 
-                        PopupWindow.Show(popUpRect, new CustomGameObjectHierarchyPopUp(obj));
+                        PopupWindow.Show(
+                            popUpRect, 
+                            new CustomGameObjectHierarchyPopUp(
+                                obj, 
+                                GameObjectHierarchyEditor.GetCurrentSceneGlobalId().ToString()
+                            )
+                        );
                     }
                 }
             }
