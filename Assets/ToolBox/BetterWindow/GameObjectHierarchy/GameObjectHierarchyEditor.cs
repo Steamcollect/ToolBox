@@ -90,103 +90,84 @@ public static class GameObjectHierarchyEditor
 
     public static void SaveGOData()
     {
-        List<SceneDataWrapper> allScenes = new();
-
         foreach (var sceneEntry in ScenesData)
         {
-            SceneDataWrapper wrapper = new SceneDataWrapper
+            string sceneId = sceneEntry.Key;
+
+            // Resolve the SceneAsset from the stored GlobalObjectId string
+            SceneAsset sceneAsset = ResolveSceneAssetFromId(sceneId);
+            if (sceneAsset == null) continue;
+
+            string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
+            if (string.IsNullOrEmpty(scenePath)) continue;
+
+            string dataPath = System.IO.Path.ChangeExtension(scenePath, "_HierarchyData.asset");
+
+            SceneHierarchyMeta meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
+            if (meta == null)
             {
-                sceneID = sceneEntry.Key,
-                items = sceneEntry.Value.Values.ToList()
-            };
-            allScenes.Add(wrapper);
+                meta = ScriptableObject.CreateInstance<SceneHierarchyMeta>();
+                AssetDatabase.CreateAsset(meta, dataPath);
+            }
+
+            meta.items.Clear();
+            meta.items.AddRange(sceneEntry.Value.Values);
+
+            EditorUtility.SetDirty(meta);
         }
 
-        string json = JsonUtility.ToJson(new SceneCollectionWrapper(allScenes), true);
-        EditorPrefs.SetString(SaveKey, json);
+        AssetDatabase.SaveAssets();
+    }
+    static SceneAsset ResolveSceneAssetFromId(string sceneId)
+    {
+        if (string.IsNullOrEmpty(sceneId)) return null;
+        if (!GlobalObjectId.TryParse(sceneId, out var gid)) return null;
+
+        return GlobalObjectId.GlobalObjectIdentifierToObjectSlow(gid) as SceneAsset;
     }
 
     static void LoadGOData()
     {
         ScenesData.Clear();
 
-        string json = EditorPrefs.GetString(SaveKey, "");
-        if (string.IsNullOrEmpty(json))
-            return;
+        var activeScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+        if (!activeScene.IsValid()) return;
 
-        var collection = JsonUtility.FromJson<SceneCollectionWrapper>(json);
-        if (collection == null || collection.scenes == null)
-            return;
+        // We still use your existing scene ID (GlobalObjectId as string)
+        string currentSceneId = GetCurrentSceneGlobalId().ToString(); // from your class
 
-        foreach (var sceneWrapper in collection.scenes)
+        // Resolve the SceneAsset from that ID
+        SceneAsset sceneAsset = ResolveSceneAssetFromId(currentSceneId);
+        if (sceneAsset == null) return;
+
+        string dataPath = System.IO.Path.ChangeExtension(activeScene.path, "_HierarchyData.asset");
+        var meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
+        if (meta == null) return;
+
+        var sceneDict = new Dictionary<int, GameObjectHierarchyData>();
+
+        foreach (var item in meta.items)
         {
-            if (string.IsNullOrEmpty(sceneWrapper.sceneID))
+            if (item == null || item.IsGlobalIdEmpty())
                 continue;
 
-            var sceneDict = new Dictionary<int, GameObjectHierarchyData>();
-            ScenesData[sceneWrapper.sceneID] = sceneDict;
+            if (!GlobalObjectId.TryParse(item.globalID, out var id))
+                continue;
 
-            foreach (var item in sceneWrapper.items)
-            {
-                if (item == null || item.IsGlobalIdEmpty())
-                    continue;
+            var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
+            if (obj == null)
+                continue;
 
-                if (!GlobalObjectId.TryParse(item.globalID, out var id))
-                    continue;
+            int instanceID = obj.GetInstanceID();
+            var newItem = new GameObjectHierarchyData(instanceID, obj, false);
 
-                var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
-                if (obj == null)
-                    continue;
+            if (!string.IsNullOrEmpty(item.iconName))
+                newItem.SetIcon(item.iconName);
 
-                int instanceID = obj.GetInstanceID();
-                if (sceneDict.ContainsKey(instanceID))
-                    continue;
-
-                var newItem = new GameObjectHierarchyData(instanceID, obj, false);
-
-                if (!string.IsNullOrEmpty(item.iconName)) // Set Icon
-                    newItem.SetIcon(item.iconName);
-
-                sceneDict[instanceID] = newItem;
-            }
+            sceneDict[instanceID] = newItem;
         }
 
+        ScenesData[currentSceneId] = sceneDict;
         EditorApplication.RepaintHierarchyWindow();
-    }
-
-    [Serializable]
-    class SceneCollectionWrapper
-    {
-        public List<SceneDataWrapper> scenes = new();
-
-        public SceneCollectionWrapper(List<SceneDataWrapper> list)
-        {
-            scenes = list;
-        }
-
-        // For JsonUtility
-        public SceneCollectionWrapper() { }
-    }
-    [Serializable]
-    class SceneDataWrapper
-    {
-        public string sceneID;
-        public List<GameObjectHierarchyData> items = new();
-    }
-
-    [MenuItem("ToolBox/Better Window/Clear GameObjects Datas")]
-    public static void ClearSavedData()
-    {
-        // Clear in-memory data
-        ScenesData.Clear();
-
-        // Remove saved JSON from EditorPrefs
-        if (EditorPrefs.HasKey(SaveKey))
-            EditorPrefs.DeleteKey(SaveKey);
-
-        // Force Unity to refresh the Hierarchy
-        EditorApplication.RepaintHierarchyWindow();
-
-        Debug.Log("<color=orange>[GameObjectsData]</color> Cleared all saved GameObject Datas");
     }
 }
