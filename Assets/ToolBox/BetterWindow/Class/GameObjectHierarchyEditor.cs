@@ -18,6 +18,8 @@ public static class GameObjectHierarchyEditor
         EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
 
         UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode += OnSceneChanged;
+
+        UnityEditor.SceneManagement.EditorSceneManager.sceneSaved += OnSceneSaved;
     }
 
     static void OnHierarchyGUI(int instanceID, Rect selectionRect)
@@ -28,6 +30,11 @@ public static class GameObjectHierarchyEditor
             return;
 
         data.Draw(selectionRect);
+    }
+
+    static void OnSceneSaved(Scene scene)
+    {
+        SaveGOData();
     }
 
     static void OnSceneChanged(Scene oldScene, Scene newScene)
@@ -42,7 +49,10 @@ public static class GameObjectHierarchyEditor
     public static void SetData(string sceneID, int instanceID, string iconName)
     {
         ScenesData[sceneID][instanceID].SetIcon(iconName);
-        SaveGOData();
+
+        var activeScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+        if (activeScene.IsValid())
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(activeScene);
 
         EditorApplication.RepaintHierarchyWindow();
     }
