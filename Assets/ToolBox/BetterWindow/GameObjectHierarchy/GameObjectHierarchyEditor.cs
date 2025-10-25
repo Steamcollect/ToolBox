@@ -101,7 +101,12 @@ public static class GameObjectHierarchyEditor
             string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
             if (string.IsNullOrEmpty(scenePath)) continue;
 
-            string dataPath = System.IO.Path.ChangeExtension(scenePath, "_HierarchyData.asset");
+            string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
+            if (!System.IO.Directory.Exists(folderPath))
+                System.IO.Directory.CreateDirectory(folderPath);
+
+            string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+            string dataPath = System.IO.Path.Combine(folderPath, $"{sceneName}_HierarchyData.asset");
 
             SceneHierarchyMeta meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
             if (meta == null)
@@ -140,7 +145,10 @@ public static class GameObjectHierarchyEditor
         SceneAsset sceneAsset = ResolveSceneAssetFromId(currentSceneId);
         if (sceneAsset == null) return;
 
-        string dataPath = System.IO.Path.ChangeExtension(activeScene.path, "_HierarchyData.asset");
+        string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
+        string sceneName = System.IO.Path.GetFileNameWithoutExtension(activeScene.path);
+        string dataPath = System.IO.Path.Combine(folderPath, $"{sceneName}_HierarchyData.asset");
+        
         var meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
         if (meta == null) return;
 
