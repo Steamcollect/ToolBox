@@ -15,8 +15,9 @@ public static class GameObjectHierarchyEditor
     static GameObjectHierarchyEditor()
     {
         EditorApplication.delayCall += LoadGOData;
-
         EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
+
+        UnityEditor.SceneManagement.EditorSceneManager.activeSceneChangedInEditMode += OnSceneChanged;
     }
 
     static void OnHierarchyGUI(int instanceID, Rect selectionRect)
@@ -27,6 +28,11 @@ public static class GameObjectHierarchyEditor
             return;
 
         data.Draw(selectionRect);
+    }
+
+    static void OnSceneChanged(Scene oldScene, Scene newScene)
+    {
+        LoadGOData();
     }
 
     public static GameObjectHierarchyData GetData(string sceneID, int instanceID)
