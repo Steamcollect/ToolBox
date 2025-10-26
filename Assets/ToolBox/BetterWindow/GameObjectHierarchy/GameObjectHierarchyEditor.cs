@@ -101,12 +101,13 @@ public static class GameObjectHierarchyEditor
             string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
             if (string.IsNullOrEmpty(scenePath)) continue;
 
+            // Use a stable GUID-based filename so moves/renames don't break the link
             string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
             if (!System.IO.Directory.Exists(folderPath))
                 System.IO.Directory.CreateDirectory(folderPath);
 
-            string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-            string dataPath = System.IO.Path.Combine(folderPath, $"{sceneName}_HierarchyData.asset");
+            string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
+            string dataPath = System.IO.Path.Combine(folderPath, $"{sceneGuid}_HierarchyData.asset");
 
             SceneHierarchyMeta meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
             if (meta == null)
@@ -115,6 +116,12 @@ public static class GameObjectHierarchyEditor
                 AssetDatabase.CreateAsset(meta, dataPath);
             }
 
+            // Fill metadata (optional)
+            meta.sceneGuid = sceneGuid;
+            meta.sceneGlobalId = sceneId;
+            meta.sceneRef = sceneAsset;
+
+            // Save items
             meta.items.Clear();
             meta.items.AddRange(sceneEntry.Value.Values);
 
@@ -138,18 +145,42 @@ public static class GameObjectHierarchyEditor
         var activeScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
         if (!activeScene.IsValid()) return;
 
-        // We still use your existing scene ID (GlobalObjectId as string)
-        string currentSceneId = GetCurrentSceneGlobalId().ToString(); // from your class
-
-        // Resolve the SceneAsset from that ID
+        string currentSceneId = GetCurrentSceneGlobalId().ToString();
         SceneAsset sceneAsset = ResolveSceneAssetFromId(currentSceneId);
         if (sceneAsset == null) return;
 
+        // GUID-based path (stable across move/rename)
         string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
-        string sceneName = System.IO.Path.GetFileNameWithoutExtension(activeScene.path);
-        string dataPath = System.IO.Path.Combine(folderPath, $"{sceneName}_HierarchyData.asset");
-        
-        var meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(dataPath);
+        string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
+        string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
+        string guidDataPath = System.IO.Path.Combine(folderPath, $"{sceneGuid}_HierarchyData.asset");
+
+        // Try to load new GUID-named asset first
+        SceneHierarchyMeta meta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(guidDataPath);
+
+        // --- One-time migration: if GUID-named not found, try legacy NAME-named file and rename it ---
+        if (meta == null)
+        {
+            string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+            string legacyPath = System.IO.Path.Combine(folderPath, $"{sceneName}_HierarchyData.asset");
+            var legacyMeta = AssetDatabase.LoadAssetAtPath<SceneHierarchyMeta>(legacyPath);
+            if (legacyMeta != null)
+            {
+                string error = AssetDatabase.MoveAsset(legacyPath, guidDataPath);
+                if (string.IsNullOrEmpty(error))
+                {
+                    meta = legacyMeta;
+                    // Update meta’s identifiers and mark dirty
+                    meta.sceneGuid = sceneGuid;
+                    meta.sceneGlobalId = currentSceneId;
+                    meta.sceneRef = sceneAsset;
+                    EditorUtility.SetDirty(meta);
+                    AssetDatabase.SaveAssets();
+                }
+            }
+        }
+        // ---------------------------------------------------------------------------------------------
+
         if (meta == null) return;
 
         var sceneDict = new Dictionary<int, GameObjectHierarchyData>();
