@@ -8,7 +8,7 @@ public static class GameObjectHierarchyMaintenance
     [MenuItem("ToolBox/Better Window/Cleanup GameObjects Datas")]
     public static void CleanupOrphanedHierarchyData()
     {
-        string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
+        string folderPath = "Assets/ToolBox/BetterWindow/Datas/ScenesHierarchy/";
         if (!Directory.Exists(folderPath))
         {
             UnityEngine.Debug.Log("No hierarchy data folder found.");

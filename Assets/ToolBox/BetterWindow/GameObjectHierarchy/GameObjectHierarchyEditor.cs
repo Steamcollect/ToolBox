@@ -102,7 +102,7 @@ public static class GameObjectHierarchyEditor
             if (string.IsNullOrEmpty(scenePath)) continue;
 
             // Use a stable GUID-based filename so moves/renames don't break the link
-            string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
+            string folderPath = "Assets/ToolBox/BetterWindow/Datas/ScenesHierarchy/";
             if (!System.IO.Directory.Exists(folderPath))
                 System.IO.Directory.CreateDirectory(folderPath);
 
@@ -150,7 +150,7 @@ public static class GameObjectHierarchyEditor
         if (sceneAsset == null) return;
 
         // GUID-based path (stable across move/rename)
-        string folderPath = "Assets/ToolBox/Datas/ScenesHierarchy/";
+        string folderPath = "Assets/ToolBox/BetterWindow/Datas/ScenesHierarchy/";
         string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
         string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
         string guidDataPath = System.IO.Path.Combine(folderPath, $"{sceneGuid}_HierarchyData.asset");
