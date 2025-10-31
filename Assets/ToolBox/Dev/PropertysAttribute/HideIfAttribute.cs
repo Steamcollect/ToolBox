@@ -1,7 +1,7 @@
-﻿namespace ToolBox.Dev
-{
-    using UnityEngine;
+﻿using UnityEngine;
 
+namespace ToolBox.Dev
+{
     /// <summary>
     /// Cache la propriété dans l’inspecteur si la variable spécifiée correspond à la valeur donnée.
     ///

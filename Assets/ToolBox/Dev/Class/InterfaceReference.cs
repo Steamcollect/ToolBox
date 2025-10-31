@@ -1,7 +1,7 @@
+using UnityEngine;
+
 namespace ToolBox.Dev
 {
-    using UnityEngine;
-
     [System.Serializable]
     public class InterfaceReference<T> where T : class
     {

@@ -1,7 +1,7 @@
-namespace ToolBox.Debug
-{
-    using UnityEngine;
+using UnityEngine;
 
+namespace ToolBox.Dev
+{
     /// <summary>
     /// Affiche la variable et sa valeur à l'écran pendant l'exécution
     ///

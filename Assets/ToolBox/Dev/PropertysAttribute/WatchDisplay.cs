@@ -1,10 +1,10 @@
-namespace ToolBox.Debug
-{
-    using UnityEngine;
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
+namespace ToolBox.Dev
+{
     public class WatchDisplay : MonoBehaviour
     {
         private static List<(string name, Func<string> getter)> watchedVars = new();

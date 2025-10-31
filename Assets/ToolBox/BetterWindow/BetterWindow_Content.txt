@@ -1,4 +1,6 @@
 Hierarchy :
 	-Scene browser (on click on scene)
 	-GameObject SetActive shortcut (on the left of the GameObject name)
-	-Modify GameObject viusal with Alt + L_Click
+	
+	-Modify GameObject icon base on conponents
+		-Can modify the draw mode in Preferences

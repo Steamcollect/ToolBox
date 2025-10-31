@@ -1,7 +1,7 @@
-﻿namespace ToolBox.Dev
-{
-    using UnityEngine;
+﻿using UnityEngine;
 
+namespace ToolBox.Dev
+{
     /// <summary>
     /// Affiche un dropdown dans l'inspector avec les valeurs donnée
     /// 

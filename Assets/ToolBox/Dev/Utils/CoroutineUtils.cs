@@ -1,9 +1,9 @@
+using System;
+using UnityEngine;
+using IEnumerator = System.Collections.IEnumerator;
+
 namespace ToolBox.Utils
 {
-    using System;
-    using UnityEngine;
-    using IEnumerator = System.Collections.IEnumerator;
-
     public static class CoroutineUtils
     {
         public static void Delay(this MonoBehaviour hook, Action ev, YieldInstruction yieldInstruction)

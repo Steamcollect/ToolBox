@@ -1,6 +1,7 @@
+using UnityEngine;
+
 namespace ToolBox.Utils
 {
-    using UnityEngine;
     public static class RotationUtils
     {
         public static Quaternion QuaternionSmoothDamp(Quaternion current, Quaternion target, ref Vector3 currentVelocity, float smoothTime)

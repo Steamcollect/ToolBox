@@ -1,7 +1,7 @@
-﻿namespace ToolBox.Dev
-{
-    using UnityEngine;
+﻿using UnityEngine;
 
+namespace ToolBox.Dev
+{
     /// <summary>
     /// Affiche la propriété dans l’inspecteur **uniquement si**
     /// une autre variable (bool ou enum) correspond à la valeur indiquée.
