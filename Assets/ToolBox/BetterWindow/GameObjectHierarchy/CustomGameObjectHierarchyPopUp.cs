@@ -8,139 +8,139 @@ namespace ToolBox.BetterWindow
     [InitializeOnLoad]
     public class CustomGameObjectHierarchyPopUp : PopupWindowContent
     {
-        private Vector2 scroll;
+        //private Vector2 scroll;
 
-        string[] utilities = new string[] {             
-            "GameObject Icon",
-            "Folder Icon",
-            "cs Script Icon",
-            "ScriptableObject Icon",
-        };
-        string[] components = new string[] {
-            "d_Avatar Icon",
-            "NavMeshAgent Icon",
-            "Camera Icon",
-            "ReflectionProbe Icon",
-            "d_LightingDataAsset Icon",  
-        };
-        string[] physics = new string[] {
-            "Rigidbody Icon",
-            "BoxCollider Icon",
-            "SphereCollider Icon",
-            "Terrain Icon",
-            "PhysicsMaterial Icon",
-        };
-        string[] yellow = new string[] {
-            "Light Icon",
-            "DirectionalLight Icon",
-            "LightmapParameters Icon",
-            "AudioSource Icon",
-            "AudioClip Icon",
-        };
-        string[] grey = new string[]
-        {
-            "Canvas Icon",
-            "Button Icon",
-            "Image Icon",
-            "Text Icon",
-            "Toggle Icon",
-        };
+        //string[] utilities = new string[] {
+        //    "GameObject Icon",
+        //    "Folder Icon",
+        //    "cs Script Icon",
+        //    "ScriptableObject Icon",
+        //};
+        //string[] components = new string[] {
+        //    "d_Avatar Icon",
+        //    "NavMeshAgent Icon",
+        //    "Camera Icon",
+        //    "ReflectionProbe Icon",
+        //    "d_LightingDataAsset Icon",
+        //};
+        //string[] physics = new string[] {
+        //    "Rigidbody Icon",
+        //    "BoxCollider Icon",
+        //    "SphereCollider Icon",
+        //    "Terrain Icon",
+        //    "PhysicsMaterial Icon",
+        //};
+        //string[] yellow = new string[] {
+        //    "Light Icon",
+        //    "DirectionalLight Icon",
+        //    "LightmapParameters Icon",
+        //    "AudioSource Icon",
+        //    "AudioClip Icon",
+        //};
+        //string[] grey = new string[]
+        //{
+        //    "Canvas Icon",
+        //    "Button Icon",
+        //    "Image Icon",
+        //    "Text Icon",
+        //    "Toggle Icon",
+        //};
 
-        int objId;
-        string sceneID;
+        //int objId;
+        //string sceneID;
 
-        public CustomGameObjectHierarchyPopUp(Object obj, string currentSceneID)
-        {
-            if (obj == null)
-            {
-                UnityEngine.Debug.LogWarning("Popup opened with a null object reference.");
-                return;
-            }
+        //public CustomGameObjectHierarchyPopUp(Object obj, string currentSceneID)
+        //{
+        //    if (obj == null)
+        //    {
+        //        UnityEngine.Debug.LogWarning("Popup opened with a null object reference.");
+        //        return;
+        //    }
 
-            sceneID = currentSceneID;
-            objId = obj.GetInstanceID();
+        //    sceneID = currentSceneID;
+        //    objId = obj.GetInstanceID();
 
-            GameObjectHierarchyData data = GameObjectHierarchyEditor.GetData(sceneID, objId);
-            if (data == null || data.GameObject == null)
-            {
-                UnityEngine.Debug.LogWarning($"No GameObjectHierarchyData found for {obj.name} (InstanceID: {objId}).");
-                return;
-            }
+        //    GameObjectHierarchyData data = GameObjectHierarchyEditor.GetData(sceneID, objId);
+        //    if (data == null || data.GameObject == null)
+        //    {
+        //        UnityEngine.Debug.LogWarning($"No GameObjectHierarchyData found for {obj.name} (InstanceID: {objId}).");
+        //        return;
+        //    }
 
-            //UnityEngine.Debug.Log($"Popup Opened for: {obj.name}");
-            //UnityEngine.Debug.Log($"GlobalID: {data.globalID}");
-        }
+        //    //UnityEngine.Debug.Log($"Popup Opened for: {obj.name}");
+        //    //UnityEngine.Debug.Log($"GlobalID: {data.globalID}");
+        //}
 
-        public override void OnGUI(Rect rect)
-        {
-            scroll = GUILayout.BeginScrollView(scroll);
-            const int iconsPerRow = 6;
+        //public override void OnGUI(Rect rect)
+        //{
+        //    scroll = GUILayout.BeginScrollView(scroll);
+        //    const int iconsPerRow = 6;
 
-            GUILayout.Space(10);
+        //    GUILayout.Space(10);
 
-            DrawIcons(utilities, iconsPerRow);
-            DrawLine();
+        //    DrawIcons(utilities, iconsPerRow);
+        //    DrawLine();
 
-            DrawIcons(components, iconsPerRow);
-            DrawLine();
+        //    DrawIcons(components, iconsPerRow);
+        //    DrawLine();
 
-            DrawIcons(physics, iconsPerRow);
-            DrawLine();
+        //    DrawIcons(physics, iconsPerRow);
+        //    DrawLine();
 
-            DrawIcons(yellow, iconsPerRow);
-            DrawLine();
+        //    DrawIcons(yellow, iconsPerRow);
+        //    DrawLine();
 
-            DrawIcons(grey, iconsPerRow);
+        //    DrawIcons(grey, iconsPerRow);
 
-            GUILayout.Space(10);
-            GUILayout.EndScrollView();
-        }
+        //    GUILayout.Space(10);
+        //    GUILayout.EndScrollView();
+        //}
 
-        void DrawIcons(string[] icons, int iconsPerRow)
-        {
-            int count = 0;
+        //void DrawIcons(string[] icons, int iconsPerRow)
+        //{
+        //    int count = 0;
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
+        //    GUILayout.BeginHorizontal();
+        //    GUILayout.Space(10);
 
-            for (int i = 0; i < icons.Length; i++)
-            {
-                GUIContent iconContent = EditorGUIUtility.IconContent(icons[i]);
-                if (iconContent == null || iconContent.image == null)
-                    continue;
+        //    for (int i = 0; i < icons.Length; i++)
+        //    {
+        //        GUIContent iconContent = EditorGUIUtility.IconContent(icons[i]);
+        //        if (iconContent == null || iconContent.image == null)
+        //            continue;
 
-                if (GUILayout.Button(iconContent, GUIStyle.none, GUILayout.Width(18), GUILayout.Height(18)))
-                {
-                    GameObjectHierarchyEditor.SetData( sceneID, objId, icons[i]);
-                }
+        //        if (GUILayout.Button(iconContent, GUIStyle.none, GUILayout.Width(18), GUILayout.Height(18)))
+        //        {
+        //            GameObjectHierarchyEditor.SetData(sceneID, objId, icons[i]);
+        //        }
 
-                if (i < icons.Length - 1)
-                {
-                    GUILayout.Space(4);
-                }
+        //        if (i < icons.Length - 1)
+        //        {
+        //            GUILayout.Space(4);
+        //        }
 
-                count++;
-                if (count % iconsPerRow == 0)
-                {
-                    GUILayout.Space(10);
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(10);
-                }
-            }
+        //        count++;
+        //        if (count % iconsPerRow == 0)
+        //        {
+        //            GUILayout.Space(10);
+        //            GUILayout.EndHorizontal();
+        //            GUILayout.BeginHorizontal();
+        //            GUILayout.Space(10);
+        //        }
+        //    }
 
-            GUILayout.EndHorizontal();
-        }
-        void DrawLine()
-        {
-            GUILayout.Space(3);
-            GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
-            GUILayout.Space(3);
-        }
+        //    GUILayout.EndHorizontal();
+        //}
+        //void DrawLine()
+        //{
+        //    GUILayout.Space(3);
+        //    GUILayout.Box("", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(2) });
+        //    GUILayout.Space(3);
+        //}
 
-        public override Vector2 GetWindowSize()
-        {
-            return new Vector2(130, 174);
-        }
+        //public override Vector2 GetWindowSize()
+        //{
+        //    return new Vector2(130, 174);
+        //}
     }
 }
