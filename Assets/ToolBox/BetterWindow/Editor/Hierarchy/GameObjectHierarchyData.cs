@@ -28,7 +28,7 @@ namespace ToolBox.BetterWindow
 
         public void Draw(Rect selectionRect)
         {
-            if(ToolBoxPreferences.s_DrawModeInHierarchy == ToolBoxIconDrawModeInHierarchy.Default)
+            if(ToolBoxPreferences.s_DrawModeInHierarchy == ToolBoxIconDrawModeInHierarchy.UnityDefault)
                 return;
 
             // Check if components have changed
@@ -38,6 +38,9 @@ namespace ToolBox.BetterWindow
             {
                 components = comps;
             }
+
+            if(components.Length <= 1 && !ToolBoxPreferences.s_DrawFolderIconInHierarchy)
+                return;
 
             // Draw background
             bool isSelected = Selection.instanceIDs.Contains(instanceID);
@@ -49,44 +52,36 @@ namespace ToolBox.BetterWindow
 
             // icon
             Rect iconRect = new Rect(selectionRect.x - 1, selectionRect.y, 16, 16);
-            if(ToolBoxPreferences.s_DrawModeInHierarchy == ToolBoxIconDrawModeInHierarchy.OnRightSide)
-                    iconRect = new Rect(selectionRect.x + selectionRect.width - 17, selectionRect.y, 16, 16);
 
-            if(ToolBoxPreferences.s_DrawModeInHierarchy != ToolBoxIconDrawModeInHierarchy.OnlyFolderIcon)
+            if(ToolBoxPreferences.s_DrawModeInHierarchy == ToolBoxIconDrawModeInHierarchy.ToolBoxDefault)
+            {
+                if (components.Length <= 1)
+                    iconRect = new Rect(selectionRect.x - 1, selectionRect.y, 16, 16);
+                else
+                    iconRect = new Rect(selectionRect.x + selectionRect.width - 17, selectionRect.y, 16, 16);
+            }
+
+            if(ToolBoxPreferences.s_DrawModeInHierarchy != ToolBoxIconDrawModeInHierarchy.ToolBoxDefault || components.Length <= 1)
                 EditorGUI.DrawRect(iconRect, bgColor);
 
             Texture icon = null;
-            if (ToolBoxPreferences.s_DrawModeInHierarchy == ToolBoxIconDrawModeInHierarchy.OnlyFolderIcon)
-            {
-                if (components.Length <= 1)
-                {
-                    EditorGUI.DrawRect(iconRect, bgColor);
-                    icon = EditorGUIUtility.IconContent("Folder Icon").image;
-                }
-            }                
+            if (components.Length > 1)
+                icon = EditorGUIUtility.ObjectContent(null, components[1].GetType()).image as Texture2D;
             else
-            {
-                if (components.Length > 1)
-                    icon = EditorGUIUtility.ObjectContent(null, components[1].GetType()).image as Texture2D;
-                else
-                    icon = EditorGUIUtility.IconContent("Folder Icon").image;
-            }
+                icon = EditorGUIUtility.IconContent("Folder Icon").image;
 
-            if(icon != null)
-            {
-                GUI.DrawTexture(
-                    iconRect,
-                    icon,
-                    ScaleMode.ScaleToFit);
-            }
+            if (icon == null) return;
+            GUI.DrawTexture(
+                iconRect,
+                icon,
+                ScaleMode.ScaleToFit);
         }
     }
 
     public enum ToolBoxIconDrawModeInHierarchy
     {
-        OnGameObjectIcon,
-        OnRightSide,
-        OnlyFolderIcon,
-        Default,
+        ToolBoxDefault,
+        OverrideGameObjectIcon,
+        UnityDefault,
     }
 }
