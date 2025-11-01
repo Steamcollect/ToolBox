@@ -12,13 +12,7 @@ public class SingleComponentWindow : EditorWindow
     private Vector2 windowStartPos;
     private const float HeaderHeight = 22f;
 
-    private bool isResizing;
-    private float resizeStartScreenX;
-    private float windowStartWidth;
-    private const float ResizeHandleSize = 6f;
-
     private int dragControlId;
-    private int resizeControlId;
 
     public static void Show(Component component)
     {
@@ -30,26 +24,29 @@ public class SingleComponentWindow : EditorWindow
 
         var window = CreateInstance<SingleComponentWindow>();
         window.targetComponent = component;
-        window.titleContent = new GUIContent(
-            component.GetType().Name,
-            AssetPreview.GetMiniThumbnail(component)
-        );
+        window.titleContent = new GUIContent(component.gameObject.name);
         window.CreateEditor();
 
-        float initialWidth = 400f;
-        float inspectorH = window.CalculateInspectorHeight(initialWidth - 8f);
-        float height = 22f + inspectorH + 6f;
+        // Taille initiale fixe
+        float initialWidth = 300;
+        float initialHeight = 150;
 
         Rect rect = new Rect(
             (Screen.currentResolution.width - initialWidth) / 2f,
-            (Screen.currentResolution.height - height) / 2f,
+            (Screen.currentResolution.height - initialHeight) / 2f,
             initialWidth,
-            height
+            initialHeight
         );
 
         window.position = rect;
-        window.minSize = new Vector2(250, 100);
-        window.ShowPopup();
+
+        // Bornes de redimensionnement
+        window.minSize = new Vector2(150, 150);
+        window.maxSize = new Vector2(500, 800);
+
+        // Ouvre en fenêtre utilitaire flottante (redimensionnable).
+        // Pour une fenêtre dockable: remplace par window.Show();
+        window.ShowUtility();
     }
 
     private void CreateEditor()
@@ -71,19 +68,18 @@ public class SingleComponentWindow : EditorWindow
 
         DrawHeaderWithCloseAndDrag();
         DrawInspectorScrollable();
-
-        HandleResizeHorizontal();
+        // Aucun redimensionnement custom : on laisse les bordures système gérer.
     }
 
     private void DrawInspectorScrollable()
     {
+        // Zone scrollable pour l’inspecteur
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
         EditorGUI.BeginChangeCheck();
         componentEditor.OnInspectorGUI();
         if (EditorGUI.EndChangeCheck())
         {
             EditorUtility.SetDirty(targetComponent);
-            AdjustHeightToContent();
             Repaint();
         }
         EditorGUILayout.EndScrollView();
@@ -94,51 +90,32 @@ public class SingleComponentWindow : EditorWindow
         Rect headerRect = new Rect(0, 0, position.width, HeaderHeight);
         EditorGUI.DrawRect(headerRect, new Color(0.18f, 0.18f, 0.18f));
 
-        // Tilte
+        // Titre
         GUIContent title = new GUIContent(
-            "    " +  targetComponent.gameObject.name + " : " + targetComponent.GetType().Name,
+            "    " + targetComponent.GetType().Name,
             AssetPreview.GetMiniThumbnail(targetComponent)
         );
         GUI.Label(new Rect(5, 2, position.width - 40, 20), title, EditorStyles.boldLabel);
-
-        // Close
-        Rect closeRect = new Rect(position.width - 22, 2, 18, 18);
-        var closeStyle = new GUIStyle(EditorStyles.boldLabel)
-        {
-            alignment = TextAnchor.MiddleCenter,
-            fontSize = 16
-        };
-
-        EditorGUIUtility.AddCursorRect(closeRect, MouseCursor.Link);
-        if (GUI.Button(closeRect, "×", closeStyle))
-        {
-            Close();
-            GUIUtility.ExitGUI();
-        }
-
-        HandleDrag(closeRect, headerRect);
+        HandleDrag(headerRect);
 
         GUILayout.Space(HeaderHeight);
     }
 
-    void HandleDrag(Rect closeRect, Rect headerRect)
+    void HandleDrag(Rect headerRect)
     {
         dragControlId = GUIUtility.GetControlID(FocusType.Passive);
         Event e = Event.current;
         EventType typeForCtrl = e.GetTypeForControl(dragControlId);
 
-        if (!closeRect.Contains(e.mousePosition))
-            EditorGUIUtility.AddCursorRect(headerRect, MouseCursor.MoveArrow);
-
         switch (typeForCtrl)
         {
             case EventType.MouseDown:
-                if (headerRect.Contains(e.mousePosition) && !closeRect.Contains(e.mousePosition) && e.button == 0)
+                if (headerRect.Contains(e.mousePosition) && e.button == 0)
                 {
                     GUIUtility.hotControl = dragControlId;
                     isDragging = true;
 
-                    // Point de départ côté écran pour ne pas perdre le drag en sortant de la fenêtre
+                    // Point de départ écran pour un drag fiable
                     dragStartScreen = GUIUtility.GUIToScreenPoint(e.mousePosition);
                     windowStartPos = position.position;
                     e.Use();
@@ -164,96 +141,6 @@ public class SingleComponentWindow : EditorWindow
                 }
                 break;
         }
-
-        if(!isResizing) AdjustHeightToContent();
-    }
-
-    private void HandleResizeHorizontal()
-    {
-        Rect handleRect = new Rect(position.width - ResizeHandleSize, 0, ResizeHandleSize, position.height);
-        EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.ResizeHorizontal);
-
-        resizeControlId = GUIUtility.GetControlID(FocusType.Passive);
-        Event e = Event.current;
-        EventType typeForCtrl = e.GetTypeForControl(resizeControlId);
-
-        switch (typeForCtrl)
-        {
-            case EventType.MouseDown:
-                if (handleRect.Contains(e.mousePosition) && e.button == 0)
-                {
-                    GUIUtility.hotControl = resizeControlId;
-                    isResizing = true;
-
-                    resizeStartScreenX = GUIUtility.GUIToScreenPoint(e.mousePosition).x;
-                    windowStartWidth = position.width;
-                    e.Use();
-                }
-                break;
-
-            case EventType.MouseDrag:
-                if (GUIUtility.hotControl == resizeControlId && isResizing)
-                {
-                    float curScreenX = GUIUtility.GUIToScreenPoint(e.mousePosition).x;
-                    float deltaX = curScreenX - resizeStartScreenX;
-                    float newWidth = Mathf.Max(250f, windowStartWidth + deltaX);
-                    position = new Rect(position.x, position.y, newWidth, position.height);
-                    Repaint();
-                    e.Use();
-                }
-                break;
-
-            case EventType.MouseUp:
-                if (GUIUtility.hotControl == resizeControlId)
-                {
-                    GUIUtility.hotControl = 0;
-                    isResizing = false;
-                    e.Use();
-                }
-                break;
-        }
-    }
-
-    private float CalculateInspectorHeight(float availableWidth)
-    {
-        if (targetComponent == null) return 100f;
-
-        var so = new SerializedObject(targetComponent);
-        var prop = so.GetIterator();
-
-        float total = 0f;
-        bool enterChildren = true;
-        float spacing = EditorGUIUtility.standardVerticalSpacing;
-
-        while (prop.NextVisible(enterChildren))
-        {
-            // Calcule la hauteur réelle de la propriété (respecte les menus déroulants)
-            float ph = EditorGUI.GetPropertyHeight(prop, includeChildren: prop.isExpanded);
-            total += ph + spacing;
-            enterChildren = false;
-        }
-
-        // Marge interne
-        total += 4f;
-        return total;
-    }
-    private void AdjustHeightToContent()
-    {
-        float contentWidth = Mathf.Max(200f, position.width - 8f);
-        float inspectorH = CalculateInspectorHeight(contentWidth);
-        float desired = 22f + inspectorH + 6f; // header + contenu + marge bas
-
-        // Évite qu'elle dépasse trop l’écran
-        desired = Mathf.Min(desired, Screen.currentResolution.height * 0.9f);
-
-        if (Mathf.Abs(position.height - desired) > 0.5f)
-            position = new Rect(position.x, position.y, position.width, desired);
-    }
-
-    private void OnInspectorUpdate()
-    {
-        if (targetComponent != null)
-            AdjustHeightToContent();
     }
 
     private void OnDisable()
