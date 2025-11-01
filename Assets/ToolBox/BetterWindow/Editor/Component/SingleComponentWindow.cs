@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class SingleComponentWindow : EditorWindow
@@ -20,12 +21,12 @@ public class SingleComponentWindow : EditorWindow
     private int dragControlId;
     private int resizeControlId;
 
-    public static void Show(Component component)
+    public static SingleComponentWindow Show(Component component)
     {
         if (component == null)
         {
             Debug.LogWarning("Aucun composant fourni.");
-            return;
+            return null;
         }
 
         var window = CreateInstance<SingleComponentWindow>();
@@ -50,6 +51,8 @@ public class SingleComponentWindow : EditorWindow
         window.position = rect;
         window.minSize = new Vector2(250, 100);
         window.ShowPopup();
+
+        return window;
     }
 
     private void CreateEditor()
@@ -135,13 +138,7 @@ public class SingleComponentWindow : EditorWindow
             case EventType.MouseDown:
                 if (headerRect.Contains(e.mousePosition) && !closeRect.Contains(e.mousePosition) && e.button == 0)
                 {
-                    GUIUtility.hotControl = dragControlId;
-                    isDragging = true;
-
-                    // Point de départ côté écran pour ne pas perdre le drag en sortant de la fenêtre
-                    dragStartScreen = GUIUtility.GUIToScreenPoint(e.mousePosition);
-                    windowStartPos = position.position;
-                    e.Use();
+                    StartDrag();
                 }
                 break;
 
@@ -166,6 +163,33 @@ public class SingleComponentWindow : EditorWindow
         }
 
         if(!isResizing) AdjustHeightToContent();
+    }
+
+    public void SetPosition(Vector2 newPosition)
+    {
+        position = new Rect(position.x, position.y, position.width, position.height);
+    }
+
+    public void StartDrag()
+    {
+        Event e = Event.current;
+
+        GUIUtility.hotControl = dragControlId;
+        isDragging = true;
+
+        // Point de départ côté écran pour ne pas perdre le drag en sortant de la fenêtre
+        dragStartScreen = GUIUtility.GUIToScreenPoint(e.mousePosition);
+        windowStartPos = position.position;
+        e.Use();
+    }
+    public void StartDrag(Vector2 mousePosition)
+    {
+        GUIUtility.hotControl = dragControlId;
+        isDragging = true;
+
+        // Point de départ côté écran pour ne pas perdre le drag en sortant de la fenêtre
+        dragStartScreen = GUIUtility.GUIToScreenPoint(mousePosition);
+        windowStartPos = position.position;
     }
 
     private void HandleResizeHorizontal()
