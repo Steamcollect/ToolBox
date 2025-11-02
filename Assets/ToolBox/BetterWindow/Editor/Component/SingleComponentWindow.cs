@@ -29,7 +29,7 @@ public class SingleComponentWindow : EditorWindow
 
         // Taille initiale fixe
         float initialWidth = 300;
-        float initialHeight = 150;
+        float initialHeight = 200;
 
         Rect rect = new Rect(
             (Screen.currentResolution.width - initialWidth) / 2f,
@@ -41,7 +41,7 @@ public class SingleComponentWindow : EditorWindow
         window.position = rect;
 
         // Bornes de redimensionnement
-        window.minSize = new Vector2(150, 150);
+        window.minSize = new Vector2(150, 100);
         window.maxSize = new Vector2(500, 800);
 
         // Ouvre en fenêtre utilitaire flottante (redimensionnable).
