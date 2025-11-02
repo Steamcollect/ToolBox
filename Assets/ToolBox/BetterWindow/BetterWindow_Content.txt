@@ -4,3 +4,6 @@ Hierarchy :
 	
 	-Modify GameObject icon base on conponents
 		-Can modify the draw mode in Preferences
+
+	-Open window for component (On component menu / Alt + Drag and drop)
+	-Open new inspector in lock mods (On Asset or Gameobject menu)

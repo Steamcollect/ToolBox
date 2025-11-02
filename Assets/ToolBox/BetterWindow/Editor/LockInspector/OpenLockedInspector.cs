@@ -5,8 +5,8 @@ using System.Reflection;
 
 public static class OpenLockedInspector
 {
-    [MenuItem("GameObject/Open Locked Inspector", false, 49)]
-    [MenuItem("Assets/Open Locked Inspector", false, 49)]
+    [MenuItem("GameObject/Open In New Inspector", false, 0)]
+    [MenuItem("Assets/Open In New Inspector", false, 20)]
     public static void OpenLockedInspectorWindow()
     {
         UnityEngine.Object activeObject = Selection.activeObject;
