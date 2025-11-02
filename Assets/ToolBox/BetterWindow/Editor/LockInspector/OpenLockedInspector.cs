@@ -3,52 +3,55 @@ using UnityEngine;
 using System;
 using System.Reflection;
 
-public static class OpenLockedInspector
+namespace ToolBox.BetterWindow
 {
-    [MenuItem("GameObject/Open In New Inspector", false, 0)]
-    [MenuItem("Assets/Open In New Inspector", false, 20)]
-    public static void OpenLockedInspectorWindow()
+    public static class OpenLockedInspector
     {
-        UnityEngine.Object activeObject = Selection.activeObject;
-        if (activeObject == null)
+        [MenuItem("GameObject/Open In New Inspector", false, 0)]
+        [MenuItem("Assets/Open In New Inspector", false, 20)]
+        public static void OpenLockedInspectorWindow()
         {
-            Debug.LogWarning("Aucun objet sélectionné.");
-            return;
+            UnityEngine.Object activeObject = Selection.activeObject;
+            if (activeObject == null)
+            {
+                Debug.LogWarning("Aucun objet sélectionné.");
+                return;
+            }
+
+            // Crée une nouvelle fenêtre d’inspector
+            EditorWindow inspector = CreateNewInspectorWindow();
+
+            // Lock la fenêtre sur l’objet sélectionné
+            LockInspector(inspector, true);
+
+            // Focus sur la nouvelle fenêtre
+            inspector.Show();
+            inspector.Focus();
+
+            // Force la sélection de l’objet
+            Selection.activeObject = activeObject;
         }
 
-        // Crée une nouvelle fenêtre d’inspector
-        EditorWindow inspector = CreateNewInspectorWindow();
-
-        // Lock la fenêtre sur l’objet sélectionné
-        LockInspector(inspector, true);
-
-        // Focus sur la nouvelle fenêtre
-        inspector.Show();
-        inspector.Focus();
-
-        // Force la sélection de l’objet
-        Selection.activeObject = activeObject;
-    }
-
-    private static EditorWindow CreateNewInspectorWindow()
-    {
-        // Utilise la même classe interne que l’inspector normal
-        Type inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
-        return ScriptableObject.CreateInstance(inspectorType) as EditorWindow;
-    }
-
-    private static void LockInspector(EditorWindow inspector, bool isLocked)
-    {
-        // Récupère le champ interne "isLocked"
-        Type inspectorType = inspector.GetType();
-        PropertyInfo isLockedProp = inspectorType.GetProperty("isLocked", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (isLockedProp != null)
+        private static EditorWindow CreateNewInspectorWindow()
         {
-            isLockedProp.SetValue(inspector, isLocked, null);
+            // Utilise la même classe interne que l’inspector normal
+            Type inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+            return ScriptableObject.CreateInstance(inspectorType) as EditorWindow;
         }
 
-        // Force la mise à jour
-        MethodInfo repaintMethod = inspectorType.GetMethod("Repaint", BindingFlags.Instance | BindingFlags.Public);
-        repaintMethod?.Invoke(inspector, null);
+        private static void LockInspector(EditorWindow inspector, bool isLocked)
+        {
+            // Récupère le champ interne "isLocked"
+            Type inspectorType = inspector.GetType();
+            PropertyInfo isLockedProp = inspectorType.GetProperty("isLocked", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (isLockedProp != null)
+            {
+                isLockedProp.SetValue(inspector, isLocked, null);
+            }
+
+            // Force la mise à jour
+            MethodInfo repaintMethod = inspectorType.GetMethod("Repaint", BindingFlags.Instance | BindingFlags.Public);
+            repaintMethod?.Invoke(inspector, null);
+        }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public static class ComponentMenuItemsButtons
+namespace ToolBox.BetterWindow
 {
-    [MenuItem("CONTEXT/Component/Open in new Tab", false, 1)]
-    static void Test(MenuCommand command)
+    public static class ComponentMenuItemsButtons
     {
-        SingleComponentWindow.Show((Component)command.context);
+        [MenuItem("CONTEXT/Component/Open in new Tab", false, 1)]
+        static void Test(MenuCommand command)
+        {
+            SingleComponentWindow.Show((Component)command.context);
+        }
     }
 }
