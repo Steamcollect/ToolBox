@@ -42,6 +42,9 @@ namespace ToolBox.BetterWindow
             if(components.Length <= 1 && !ToolBoxPreferences.s_DrawFolderIconInHierarchy)
                 return;
 
+            if (components.Length > 1 && components[1] == null) 
+                return;
+
             // Draw background
             bool isSelected = Selection.instanceIDs.Contains(instanceID);
             Color bgColor = isSelected
