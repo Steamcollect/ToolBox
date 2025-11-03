@@ -5,8 +5,6 @@
     using System;
     using System.Reflection;
     using System.Collections.Generic;
-    using UnityEditor.Rendering.LookDev;
-    using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(DropdownAttribute))]
     public class Dropdown_PropertyDrawer : PropertyDrawer
@@ -15,6 +13,7 @@
         {
             SerializedPropertyType type = property.propertyType;
             
+            // Check le type de la variable target
             if(type != SerializedPropertyType.Integer 
                 && type != SerializedPropertyType.String
                 && type != SerializedPropertyType.Float)
