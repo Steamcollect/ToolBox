@@ -9,9 +9,9 @@ namespace ToolBox.BetterWindow
 {
     public class SceneBrowserPopUp : PopupWindowContent
     {
-        static int buttonHeight = 20;
-        static int searchBarHeight = 22;
-        static int maxHeight = 300;
+        int buttonHeight = 20;
+        int searchBarHeight = 22;
+        int maxHeight = 300;
 
         private Vector2 scrollPos;
         private string searchQuery = "";
