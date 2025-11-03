@@ -2,6 +2,7 @@ Property Drawer :
 	-ShowIf : show variable with condition
 	-HideIf : hide variable with condition
 	-Button : draw button on inspector
+	-Tab : Separe le component en plusieurs onglets
 	-SceneName : dropdown of every scene in build settings
 	-ReadOnly : show variable on inspector but cant be modified
 	-StringDropdown : show dropdown base on string array
