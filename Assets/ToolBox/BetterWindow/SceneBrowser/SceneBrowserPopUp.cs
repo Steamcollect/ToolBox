@@ -140,11 +140,11 @@ namespace ToolBox.BetterWindow
                         if (EditorSceneManager.GetActiveScene().isDirty)
                         {
                             int option = EditorUtility.DisplayDialogComplex(
-                                "Scène modifiée",
-                                "La scène actuelle a été modifiée. Voulez-vous la sauvegarder avant de changer de scène ?",
-                                "Sauvegarder",
-                                "Ne pas sauvegarder",
-                                "Annuler"
+                                "Scene Modified",
+                                "The scene as been modified. " +
+                                "Would you want to save it?", "Yes",
+                                "No",
+                                "Cancel"
                             );
 
                             if (option == 0)
@@ -224,11 +224,11 @@ namespace ToolBox.BetterWindow
                     if (EditorSceneManager.GetActiveScene().isDirty)
                     {
                         int option = EditorUtility.DisplayDialogComplex(
-                            "Scène modifiée",
-                            "La scène actuelle a été modifiée. Voulez-vous la sauvegarder avant de changer de scène ?",
-                            "Sauvegarder",
-                            "Ne pas sauvegarder",
-                            "Annuler"
+                            "Scene Modified",
+                            "The scene as been modified. " +
+                            "Would you want to save it?", "Yes",
+                            "No",
+                            "Cancel"
                         );
 
                         if (option == 0)
