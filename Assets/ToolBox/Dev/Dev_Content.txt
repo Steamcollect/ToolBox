@@ -10,9 +10,6 @@ Property Drawer :
 Class :
 	-InterfaceReference : show on inspector the interface as object reference
 
-Debug :
-	-Logger : Log message in console, create txt file if in build
-
 Utils :
 	-IEnumerableUtils
 	-CoroutineUtils
