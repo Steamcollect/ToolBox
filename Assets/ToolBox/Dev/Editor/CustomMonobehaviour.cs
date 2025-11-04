@@ -8,14 +8,12 @@ using ToolBox.Dev;
 public class CustomMonobehaviour : Editor
 {
     private readonly Dictionary<string, List<SerializedProperty>> foldouts = new();
-    private readonly Dictionary<string, bool> foldoutStates = new();
     private readonly List<string> foldoutsOrder = new();
 
     private void OnEnable()
     {
         foldouts.Clear();
         foldoutsOrder.Clear();
-        foldoutStates.Clear();
 
         SerializedProperty iterator = serializedObject.GetIterator();
         if (!iterator.NextVisible(true))
@@ -25,7 +23,8 @@ public class CustomMonobehaviour : Editor
 
         do
         {
-            if (iterator.name == "m_Script") continue;
+            if (iterator.name == "m_Script")
+                continue;
 
             FieldInfo field = serializedObject.targetObject.GetType().GetField(
                 iterator.name,
@@ -36,6 +35,7 @@ public class CustomMonobehaviour : Editor
                 ? (FoldoutAttribute)System.Attribute.GetCustomAttribute(field, typeof(FoldoutAttribute))
                 : null;
 
+            // Si un nouvel attribut Foldout est trouvé
             if (foldoutAttr != null)
             {
                 currentFoldout = foldoutAttr.foldoutName;
@@ -44,14 +44,15 @@ public class CustomMonobehaviour : Editor
                 {
                     foldouts[currentFoldout] = new List<SerializedProperty>();
                     foldoutsOrder.Add(currentFoldout);
-                    foldoutStates[currentFoldout] = true; // ouvert par défaut
                 }
             }
 
+            // Si un foldout actif est défini, on y ajoute la propriété
             if (!string.IsNullOrEmpty(currentFoldout))
             {
-                // Clone proprement le SerializedProperty
-                foldouts[currentFoldout].Add(serializedObject.FindProperty(iterator.name));
+                var prop = serializedObject.FindProperty(iterator.name);
+                if (prop != null)
+                    foldouts[currentFoldout].Add(prop);
             }
 
         } while (iterator.NextVisible(false));
@@ -69,7 +70,7 @@ public class CustomMonobehaviour : Editor
 
         serializedObject.Update();
 
-        // Désactive le champ Script
+        // Champ script en lecture seule
         SerializedProperty scriptProp = serializedObject.FindProperty("m_Script");
         if (scriptProp != null)
         {
@@ -79,19 +80,24 @@ public class CustomMonobehaviour : Editor
             EditorGUILayout.Space();
         }
 
-        // Affiche chaque foldout
+        // Dessin des foldouts
         foreach (string foldoutName in foldoutsOrder)
         {
-            bool isExpanded = foldoutStates[foldoutName];
+            string foldoutKey = $"{target.GetType().Name}_{foldoutName}_Foldout";
+            bool isExpanded = EditorPrefs.GetBool(foldoutKey, true);
+
+            // Foldout header
             bool newExpanded = EditorGUILayout.Foldout(isExpanded, foldoutName, true, EditorStyles.foldout);
 
+            // Sauvegarde de l'état si modifié
             if (newExpanded != isExpanded)
-                foldoutStates[foldoutName] = newExpanded;
+                EditorPrefs.SetBool(foldoutKey, newExpanded);
 
-            if (newExpanded)
+            // Si ouvert → affiche les propriétés
+            if (newExpanded && foldouts.TryGetValue(foldoutName, out var properties))
             {
                 EditorGUI.indentLevel++;
-                foreach (var prop in foldouts[foldoutName])
+                foreach (var prop in properties)
                 {
                     if (prop != null)
                         EditorGUILayout.PropertyField(prop, true);
