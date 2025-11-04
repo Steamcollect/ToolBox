@@ -7,19 +7,27 @@ using ToolBox.Dev;
 [CustomEditor(typeof(MonoBehaviour), true)]
 public class CustomMonobehaviour : Editor
 {
-    private readonly Dictionary<string, List<SerializedProperty>> foldouts = new();
-    private readonly List<string> foldoutsOrder = new();
+    private readonly Dictionary<string, Dictionary<string, List<SerializedProperty>>> tabs = new();
+    private readonly List<string> tabOrder = new();
+    private string currentTab;
+
+    // Groupes globaux (au-dessus des tabs)
+    private readonly Dictionary<string, List<SerializedProperty>> globalFoldouts = new();
+    private readonly List<string> globalFoldoutOrder = new();
 
     private void OnEnable()
     {
-        foldouts.Clear();
-        foldoutsOrder.Clear();
+        tabs.Clear();
+        tabOrder.Clear();
+        globalFoldouts.Clear();
+        globalFoldoutOrder.Clear();
 
         SerializedProperty iterator = serializedObject.GetIterator();
         if (!iterator.NextVisible(true))
             return;
 
-        string currentFoldout = string.Empty;
+        string currentTabName = null;
+        string currentFoldoutName = string.Empty;
 
         do
         {
@@ -31,46 +39,83 @@ public class CustomMonobehaviour : Editor
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
             );
 
-            FoldoutAttribute foldoutAttr = field != null
-                ? (FoldoutAttribute)System.Attribute.GetCustomAttribute(field, typeof(FoldoutAttribute))
-                : null;
+            if (field == null)
+                continue;
 
-            // Si un nouvel attribut Foldout est trouvé
+            var tabAttr = field.GetCustomAttribute<TabAttribute>();
+            var foldoutAttr = field.GetCustomAttribute<FoldoutAttribute>();
+
+            // Si on détecte un nouvel onglet
+            if (tabAttr != null)
+            {
+                currentTabName = tabAttr.tabName;
+                currentFoldoutName = string.Empty;
+                if (!tabs.ContainsKey(currentTabName))
+                {
+                    tabs[currentTabName] = new Dictionary<string, List<SerializedProperty>>();
+                    tabOrder.Add(currentTabName);
+                }
+                continue; // la propriété ne doit pas appartenir à la tab si elle a seulement un TabAttribute
+            }
+
+            // Détection d’un nouveau foldout
             if (foldoutAttr != null)
             {
-                currentFoldout = foldoutAttr.foldoutName;
+                currentFoldoutName = foldoutAttr.foldoutName;
 
-                if (!foldouts.ContainsKey(currentFoldout))
+                // Si aucun onglet actif → foldout global
+                if (currentTabName == null)
                 {
-                    foldouts[currentFoldout] = new List<SerializedProperty>();
-                    foldoutsOrder.Add(currentFoldout);
+                    if (!globalFoldouts.ContainsKey(currentFoldoutName))
+                    {
+                        globalFoldouts[currentFoldoutName] = new List<SerializedProperty>();
+                        globalFoldoutOrder.Add(currentFoldoutName);
+                    }
+                }
+                else // foldout dans tab
+                {
+                    if (!tabs[currentTabName].ContainsKey(currentFoldoutName))
+                        tabs[currentTabName][currentFoldoutName] = new List<SerializedProperty>();
                 }
             }
 
-            // Si un foldout actif est défini, on y ajoute la propriété
-            if (!string.IsNullOrEmpty(currentFoldout))
+            // Récupération de la propriété sérialisée
+            var prop = serializedObject.FindProperty(iterator.name);
+            if (prop == null)
+                continue;
+
+            // Classement selon le contexte
+            if (currentTabName == null)
             {
-                var prop = serializedObject.FindProperty(iterator.name);
-                if (prop != null)
-                    foldouts[currentFoldout].Add(prop);
+                string foldoutKey = string.IsNullOrEmpty(currentFoldoutName) ? "_root_" : currentFoldoutName;
+                if (!globalFoldouts.ContainsKey(foldoutKey))
+                {
+                    globalFoldouts[foldoutKey] = new List<SerializedProperty>();
+                    if (foldoutKey != "_root_")
+                        globalFoldoutOrder.Add(foldoutKey);
+                }
+                globalFoldouts[foldoutKey].Add(prop);
+            }
+            else
+            {
+                string foldoutKey = string.IsNullOrEmpty(currentFoldoutName) ? "_root_" : currentFoldoutName;
+                if (!tabs[currentTabName].ContainsKey(foldoutKey))
+                    tabs[currentTabName][foldoutKey] = new List<SerializedProperty>();
+                tabs[currentTabName][foldoutKey].Add(prop);
             }
 
         } while (iterator.NextVisible(false));
+
+        // Sélection de la première tab
+        if (tabOrder.Count > 0)
+            currentTab = tabOrder[0];
     }
 
     public override void OnInspectorGUI()
     {
-        // Aucun foldout trouvé → fallback
-        if (foldouts.Count == 0)
-        {
-            base.OnInspectorGUI();
-            DrawButtons();
-            return;
-        }
-
         serializedObject.Update();
 
-        // Champ script en lecture seule
+        // Script reference
         SerializedProperty scriptProp = serializedObject.FindProperty("m_Script");
         if (scriptProp != null)
         {
@@ -80,151 +125,80 @@ public class CustomMonobehaviour : Editor
             EditorGUILayout.Space();
         }
 
-        // Dessin des foldouts
-        foreach (string foldoutName in foldoutsOrder)
+        // --- SECTION : Contenu global avant les tabs ---
+        if (globalFoldouts.ContainsKey("_root_"))
         {
-            string foldoutKey = $"{target.GetType().Name}_{foldoutName}_Foldout";
-            bool isExpanded = EditorPrefs.GetBool(foldoutKey, true);
+            foreach (var prop in globalFoldouts["_root_"])
+                EditorGUILayout.PropertyField(prop, true);
+        }
 
-            // Foldout header
-            bool newExpanded = EditorGUILayout.Foldout(isExpanded, foldoutName, true, EditorStyles.foldout);
+        foreach (string foldoutName in globalFoldoutOrder)
+        {
+            DrawFoldout(foldoutName, globalFoldouts[foldoutName], "Global");
+        }
 
-            // Sauvegarde de l'état si modifié
-            if (newExpanded != isExpanded)
-                EditorPrefs.SetBool(foldoutKey, newExpanded);
+        if (globalFoldouts.Count > 0 && tabs.Count > 0)
+        {
+            EditorGUILayout.Space(8);
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            EditorGUILayout.Space(4);
+        }
 
-            // Si ouvert → affiche les propriétés
-            if (newExpanded && foldouts.TryGetValue(foldoutName, out var properties))
+        // --- SECTION : Tabs ---
+        if (tabs.Count > 0)
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            foreach (var tabName in tabOrder)
             {
-                EditorGUI.indentLevel++;
-                foreach (var prop in properties)
+                bool selected = (tabName == currentTab);
+                if (GUILayout.Toggle(selected, tabName, EditorStyles.toolbarButton))
+                    currentTab = tabName;
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+
+            if (tabs.TryGetValue(currentTab, out var groups))
+            {
+                foreach (var kvp in groups)
                 {
-                    if (prop != null)
-                        EditorGUILayout.PropertyField(prop, true);
+                    string foldoutName = kvp.Key;
+                    var props = kvp.Value;
+
+                    if (foldoutName == "_root_")
+                    {
+                        foreach (var prop in props)
+                            EditorGUILayout.PropertyField(prop, true);
+                        EditorGUILayout.Space(4);
+                        continue;
+                    }
+
+                    DrawFoldout(foldoutName, props, currentTab);
                 }
-                EditorGUI.indentLevel--;
-                EditorGUILayout.Space(5);
             }
         }
 
         serializedObject.ApplyModifiedProperties();
-
         DrawButtons();
     }
 
-    //private Dictionary<string, List<SerializedProperty>> tabs = new();
+    private void DrawFoldout(string foldoutName, List<SerializedProperty> props, string context)
+    {
+        string foldoutKey = $"{target.GetType().Name}_{context}_{foldoutName}_Foldout";
+        bool isExpanded = EditorPrefs.GetBool(foldoutKey, true);
+        bool newExpanded = EditorGUILayout.Foldout(isExpanded, foldoutName, true, EditorStyles.foldout);
 
-    //private List<string> tabOrder = new();
-    //private string currentTab;
+        if (newExpanded != isExpanded)
+            EditorPrefs.SetBool(foldoutKey, newExpanded);
 
-    //private void OnEnable()
-    //{
-    //    tabs.Clear();
-    //    tabOrder.Clear();
-
-    //    SerializedProperty iterator = serializedObject.GetIterator();
-    //    iterator.NextVisible(true);
-
-    //    string current = "DefaultTabName";
-
-    //    while (iterator.NextVisible(false))
-    //    {
-    //        FieldInfo field = serializedObject.targetObject.GetType().GetField(
-    //            iterator.name,
-    //            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-    //        );
-
-    //        // Check if this field defines a new tab
-    //        TabAttribute tabAttr = field != null
-    //            ? (TabAttribute)System.Attribute.GetCustomAttribute(field, typeof(TabAttribute))
-    //            : null;
-
-    //        if (tabAttr != null)
-    //        {
-    //            current = tabAttr.tabName;
-    //            if (!tabs.ContainsKey(current))
-    //            {
-    //                tabs[current] = new List<SerializedProperty>();
-    //                tabOrder.Add(current);
-    //            }
-    //        }
-
-    //        // Add the current field
-    //        if (!tabs.ContainsKey(current))
-    //        {
-    //            tabs[current] = new List<SerializedProperty>();
-    //            tabOrder.Add(current);
-    //        }
-
-    //        tabs[current].Add(serializedObject.FindProperty(iterator.name));
-    //    }
-
-    //    // Default tab selected by default
-    //    if (tabOrder.Count > 0)
-    //    {
-    //        if (tabOrder.Count > 1 && tabOrder[0] == "DefaultTabName")
-    //            currentTab = tabOrder[1];
-    //        else
-    //            currentTab = tabOrder[0];
-    //    }
-    //}
-
-    //public override void OnInspectorGUI()
-    //{
-    //    serializedObject.Update();
-
-    //    // If no tabs
-    //    if (tabOrder.Count == 0 || (tabOrder.Count == 1 && tabOrder[0] == "DefaultTabName"))
-    //    {
-    //        base.OnInspectorGUI();
-    //        DrawButtons();
-    //        return;
-    //    }
-
-    //    SerializedProperty scriptProp = serializedObject.FindProperty("m_Script");
-    //    if (scriptProp != null)
-    //    {
-    //        GUI.enabled = false;
-    //        EditorGUILayout.PropertyField(scriptProp, true);
-    //        GUI.enabled = true;
-    //        EditorGUILayout.Space();
-    //    }
-
-    //    if (tabs.ContainsKey("DefaultTabName"))
-    //    {
-    //        foreach (var prop in tabs["DefaultTabName"])
-    //            EditorGUILayout.PropertyField(prop, true);
-
-    //        EditorGUILayout.Space(2);
-    //        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-    //        EditorGUILayout.Space(2);
-    //    }
-
-    //    if (tabOrder.Count > 1 || (tabOrder.Count == 1 && tabOrder[0] != "DefaultTabName"))
-    //    {
-    //        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-    //        foreach (var tab in tabOrder)
-    //        {
-    //            if (tab == "DefaultTabName") continue;
-
-    //            bool selected = (tab == currentTab);
-    //            if (GUILayout.Toggle(selected, tab, EditorStyles.toolbarButton))
-    //                currentTab = tab;
-    //        }
-    //        EditorGUILayout.EndHorizontal();
-    //        EditorGUILayout.Space();
-    //    }
-
-    //    if (tabs.ContainsKey(currentTab) && currentTab != "DefaultTabName")
-    //    {
-    //        foreach (var prop in tabs[currentTab])
-    //            EditorGUILayout.PropertyField(prop, true);
-    //    }
-
-    //    serializedObject.ApplyModifiedProperties();
-
-    //    DrawButtons();
-    //}
+        if (newExpanded)
+        {
+            EditorGUI.indentLevel++;
+            foreach (var prop in props)
+                EditorGUILayout.PropertyField(prop, true);
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space(5);
+        }
+    }
 
     private void DrawButtons()
     {
@@ -253,6 +227,7 @@ public class CustomMonobehaviour : Editor
             }
         }
     }
+
     private object[] ResolveButtonsParameters(object[] rawParams, object target)
     {
         if (rawParams == null)
@@ -272,7 +247,6 @@ public class CustomMonobehaviour : Editor
                     continue;
                 }
             }
-
             resolved[i] = param;
         }
 
