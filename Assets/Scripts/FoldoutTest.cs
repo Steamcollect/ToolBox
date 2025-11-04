@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class FoldoutTest : MonoBehaviour
 {
+    [Foldout("hi")]
+    public int _test;
+
+    public string test;
+    
     [Tab("Tab 1")]
     [Foldout("Main Stats")]
     public int Health;

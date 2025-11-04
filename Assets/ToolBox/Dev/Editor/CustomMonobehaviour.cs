@@ -11,7 +11,7 @@ public class CustomMonobehaviour : Editor
     private readonly List<string> tabOrder = new();
     private string currentTab;
 
-    // Groupes globaux (au-dessus des tabs)
+    // Default groups
     private readonly Dictionary<string, List<SerializedProperty>> globalFoldouts = new();
     private readonly List<string> globalFoldoutOrder = new();
 
@@ -42,8 +42,8 @@ public class CustomMonobehaviour : Editor
             if (field == null)
                 continue;
 
-            var tabAttr = field.GetCustomAttribute<TabAttribute>();
-            var foldoutAttr = field.GetCustomAttribute<FoldoutAttribute>();
+            TabAttribute tabAttr = field.GetCustomAttribute<TabAttribute>();
+            FoldoutAttribute foldoutAttr = field.GetCustomAttribute<FoldoutAttribute>();
 
             // Si on détecte un nouvel onglet
             if (tabAttr != null)
@@ -55,7 +55,6 @@ public class CustomMonobehaviour : Editor
                     tabs[currentTabName] = new Dictionary<string, List<SerializedProperty>>();
                     tabOrder.Add(currentTabName);
                 }
-                continue; // la propriété ne doit pas appartenir à la tab si elle a seulement un TabAttribute
             }
 
             // Détection d’un nouveau foldout
@@ -63,7 +62,7 @@ public class CustomMonobehaviour : Editor
             {
                 currentFoldoutName = foldoutAttr.foldoutName;
 
-                // Si aucun onglet actif → foldout global
+                // Si aucun onglet actif : foldout global
                 if (currentTabName == null)
                 {
                     if (!globalFoldouts.ContainsKey(currentFoldoutName))
@@ -106,7 +105,6 @@ public class CustomMonobehaviour : Editor
 
         } while (iterator.NextVisible(false));
 
-        // Sélection de la première tab
         if (tabOrder.Count > 0)
             currentTab = tabOrder[0];
     }
@@ -159,14 +157,14 @@ public class CustomMonobehaviour : Editor
 
             if (tabs.TryGetValue(currentTab, out var groups))
             {
-                foreach (var kvp in groups)
+                foreach (KeyValuePair<string, List<SerializedProperty>> kvp in groups)
                 {
                     string foldoutName = kvp.Key;
                     var props = kvp.Value;
 
                     if (foldoutName == "_root_")
                     {
-                        foreach (var prop in props)
+                        foreach (SerializedProperty prop in props)
                             EditorGUILayout.PropertyField(prop, true);
                         EditorGUILayout.Space(4);
                         continue;
