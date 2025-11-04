@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 7eb3e2ad4c3b9754d8e4ae1eb296bb94
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243191
+  packageName: Component Header Item
+  packageVersion: 1.0
+  assetPath: Assets/Plugins/NoDawn/Inspector/Example/Scripts/Component.cs
+  uploadId: 553175

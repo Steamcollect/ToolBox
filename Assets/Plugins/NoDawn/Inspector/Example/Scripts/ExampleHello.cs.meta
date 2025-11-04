@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 75387ec2e259f4f45a9730164e382d20
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243191
+  packageName: Component Header Item
+  packageVersion: 1.0
+  assetPath: Assets/Plugins/NoDawn/Inspector/Example/Scripts/ExampleHello.cs
+  uploadId: 553175
