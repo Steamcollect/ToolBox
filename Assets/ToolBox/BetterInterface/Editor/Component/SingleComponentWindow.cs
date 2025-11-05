@@ -25,7 +25,7 @@ namespace ToolBox.BetterInterface
         private float windowHeight;
         Vector2 minMaxWindowHeight = new Vector2(30, 800);
 
-        Rect newPosition;
+        public Rect newPosition;
 
         public static void Show(Component component)
         {
@@ -41,7 +41,7 @@ namespace ToolBox.BetterInterface
             window.CreateEditor();
 
             // Taille initiale fixe
-            float initialWidth = 300;
+            float initialWidth = 400;
             float initialHeight = 200;
 
             Rect rect = new Rect(
@@ -51,10 +51,9 @@ namespace ToolBox.BetterInterface
                 initialHeight
             );
 
-            window.position = rect;
+            window.newPosition = rect;
 
-            // Bornes de redimensionnement
-            window.minSize = new Vector2(150, 100);
+            window.minSize = new Vector2(300, 150);
             window.maxSize = new Vector2(500, 800);
 
             window.ShowPopup();
@@ -83,9 +82,6 @@ namespace ToolBox.BetterInterface
             HandleResizeHorizontal();
 
             position = newPosition;
-
-            //position = new Rect(position.x, position.y,
-            //    450, Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y));
         }
 
         private void DrawInspectorScrollable()
