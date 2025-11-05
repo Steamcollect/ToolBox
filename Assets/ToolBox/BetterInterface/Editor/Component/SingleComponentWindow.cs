@@ -14,10 +14,18 @@ namespace ToolBox.BetterInterface
         private Vector2 windowStartPos;
         private const float HeaderHeight = 22f;
 
+        private bool isResizing;
+        private float resizeStartScreenX;
+        private float windowStartWidth;
+        private const float ResizeHandleSize = 6f;
+
         private int dragControlId;
+        private int resizeControlId;
 
         private float windowHeight;
         Vector2 minMaxWindowHeight = new Vector2(30, 800);
+
+        Rect newPosition;
 
         public static void Show(Component component)
         {
@@ -49,7 +57,7 @@ namespace ToolBox.BetterInterface
             window.minSize = new Vector2(150, 100);
             window.maxSize = new Vector2(500, 800);
 
-            window.ShowUtility();
+            window.ShowPopup();
         }
 
         private void CreateEditor()
@@ -72,8 +80,12 @@ namespace ToolBox.BetterInterface
             DrawHeaderWithCloseAndDrag();
             DrawInspectorScrollable();
 
-            position = new Rect(position.x, position.y,
-                450, Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y));
+            HandleResizeHorizontal();
+
+            position = newPosition;
+
+            //position = new Rect(position.x, position.y,
+            //    450, Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y));
         }
 
         private void DrawInspectorScrollable()
@@ -99,32 +111,51 @@ namespace ToolBox.BetterInterface
             Rect headerRect = new Rect(0, 0, position.width, HeaderHeight);
             EditorGUI.DrawRect(headerRect, new Color(0.18f, 0.18f, 0.18f));
 
+            // Tilte
             GUIContent title = new GUIContent(
-                "    " + targetComponent.GetType().Name,
+                "    " + targetComponent.gameObject.name + " : " + targetComponent.GetType().Name,
                 AssetPreview.GetMiniThumbnail(targetComponent)
             );
-
             GUI.Label(new Rect(5, 2, position.width - 40, 20), title, EditorStyles.boldLabel);
-            HandleDrag(headerRect);
+
+            // Close
+            Rect closeRect = new Rect(position.width - 22, 2, 18, 18);
+            var closeStyle = new GUIStyle(EditorStyles.boldLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 16
+            };
+
+            EditorGUIUtility.AddCursorRect(closeRect, MouseCursor.Link);
+            if (GUI.Button(closeRect, "×", closeStyle))
+            {
+                Close();
+                GUIUtility.ExitGUI();
+            }
+
+            HandleDrag(closeRect, headerRect);
 
             GUILayout.Space(HeaderHeight);
         }
 
-        void HandleDrag(Rect headerRect)
+        void HandleDrag(Rect closeRect, Rect headerRect)
         {
             dragControlId = GUIUtility.GetControlID(FocusType.Passive);
             Event e = Event.current;
             EventType typeForCtrl = e.GetTypeForControl(dragControlId);
 
+            if (!closeRect.Contains(e.mousePosition))
+                EditorGUIUtility.AddCursorRect(headerRect, MouseCursor.MoveArrow);
+
             switch (typeForCtrl)
             {
                 case EventType.MouseDown:
-                    if (headerRect.Contains(e.mousePosition) && e.button == 0)
+                    if (headerRect.Contains(e.mousePosition) && !closeRect.Contains(e.mousePosition) && e.button == 0)
                     {
                         GUIUtility.hotControl = dragControlId;
                         isDragging = true;
 
-                        // Point de départ écran pour un drag fiable
+                        // Point de départ côté écran pour ne pas perdre le drag en sortant de la fenêtre
                         dragStartScreen = GUIUtility.GUIToScreenPoint(e.mousePosition);
                         windowStartPos = position.position;
                         e.Use();
@@ -136,7 +167,7 @@ namespace ToolBox.BetterInterface
                     {
                         Vector2 curScreen = GUIUtility.GUIToScreenPoint(e.mousePosition);
                         Vector2 delta = curScreen - dragStartScreen;
-                        position = new Rect(windowStartPos.x + delta.x, windowStartPos.y + delta.y, position.width, position.height);
+                        newPosition = new Rect(windowStartPos.x + delta.x, windowStartPos.y + delta.y, position.width, position.height);
                         e.Use();
                     }
                     break;
@@ -146,6 +177,55 @@ namespace ToolBox.BetterInterface
                     {
                         GUIUtility.hotControl = 0;
                         isDragging = false;
+                        e.Use();
+                    }
+                    break;
+            }
+
+            if (!isResizing) 
+                newPosition.height = Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y);
+        }
+
+        private void HandleResizeHorizontal()
+        {
+            Rect handleRect = new Rect(position.width - ResizeHandleSize, 0, ResizeHandleSize, position.height);
+            EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.ResizeHorizontal);
+
+            resizeControlId = GUIUtility.GetControlID(FocusType.Passive);
+            Event e = Event.current;
+            EventType typeForCtrl = e.GetTypeForControl(resizeControlId);
+
+            switch (typeForCtrl)
+            {
+                case EventType.MouseDown:
+                    if (handleRect.Contains(e.mousePosition) && e.button == 0)
+                    {
+                        GUIUtility.hotControl = resizeControlId;
+                        isResizing = true;
+
+                        resizeStartScreenX = GUIUtility.GUIToScreenPoint(e.mousePosition).x;
+                        windowStartWidth = position.width;
+                        e.Use();
+                    }
+                    break;
+
+                case EventType.MouseDrag:
+                    if (GUIUtility.hotControl == resizeControlId && isResizing)
+                    {
+                        float curScreenX = GUIUtility.GUIToScreenPoint(e.mousePosition).x;
+                        float deltaX = curScreenX - resizeStartScreenX;
+                        float newWidth = Mathf.Max(250f, windowStartWidth + deltaX);
+                        newPosition = new Rect(position.x, position.y, newWidth, position.height);
+                        Repaint();
+                        e.Use();
+                    }
+                    break;
+
+                case EventType.MouseUp:
+                    if (GUIUtility.hotControl == resizeControlId)
+                    {
+                        GUIUtility.hotControl = 0;
+                        isResizing = false;
                         e.Use();
                     }
                     break;
