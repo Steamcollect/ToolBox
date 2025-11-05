@@ -3,7 +3,7 @@ using UnityEngine;
 using System;
 using System.Reflection;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     public static class OpenLockedInspector
     {

@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     [System.Serializable]
     public class GameObjectHierarchyData

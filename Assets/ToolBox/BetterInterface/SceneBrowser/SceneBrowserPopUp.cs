@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     public class SceneBrowserPopUp : PopupWindowContent
     {

@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 #endif
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     public static class EditorInputManager
     {

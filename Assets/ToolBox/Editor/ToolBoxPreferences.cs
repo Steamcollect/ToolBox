@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     public static class ToolBoxPreferences
     {

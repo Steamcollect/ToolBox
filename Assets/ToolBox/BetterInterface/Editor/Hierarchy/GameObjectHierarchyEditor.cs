@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     [InitializeOnLoad]
     public static class GameObjectHierarchyEditor

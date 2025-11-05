@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     public class SingleComponentWindow : EditorWindow
     {

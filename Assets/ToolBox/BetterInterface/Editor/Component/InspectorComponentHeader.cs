@@ -22,15 +22,15 @@ public class InspectorComponentHeader
         FieldInfo fieldInfo = typeof(EditorGUIUtility).GetField("s_EditorHeaderItemsMethods", flags);
         IList value = (IList)fieldInfo.GetValue(null);
         if (value == null) return;
+
+        value.Clear();
+
         Type delegateType = value.GetType().GetGenericArguments()[0];
 
         Func<Rect, UnityEngine.Object[], bool> func = DrawHeaderItem;
-
-        // Récupérer la méthode DrawButtons
         MethodInfo method = typeof(InspectorComponentHeader)
             .GetMethod("DrawButtons", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
-        // Enregistrer DrawButtons pour tous les types dérivés de Component
         foreach (Type type in TypeCache.GetTypesDerivedFrom<Component>())
         {
             if (!methodDict.ContainsKey(type))
@@ -41,8 +41,6 @@ public class InspectorComponentHeader
 
         EditorApplication.update -= InitHeader;
     }
-
-
     private static bool DrawHeaderItem(Rect rect, UnityEngine.Object[] targets)
     {
         UnityEngine.Object target = targets[0];
@@ -91,37 +89,14 @@ public class InspectorComponentHeader
         Component comp = target as Component;
         if (comp == null) return;
 
-        Debug.Log(rect);
-
-        bool isHovered = rect.Contains(Event.current.mousePosition);
-        Color bgColor = isHovered ? Color.red : new Color(0.2431373f, 0.2431373f, 0.2431373f, 1);
-        
-        EditorGUI.DrawRect(
-            new Rect(rect.x, rect.y, 60, rect.height),
-            bgColor);
-
-        rect.x += 38;
+        rect.x += 2;
 
         // Icon Button Style
         GUIStyle iconStyle = new GUIStyle(GUI.skin.GetStyle("IconButton"));
 
-        //Using Unity's built-in Icon requires adjusting the location of each Icon
-        iconStyle.contentOffset = new Vector2(2.5f, 1.5f);
-        
-        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("Toolbar Plus").image, "Create a new window with locked on the component"), iconStyle))
+        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("d_P4_AddedRemote").image, "Create a new window with locked on the component"), iconStyle))
         {
-            ToolBox.BetterWindow.SingleComponentWindow.Show(comp);
+            ToolBox.BetterInterface.SingleComponentWindow.Show(comp);
         }
-
-        ////Adjust the Rect to avoid overlap between the two buttons
-        //rect.x -= 19;
-
-        ////Using Unity's built-in Icon requires adjusting the location of each Icon
-        //iconStyle.contentOffset = new Vector2(2f, 2f);
-        ////Draw Button
-        //if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("RectTransformRaw").image, "Switch a language at random"), iconStyle))
-        //{
-        //    Debug.Log("Test 2");
-        //}
     }
 }

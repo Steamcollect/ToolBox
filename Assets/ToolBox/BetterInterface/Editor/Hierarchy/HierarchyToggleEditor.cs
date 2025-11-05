@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ToolBox.BetterWindow
+namespace ToolBox.BetterInterface
 {
     [InitializeOnLoad]
     public static class HierarchyToggleEditor
