@@ -94,7 +94,8 @@ public class InspectorComponentHeader
         // Icon Button Style
         GUIStyle iconStyle = new GUIStyle(GUI.skin.GetStyle("IconButton"));
 
-        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("d_P4_AddedRemote").image, "Create a new window with locked on the component"), iconStyle))
+        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("d_P4_AddedRemote").image,
+            "Open in new Tab"), iconStyle))
         {
             ToolBox.BetterInterface.SingleComponentWindow.Show(comp);
         }

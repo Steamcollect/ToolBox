@@ -93,8 +93,11 @@ namespace ToolBox.BetterInterface
 
             componentEditor.OnInspectorGUI();
 
+            GUILayout.Space(3);
+
             if (Event.current.type == EventType.Repaint)
             {
+
                 Rect lastRect = GUILayoutUtility.GetLastRect();
                 windowHeight = lastRect.yMax + 25;
             }
@@ -181,7 +184,6 @@ namespace ToolBox.BetterInterface
             if (!isResizing) 
                 newPosition.height = Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y);
         }
-
         private void HandleResizeHorizontal()
         {
             Rect handleRect = new Rect(position.width - ResizeHandleSize, 0, ResizeHandleSize, position.height);
