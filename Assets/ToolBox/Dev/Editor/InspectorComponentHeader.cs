@@ -62,9 +62,11 @@ public class InspectorComponentHeader
 
             Type rectType = rect.GetType();
 
-            if (parametersType.Count == 1 && parametersType.Contains(rectType))
+            if (parametersType.Count == 2 &&
+                parametersType[0] == typeof(Rect) &&
+                typeof(UnityEngine.Object).IsAssignableFrom(parametersType[1]))
             {
-                method.Invoke(null, new object[] { rect });
+                method.Invoke(null, new object[] { rect, target });
             }
             else
             {
@@ -84,28 +86,42 @@ public class InspectorComponentHeader
         return false;
     }
 
-    static void DrawButtons(Rect rect)
+    static void DrawButtons(Rect rect, UnityEngine.Object target)
     {
+        Component comp = target as Component;
+        if (comp == null) return;
+
+        Debug.Log(rect);
+
+        bool isHovered = rect.Contains(Event.current.mousePosition);
+        Color bgColor = isHovered ? Color.red : new Color(0.2431373f, 0.2431373f, 0.2431373f, 1);
+        
+        EditorGUI.DrawRect(
+            new Rect(rect.x, rect.y, 60, rect.height),
+            bgColor);
+
+        rect.x += 38;
+
         // Icon Button Style
         GUIStyle iconStyle = new GUIStyle(GUI.skin.GetStyle("IconButton"));
 
         //Using Unity's built-in Icon requires adjusting the location of each Icon
         iconStyle.contentOffset = new Vector2(2.5f, 1.5f);
-        //Draw Button
-        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("Clipboard").image, "Displays a list of languages"), iconStyle))
+        
+        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("Toolbar Plus").image, "Create a new window with locked on the component"), iconStyle))
         {
-            Debug.Log("Test 1");
+            ToolBox.BetterWindow.SingleComponentWindow.Show(comp);
         }
 
-        //Adjust the Rect to avoid overlap between the two buttons
-        rect.x -= 19;
+        ////Adjust the Rect to avoid overlap between the two buttons
+        //rect.x -= 19;
 
-        //Using Unity's built-in Icon requires adjusting the location of each Icon
-        iconStyle.contentOffset = new Vector2(2f, 2f);
-        //Draw Button
-        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("RectTransformRaw").image, "Switch a language at random"), iconStyle))
-        {
-            Debug.Log("Test 1");
-        }
+        ////Using Unity's built-in Icon requires adjusting the location of each Icon
+        //iconStyle.contentOffset = new Vector2(2f, 2f);
+        ////Draw Button
+        //if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("RectTransformRaw").image, "Switch a language at random"), iconStyle))
+        //{
+        //    Debug.Log("Test 2");
+        //}
     }
 }

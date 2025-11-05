@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class DropdownTest : MonoBehaviour
 {
+    public Color color;
+
     public string[] fileTypes;
     public int[] fileSizes;
     public float[] fileCompressions;
