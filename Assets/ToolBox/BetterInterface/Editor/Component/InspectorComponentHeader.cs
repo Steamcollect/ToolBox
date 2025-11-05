@@ -5,99 +5,102 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-public class InspectorComponentHeader
+namespace ToolBox.BetterInterface
 {
-    private static Dictionary<Type, MethodInfo> methodDict = new Dictionary<Type, MethodInfo>();
-
-    [InitializeOnLoadMethod]
-    private static void Init()
+    public class InspectorComponentHeader
     {
-        EditorApplication.update += InitHeader;
-    }
+        private static Dictionary<Type, MethodInfo> methodDict = new Dictionary<Type, MethodInfo>();
 
-    private static void InitHeader()
-    {
-        BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;
-
-        FieldInfo fieldInfo = typeof(EditorGUIUtility).GetField("s_EditorHeaderItemsMethods", flags);
-        IList value = (IList)fieldInfo.GetValue(null);
-        if (value == null) return;
-
-        value.Clear();
-
-        Type delegateType = value.GetType().GetGenericArguments()[0];
-
-        Func<Rect, UnityEngine.Object[], bool> func = DrawHeaderItem;
-        MethodInfo method = typeof(InspectorComponentHeader)
-            .GetMethod("DrawButtons", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-
-        foreach (Type type in TypeCache.GetTypesDerivedFrom<Component>())
+        [InitializeOnLoadMethod]
+        private static void Init()
         {
-            if (!methodDict.ContainsKey(type))
-                methodDict.Add(type, method);
+            EditorApplication.update += InitHeader;
         }
 
-        value.Add(Delegate.CreateDelegate(delegateType, func.Method));
-
-        EditorApplication.update -= InitHeader;
-    }
-    private static bool DrawHeaderItem(Rect rect, UnityEngine.Object[] targets)
-    {
-        UnityEngine.Object target = targets[0];
-
-        Type targetType = target.GetType();
-
-        if (methodDict.ContainsKey(targetType))
+        private static void InitHeader()
         {
-            methodDict.TryGetValue(targetType, out MethodInfo method);
-            ParameterInfo[] parameters = method.GetParameters();
-            List<Type> parametersType = new List<Type>();
+            BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;
 
-            foreach (var parameter in parameters)
+            FieldInfo fieldInfo = typeof(EditorGUIUtility).GetField("s_EditorHeaderItemsMethods", flags);
+            IList value = (IList)fieldInfo.GetValue(null);
+            if (value == null) return;
+
+            value.Clear();
+
+            Type delegateType = value.GetType().GetGenericArguments()[0];
+
+            Func<Rect, UnityEngine.Object[], bool> func = DrawHeaderItem;
+            MethodInfo method = typeof(InspectorComponentHeader)
+                .GetMethod("DrawButtons", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+            foreach (Type type in TypeCache.GetTypesDerivedFrom<Component>())
             {
-                parametersType.Add(parameter.ParameterType);
+                if (!methodDict.ContainsKey(type))
+                    methodDict.Add(type, method);
             }
 
-            Type rectType = rect.GetType();
+            value.Add(Delegate.CreateDelegate(delegateType, func.Method));
 
-            if (parametersType.Count == 2 &&
-                parametersType[0] == typeof(Rect) &&
-                typeof(UnityEngine.Object).IsAssignableFrom(parametersType[1]))
-            {
-                method.Invoke(null, new object[] { rect, target });
-            }
-            else
-            {
-                GUIStyle errorStyle = new GUIStyle();
-                errorStyle.normal.textColor = Color.red;
-                errorStyle.alignment = TextAnchor.MiddleCenter;
-                errorStyle.fontStyle = FontStyle.Bold;
-                errorStyle.fontSize = 12;
-                rect.width = 78;
-                rect.x -= 63;
+            EditorApplication.update -= InitHeader;
+        }
+        private static bool DrawHeaderItem(Rect rect, UnityEngine.Object[] targets)
+        {
+            UnityEngine.Object target = targets[0];
 
-                string errorToolTip = "Method Parameter Error: Please make sure the parameter is correct";
-                GUI.Label(rect, new GUIContent(" Item Error!", EditorGUIUtility.IconContent("CollabError").image, errorToolTip), errorStyle);
+            Type targetType = target.GetType();
+
+            if (methodDict.ContainsKey(targetType))
+            {
+                methodDict.TryGetValue(targetType, out MethodInfo method);
+                ParameterInfo[] parameters = method.GetParameters();
+                List<Type> parametersType = new List<Type>();
+
+                foreach (var parameter in parameters)
+                {
+                    parametersType.Add(parameter.ParameterType);
+                }
+
+                Type rectType = rect.GetType();
+
+                if (parametersType.Count == 2 &&
+                    parametersType[0] == typeof(Rect) &&
+                    typeof(UnityEngine.Object).IsAssignableFrom(parametersType[1]))
+                {
+                    method.Invoke(null, new object[] { rect, target });
+                }
+                else
+                {
+                    GUIStyle errorStyle = new GUIStyle();
+                    errorStyle.normal.textColor = Color.red;
+                    errorStyle.alignment = TextAnchor.MiddleCenter;
+                    errorStyle.fontStyle = FontStyle.Bold;
+                    errorStyle.fontSize = 12;
+                    rect.width = 78;
+                    rect.x -= 63;
+
+                    string errorToolTip = "Method Parameter Error: Please make sure the parameter is correct";
+                    GUI.Label(rect, new GUIContent(" Item Error!", EditorGUIUtility.IconContent("CollabError").image, errorToolTip), errorStyle);
+                }
+                return false;
             }
             return false;
         }
-        return false;
-    }
 
-    static void DrawButtons(Rect rect, UnityEngine.Object target)
-    {
-        Component comp = target as Component;
-        if (comp == null) return;
-
-        rect.x += 2;
-
-        // Icon Button Style
-        GUIStyle iconStyle = new GUIStyle(GUI.skin.GetStyle("IconButton"));
-
-        if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("d_P4_AddedRemote").image,
-            "Open in new Tab"), iconStyle))
+        static void DrawButtons(Rect rect, UnityEngine.Object target)
         {
-            ToolBox.BetterInterface.SingleComponentWindow.Show(comp);
+            Component comp = target as Component;
+            if (comp == null) return;
+
+            rect.x += 2;
+
+            // Icon Button Style
+            GUIStyle iconStyle = new GUIStyle(GUI.skin.GetStyle("IconButton"));
+
+            if (GUI.Button(rect, new GUIContent("", EditorGUIUtility.IconContent("d_P4_AddedRemote").image,
+                "Open in new Tab"), iconStyle))
+            {
+                ToolBox.BetterInterface.SingleComponentWindow.Show(comp);
+            }
         }
     }
 }
