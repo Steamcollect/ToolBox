@@ -16,6 +16,9 @@ namespace ToolBox.BetterInterface
 
         private int dragControlId;
 
+        private float windowHeight;
+        Vector2 minMaxWindowHeight = new Vector2(30, 800);
+
         public static void Show(Component component)
         {
             if (component == null)
@@ -46,8 +49,6 @@ namespace ToolBox.BetterInterface
             window.minSize = new Vector2(150, 100);
             window.maxSize = new Vector2(500, 800);
 
-            // Ouvre en fenêtre utilitaire flottante (redimensionnable).
-            // Pour une fenêtre dockable: remplace par window.Show();
             window.ShowUtility();
         }
 
@@ -70,20 +71,26 @@ namespace ToolBox.BetterInterface
 
             DrawHeaderWithCloseAndDrag();
             DrawInspectorScrollable();
-            // Aucun redimensionnement custom : on laisse les bordures système gérer.
+
+            position = new Rect(position.x, position.y,
+                450, Mathf.Clamp(windowHeight, minMaxWindowHeight.x, minMaxWindowHeight.y));
         }
 
         private void DrawInspectorScrollable()
         {
-            // Zone scrollable pour l’inspecteur
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-            EditorGUI.BeginChangeCheck();
+
+            if (componentEditor == null)
+                CreateEditor();
+
             componentEditor.OnInspectorGUI();
-            if (EditorGUI.EndChangeCheck())
+
+            if (Event.current.type == EventType.Repaint)
             {
-                EditorUtility.SetDirty(targetComponent);
-                Repaint();
+                Rect lastRect = GUILayoutUtility.GetLastRect();
+                windowHeight = lastRect.yMax + 25;
             }
+
             EditorGUILayout.EndScrollView();
         }
 
@@ -92,11 +99,11 @@ namespace ToolBox.BetterInterface
             Rect headerRect = new Rect(0, 0, position.width, HeaderHeight);
             EditorGUI.DrawRect(headerRect, new Color(0.18f, 0.18f, 0.18f));
 
-            // Titre
             GUIContent title = new GUIContent(
                 "    " + targetComponent.GetType().Name,
                 AssetPreview.GetMiniThumbnail(targetComponent)
             );
+
             GUI.Label(new Rect(5, 2, position.width - 40, 20), title, EditorStyles.boldLabel);
             HandleDrag(headerRect);
 
