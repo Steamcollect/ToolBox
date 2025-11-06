@@ -160,26 +160,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 225876927}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 701488b3d97aa7b4da26e56ad775ec8d, type: 3}
+  m_Script: {fileID: 11500000, guid: 411a905edf4fd434383536676468db4e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DropdownTest
-  color: {r: 0.24313726, g: 0.24313726, b: 0.24313726, a: 0}
-  fileTypes:
-  - aaaa
-  - ffff
-  - vbvbv
-  fileSizes: 57040000ce560000050d0000050d0000
-  fileCompressions:
-  - 0.1
-  - 0.2
-  - 0.3
-  fileTypess: {x: 0, y: 0}
-  fileType: vbvbv
-  fileSize: 22222
-  fileCompression: 0.2
-  test1: Hohoho
-  test2: 0
-  test3: 0
+  m_EditorClassIdentifier: Assembly-CSharp::SecretSantaSelector
+  persons:
+  - Name: "Fran\xE7ois"
+    Mask: 0
+  - Name: Chrystelle
+    Mask: 0
+  - Name: Justine
+    Mask: 0
+  - Name: Robin
+    Mask: 0
+  - Name: Arthur
+    Mask: 0
+  - Name: Denis
+    Mask: 1
+  - Name: Laurence
+    Mask: 1
+  - Name: Manon
+    Mask: 1
+  - Name: Alice
+    Mask: 1
+  - Name: Eliot
+    Mask: 1
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
