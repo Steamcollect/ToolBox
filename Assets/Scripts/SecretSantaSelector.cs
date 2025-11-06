@@ -18,37 +18,35 @@ public class SecretSantaSelector : MonoBehaviour
     [Button]
     void ShuffleNames()
     {
-        bool valid = false;
-        Dictionary<PersonData, PersonData> result = new Dictionary<PersonData, PersonData>();
+        if (persons.Length <= 0) return;
 
-        while (!valid)
+        List<PersonData> personsAvailable = persons.ToList();
+
+        PersonData firstPerson = personsAvailable.GetRandom();
+        PersonData currentPerson = firstPerson;
+
+        int loop = 0;
+        while(loop < 1000 && personsAvailable.Count > 0)
         {
-            valid = true;
-            result.Clear();
+            loop++;
 
-            List<PersonData> givers = persons.ToList();
-            List<PersonData> receivers = persons.ToList();
+            personsAvailable.Remove(currentPerson);
 
-            foreach (var giver in givers)
+            PersonData selected;
+
+            if (personsAvailable.Count == 0) selected = firstPerson;
+            else
             {
-                var choices = receivers.Where(p => p.Mask != giver.Mask && p.Name != giver.Name).ToList();
+                PersonData[] availableByMask = personsAvailable.FindAll(c => c.Mask != currentPerson.Mask).ToArray();
 
-                if (choices.Count == 0)
-                {
-                    valid = false;
-                    break; // on recommence tout
-                }
+                if (availableByMask.Length == 0) availableByMask = personsAvailable.ToArray();
 
-                var receiver = choices.GetRandom();
-                result[giver] = receiver;
-                receivers.Remove(receiver);
+                selected = availableByMask.GetRandom();
             }
-        }
 
-        // Affiche le résultat final
-        foreach (var pair in result)
-        {
-            Debug.Log($"<color=cyan>{pair.Key.Name}</color> offre à <color=cyan>{pair.Value.Name}</color>");
+            Debug.Log($"{currentPerson.Name}, pour le Secret Santa familial, tu vas devoir offrir un cadeau à : {selected.Name}");
+
+            currentPerson = selected;
         }
     }
 }
