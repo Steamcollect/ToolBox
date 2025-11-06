@@ -128,6 +128,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 225876930}
+  - component: {fileID: 225876933}
+  - component: {fileID: 225876932}
   - component: {fileID: 225876931}
   m_Layer: 0
   m_Name: Player
@@ -160,30 +162,61 @@ MonoBehaviour:
   m_GameObject: {fileID: 225876927}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 701488b3d97aa7b4da26e56ad775ec8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropdownTest
+  color: {r: 0, g: 0, b: 0, a: 0}
+  fileTypes: []
+  fileSizes: 
+  fileCompressions: []
+  fileTypess: {x: 0, y: 0}
+  fileType: 
+  fileSize: 0
+  fileCompression: 0
+  test1: Hihihi
+  test2: 0
+  test3: 0
+--- !u!114 &225876932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225876927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 411a905edf4fd434383536676468db4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SecretSantaSelector
   persons:
-  - Name: "Fran\xE7ois"
+  - Name: 
     Mask: 0
-  - Name: Chrystelle
+  - Name: 
     Mask: 0
-  - Name: Justine
+  - Name: 
     Mask: 0
-  - Name: Robin
-    Mask: 0
-  - Name: Arthur
-    Mask: 0
-  - Name: Denis
-    Mask: 1
-  - Name: Laurence
-    Mask: 1
-  - Name: Manon
-    Mask: 1
-  - Name: Alice
-    Mask: 1
-  - Name: Eliot
-    Mask: 1
+--- !u!114 &225876933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225876927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d8a0c29611bd4f49a3297f1e6275e55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  playerName: 
+  playerID: 0
+  health: 0
+  damage: 0
+  dashSpeed: 0
+  fadeSpeed: 0
+  fadeTime: 0
+  fadeDuration: 0
+  fadeDelay: 0
+  fadeDelayTime: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

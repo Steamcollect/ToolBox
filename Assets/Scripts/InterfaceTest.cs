@@ -1,8 +1,9 @@
+using ToolBox.Dev;
 using UnityEngine;
 
 public class InterfaceTest : MonoBehaviour
 {
-    [SerializedInterface] ISerializedInterface IInterface;
+    [SerializeField] InterfaceReference<ISerializedInterface> IInterface;
 }
 
 public interface ISerializedInterface
