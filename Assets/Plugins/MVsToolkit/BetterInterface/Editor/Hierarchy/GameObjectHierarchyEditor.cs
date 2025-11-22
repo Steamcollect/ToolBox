@@ -1,7 +1,8 @@
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
-using UnityEngine;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 
 namespace MVsToolkit.BetterInterface
 {
@@ -49,7 +50,7 @@ namespace MVsToolkit.BetterInterface
             if (go.transform.childCount > 0)
             {
                 Rect foldoutRect = new Rect(rect.x - 14f, rect.y, 14f, rect.height);
-                EditorGUI.Foldout(foldoutRect, false, GUIContent.none, false);
+                EditorGUI.Foldout(foldoutRect, IsGameObjectExpand(instanceID), GUIContent.none, false);
             }
 
             if (comps.Length <= 1)
@@ -117,6 +118,25 @@ namespace MVsToolkit.BetterInterface
                     }
                 }
             }
+        }
+
+        static bool IsGameObjectExpand(int instanceID)
+        {
+            System.Type sceneHierarchyWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.SceneHierarchyWindow");
+            System.Reflection.MethodInfo getExpandedIDs = sceneHierarchyWindowType.GetMethod("GetExpandedIDs", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // Déclaration explicite du type
+            PropertyInfo lastInteractedHierarchyWindow =
+                sceneHierarchyWindowType.GetProperty("lastInteractedHierarchyWindow", BindingFlags.Public | BindingFlags.Static);
+
+            if (lastInteractedHierarchyWindow == null)
+            {
+                return false;
+            }
+
+            int[] expandedIDs = getExpandedIDs.Invoke(lastInteractedHierarchyWindow.GetValue(null), null) as int[];
+
+            return expandedIDs != null && expandedIDs.Contains(instanceID);
         }
     }
 }
