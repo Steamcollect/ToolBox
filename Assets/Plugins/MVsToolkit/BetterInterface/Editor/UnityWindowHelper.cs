@@ -1,17 +1,17 @@
+using MVsToolkit.BetterInterface;
 using UnityEditor;
 using UnityEngine;
 
 public static class UnityWindowHelper
 {
-    public static Color HierarchyBackgroundColor
+    public static Color HierarchyBackgroundColor(bool isOdd = false)
     {
-        get
-        {
-            if (EditorGUIUtility.isProSkin)
-                return new Color(0.219f, 0.219f, 0.219f);
-            else
-                return new Color(0.76f, 0.76f, 0.76f);
-        }
+        if (EditorGUIUtility.isProSkin)
+            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ? 
+                new Color(0.2f, 0.2f, 0.2f) : new Color(0.219f, 0.219f, 0.219f);
+        else
+            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ? 
+                new Color(0.92f, 0.92f, 0.92f) : new Color(0.76f, 0.76f, 0.76f);
     }
 
     public static Color HierarchyHoverColor

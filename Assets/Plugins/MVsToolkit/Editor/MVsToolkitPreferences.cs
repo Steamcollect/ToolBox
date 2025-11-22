@@ -29,6 +29,15 @@ namespace MVsToolkit.BetterInterface
             set => EditorPrefs.SetBool(k_ShowComponentsIconsKey, value);
         }
 
+        //-----------------------------
+
+        const string k_IsZebraModeKey = "k_ZebraMode";
+        public static bool s_IsZebraMode
+        {
+            get => EditorPrefs.GetBool(k_IsZebraModeKey, true);
+            set => EditorPrefs.SetBool(k_IsZebraModeKey, value);
+        }
+
         //==============================
 
         [SettingsProvider]
@@ -40,12 +49,16 @@ namespace MVsToolkit.BetterInterface
 
                 guiHandler = (searchContext) =>
                 {
+                    EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Hierarchy Settings", EditorStyles.boldLabel);
                     EditorGUILayout.Space();
 
                     s_DrawFolderIconInHierarchy = EditorGUILayout.Toggle("Draw Folder Icon", s_DrawFolderIconInHierarchy);
                     s_ShowComponentsIcon = EditorGUILayout.Toggle("Show Components Icon", s_ShowComponentsIcon);
                     s_OverrideGameObjectIcon = EditorGUILayout.Toggle("Override GameObject Icon", s_OverrideGameObjectIcon);
+
+                    EditorGUILayout.Space();
+                    s_IsZebraMode = EditorGUILayout.Toggle("Zebra Mode", s_IsZebraMode);
                 },
 
                 // recherche

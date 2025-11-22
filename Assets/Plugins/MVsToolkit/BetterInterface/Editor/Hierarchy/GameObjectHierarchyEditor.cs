@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static UnityEngine.Rendering.VolumeComponent;
 
 namespace MVsToolkit.BetterInterface
 {
@@ -15,7 +16,7 @@ namespace MVsToolkit.BetterInterface
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
         }
 
-        static void OnHierarchyGUI(int instanceID, Rect selectionRect)
+        static void OnHierarchyGUI(int instanceID, Rect rect)
         {
             Object obj = EditorUtility.InstanceIDToObject(instanceID);
 
@@ -24,10 +25,10 @@ namespace MVsToolkit.BetterInterface
             Draw(
                 obj as GameObject, 
                 Selection.instanceIDs.Contains(instanceID), 
-                selectionRect);
+                rect);
         }
 
-        static void Draw(GameObject go, bool isSelected, Rect selectionRect)
+        static void Draw(GameObject go, bool isSelected, Rect rect)
         {
             if (go == null) return;
 
@@ -36,26 +37,25 @@ namespace MVsToolkit.BetterInterface
             Texture icon;
             Event e = Event.current;
 
-            bool isHover = selectionRect.Contains(e.mousePosition);
+            bool isHover = rect.Contains(e.mousePosition);
 
-            Color bgColor = UnityWindowHelper.HierarchyBackgroundColor;
+            Color bgColor = UnityWindowHelper.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
             if (isHover) bgColor = UnityWindowHelper.HierarchyHoverColor;
             if (isSelected) bgColor = UnityWindowHelper.HierarchySelectionColor;
+
+            EditorGUI.DrawRect(new Rect(rect.x - 28, rect.y, rect.width + 44, rect.height), bgColor);
+            EditorGUI.LabelField(new Rect(rect.x + iconSize, rect.y, rect.width + 44, rect.height), go.name);
 
 
             if (comps.Length <= 1)
             {
                 if(MVsToolkitPreferences.s_DrawFolderIconInHierarchy)
                 {
-                    iconRect = new Rect(selectionRect.x - 1, selectionRect.y, iconSize, iconSize);
+                    iconRect = new Rect(rect.x - 1, rect.y, iconSize, iconSize);
                     icon = EditorGUIUtility.IconContent("Folder Icon").image;
 
                     EditorGUI.DrawRect(iconRect, bgColor);
-
-                    GUI.DrawTexture(
-                        iconRect,
-                        icon,
-                        ScaleMode.ScaleToFit);
+                    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
                 }
             }
             else
@@ -63,8 +63,8 @@ namespace MVsToolkit.BetterInterface
                 if (MVsToolkitPreferences.s_OverrideGameObjectIcon)
                 {
                     iconRect = new Rect(
-                            selectionRect.x - 1,
-                            selectionRect.y,
+                            rect.x - 1,
+                            rect.y,
                             iconSize,
                             iconSize);
 
@@ -77,8 +77,8 @@ namespace MVsToolkit.BetterInterface
                     for (int i = 1; i < comps.Length; i++)
                     {
                         iconRect = new Rect(
-                            selectionRect.x + selectionRect.width - ((comps.Length - i) * iconSize) + ((comps.Length - i) * -iconsSpacing),
-                            selectionRect.y,
+                            rect.x + rect.width - ((comps.Length - i) * iconSize) + ((comps.Length - i) * -iconsSpacing),
+                            rect.y,
                             iconSize,
                             iconSize);
 
