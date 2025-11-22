@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using static UnityEngine.Rendering.VolumeComponent;
+using UnityEditor.SceneManagement;
 
 namespace MVsToolkit.BetterInterface
 {
@@ -22,13 +22,13 @@ namespace MVsToolkit.BetterInterface
 
             if (obj == null) return;
 
-            Draw(
+            Draw(instanceID,
                 obj as GameObject, 
                 Selection.instanceIDs.Contains(instanceID), 
                 rect);
         }
 
-        static void Draw(GameObject go, bool isSelected, Rect rect)
+        static void Draw(int instanceID, GameObject go, bool isSelected, Rect rect)
         {
             if (go == null) return;
 
@@ -46,6 +46,11 @@ namespace MVsToolkit.BetterInterface
             EditorGUI.DrawRect(new Rect(rect.x - 28, rect.y, rect.width + 44, rect.height), bgColor);
             EditorGUI.LabelField(new Rect(rect.x + iconSize, rect.y, rect.width + 44, rect.height), go.name);
 
+            if (go.transform.childCount > 0)
+            {
+                Rect foldoutRect = new Rect(rect.x - 14f, rect.y, 14f, rect.height);
+                EditorGUI.Foldout(foldoutRect, false, GUIContent.none, false);
+            }
 
             if (comps.Length <= 1)
             {
