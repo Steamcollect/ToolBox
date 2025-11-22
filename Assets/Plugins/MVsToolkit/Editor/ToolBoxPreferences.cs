@@ -4,15 +4,6 @@ namespace MVsToolkit.BetterInterface
 {
     public static class ToolBoxPreferences
     {
-        const string k_DrawModeInHierarchyKey = "ToolBox_DrawModeInHierarchy";
-        public static ToolBoxIconDrawModeInHierarchy s_DrawModeInHierarchy
-        {
-            get => (ToolBoxIconDrawModeInHierarchy)EditorPrefs.GetInt(k_DrawModeInHierarchyKey, (int)ToolBoxIconDrawModeInHierarchy.OverrideGameObjectIcon);
-            set => EditorPrefs.SetInt(k_DrawModeInHierarchyKey, (int)value);
-        }
-
-        //------------------------------
-
         const string k_DrawFolderIconInHierarchyKey = "ToolBox_DrawFolderIconInHierarchy";
         public static bool s_DrawFolderIconInHierarchy
         {
@@ -34,7 +25,6 @@ namespace MVsToolkit.BetterInterface
                     EditorGUILayout.LabelField("ToolBox Settings", EditorStyles.boldLabel);
                     EditorGUILayout.Space();
 
-                    s_DrawModeInHierarchy = (ToolBoxIconDrawModeInHierarchy)EditorGUILayout.EnumPopup("Hierarchy Icons Draw Mode", s_DrawModeInHierarchy);
                     s_DrawFolderIconInHierarchy = EditorGUILayout.Toggle("Draw Folder Icon in Hierarchy", s_DrawFolderIconInHierarchy);
                 },
 
