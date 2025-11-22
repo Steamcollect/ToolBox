@@ -2,7 +2,7 @@ using MVsToolkit.BetterInterface;
 using UnityEditor;
 using UnityEngine;
 
-public static class UnityWindowHelper
+public static class EditorGUIColorUtility
 {
     public static Color HierarchyBackgroundColor(bool isOdd = false)
     {
@@ -34,5 +34,13 @@ public static class UnityWindowHelper
             else
                 return new Color(0.24f, 0.49f, 0.90f);
         }
+    }
+
+    public static Color PrefabColor(bool isActive)
+    {
+        if (EditorGUIUtility.isProSkin)
+            return isActive ? new Color(0.4132075f, 0.8216152f, 1) : new Color(0.466949f, 0.6383449f, 0.7132075f);
+        else
+            return isActive ? new Color(0.4f, 0.6f, 0.4f) : new Color(0.8f, 0.4f, 0.4f);
     }
 }

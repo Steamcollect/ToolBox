@@ -40,15 +40,19 @@ namespace MVsToolkit.BetterInterface
 
             bool isHover = rect.Contains(e.mousePosition);
 
-            Color bgColor = UnityWindowHelper.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
-            if (isHover) bgColor = UnityWindowHelper.HierarchyHoverColor;
-            if (isSelected) bgColor = UnityWindowHelper.HierarchySelectionColor;
+            Color bgColor = EditorGUIColorUtility.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
+            if (isHover) bgColor = EditorGUIColorUtility.HierarchyHoverColor;
+            if (isSelected) bgColor = EditorGUIColorUtility.HierarchySelectionColor;
 
             EditorGUI.DrawRect(new Rect(rect.x - 28, rect.y, rect.width + 44, rect.height), bgColor);
+            DrawSetActiveToggle(go, rect, e);
+
+            SetGUIColor(go);
             EditorGUI.LabelField(new Rect(rect.x + iconSize, rect.y, rect.width + 44, rect.height), go.name);
 
             if (go.transform.childCount > 0)
             {
+                GUI.color = Color.white;
                 Rect foldoutRect = new Rect(rect.x - 14f, rect.y, 14f, rect.height);
                 EditorGUI.Foldout(foldoutRect, IsGameObjectExpand(instanceID), GUIContent.none, false);
             }
@@ -60,7 +64,10 @@ namespace MVsToolkit.BetterInterface
                     iconRect = new Rect(rect.x - 1, rect.y, iconSize, iconSize);
                     icon = EditorGUIUtility.IconContent("Folder Icon").image;
 
+                    GUI.color = Color.white;
                     EditorGUI.DrawRect(iconRect, bgColor);
+                    
+                    SetGUIColor(go);
                     GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
                 }
             }
@@ -74,12 +81,17 @@ namespace MVsToolkit.BetterInterface
                             iconSize,
                             iconSize);
 
+                    GUI.color = Color.white;
                     EditorGUI.DrawRect(iconRect, bgColor);
+
+                    SetGUIColor(go);
                     DrawComponentIcon(iconRect, comps[1], e, false);
                 }
 
                 if (MVsToolkitPreferences.s_ShowComponentsIcon)
                 {
+                    GUI.color = Color.white;
+
                     for (int i = 1; i < comps.Length; i++)
                     {
                         iconRect = new Rect(
@@ -92,6 +104,8 @@ namespace MVsToolkit.BetterInterface
                     }
                 }                    
             }
+
+            GUI.color = Color.white;
         }
 
         static void DrawComponentIcon(Rect rect, Component comp, Event e, bool isInteractible)
@@ -120,6 +134,35 @@ namespace MVsToolkit.BetterInterface
             }
         }
 
+        static void DrawSetActiveToggle(GameObject go, Rect rect, Event e)
+        {
+            Rect toggleRect = new Rect(rect.x - 27, rect.y - 1, 18, 18);
+
+            if (rect.Contains(e.mousePosition) || toggleRect.Contains(e.mousePosition))
+            {
+                bool newActive = GUI.Toggle(toggleRect, go.activeSelf, GUIContent.none);
+
+                if (newActive != go.activeSelf)
+                {
+                    Undo.RecordObject(go, "Toggle Active State");
+                    go.SetActive(newActive);
+                    EditorUtility.SetDirty(go);
+                }
+            }
+        }
+
+        static void SetGUIColor(GameObject go)
+        {
+            if (IsGameObjectPartOfAnyPrefab(go))
+            {
+                GUI.color = EditorGUIColorUtility.PrefabColor(go.activeSelf);
+            }
+            else
+            {
+                GUI.color = go.activeSelf ? Color.white : Color.grey;
+            }
+        }
+
         static bool IsGameObjectExpand(int instanceID)
         {
             System.Type sceneHierarchyWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.SceneHierarchyWindow");
@@ -137,6 +180,10 @@ namespace MVsToolkit.BetterInterface
             int[] expandedIDs = getExpandedIDs.Invoke(lastInteractedHierarchyWindow.GetValue(null), null) as int[];
 
             return expandedIDs != null && expandedIDs.Contains(instanceID);
+        }
+        static bool IsGameObjectPartOfAnyPrefab(GameObject obj)
+        {
+            return PrefabUtility.IsPartOfAnyPrefab(obj);
         }
     }
 }
