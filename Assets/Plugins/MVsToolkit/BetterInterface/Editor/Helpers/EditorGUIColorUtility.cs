@@ -36,21 +36,41 @@ public static class EditorGUIColorUtility
         }
     }
 
-    public static Color PrefabColor(bool isActive, bool isSelected)
+    public static Color PrefabColor(bool isActive, bool isSelected, bool isMissingPrefab)
     {
-        if (isActive)
+        if(!isMissingPrefab)
         {
-            if (isSelected)
-                return MVsToolkitPreferences.s_EnableSelectedPrefabColor;
+            if (isActive)
+            {
+                if (isSelected)
+                    return MVsToolkitPreferences.s_EnableSelectedPrefabColor;
+                else
+                    return MVsToolkitPreferences.s_EnablePrefabColor;
+            }
             else
-                return MVsToolkitPreferences.s_EnablePrefabColor;
+            {
+                if (isSelected)
+                    return MVsToolkitPreferences.s_DisableSelectedPrefabColor;
+                else
+                    return MVsToolkitPreferences.s_DisablePrefabColor;
+            }
         }
         else
         {
-            if (isSelected)
-                return MVsToolkitPreferences.s_DisableSelectedPrefabColor;
+            if (isActive)
+            {
+                if (isSelected)
+                    return MVsToolkitPreferences.s_EnableSelectedMissingPrefabColor;
+                else
+                    return MVsToolkitPreferences.s_EnableMissingPrefabColor;
+            }
             else
-                return MVsToolkitPreferences.s_DisablePrefabColor;
+            {
+                if (isSelected)
+                    return MVsToolkitPreferences.s_DisableSelectedMissingPrefabColor;
+                else
+                    return MVsToolkitPreferences.s_DisableMissingPrefabColor;
+            }
         }
     }
 }

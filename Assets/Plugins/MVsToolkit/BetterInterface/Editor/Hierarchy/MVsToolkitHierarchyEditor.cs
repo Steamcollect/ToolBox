@@ -6,22 +6,18 @@ using UnityEngine;
 namespace MVsToolkit.BetterInterface
 {
     [InitializeOnLoad]
-    public static class GameObjectHierarchyEditor
+    public static class MVsToolkitHierarchyEditor
     {
         static int iconSize = 16;
         static int iconsSpacing = 0;
 
-        static EditorWindow focusedWindow;
-
-        static GameObjectHierarchyEditor()
+        static MVsToolkitHierarchyEditor()
         {
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
         }
 
         static void OnHierarchyGUI(int instanceID, Rect rect)
         {
-            focusedWindow = EditorWindow.focusedWindow;
-
             Object obj = EditorUtility.InstanceIDToObject(instanceID);
 
             if (obj == null) return;
@@ -42,6 +38,9 @@ namespace MVsToolkit.BetterInterface
             Event e = Event.current;
 
             bool isHover = rect.Contains(e.mousePosition);
+
+            bool isPrefab = go.IsPartOfAnyPrefab();
+            bool isMissingPrefab = go.IsPartOfMissingPrefab();
 
             Color bgColor = EditorGUIColorUtility.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
             if (isHover) bgColor = EditorGUIColorUtility.HierarchyHoverColor;
@@ -76,6 +75,17 @@ namespace MVsToolkit.BetterInterface
                     SetGUIColor(go, isSelected, true);
                     GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
                 }
+                else
+                {
+                    iconRect = new Rect(
+                        rect.x - 1,
+                        rect.y,
+                        iconSize,
+                        iconSize);
+
+                    SetGUIColor(go, isSelected);
+                    DrawGameObjectIcon(go, isPrefab, isMissingPrefab, iconRect);
+                }
             }
             else
             {
@@ -91,7 +101,22 @@ namespace MVsToolkit.BetterInterface
                     EditorGUI.DrawRect(iconRect, bgColor);
 
                     SetGUIColor(go, isSelected);
-                    DrawComponentIcon(iconRect, comps[1], e, false);
+
+                    if(isPrefab && isMissingPrefab)
+                        DrawErrorIcon(iconRect);
+                    else
+                        DrawComponentIcon(iconRect, comps[1], e, false);
+                }
+                else
+                {
+                    iconRect = new Rect(
+                        rect.x - 1,
+                        rect.y,
+                        iconSize,
+                        iconSize);
+
+                    SetGUIColor(go, isSelected);
+                    DrawGameObjectIcon(go, isPrefab, isMissingPrefab, iconRect);
                 }
 
                 if (MVsToolkitPreferences.s_ShowComponentsIcon)
@@ -114,6 +139,36 @@ namespace MVsToolkit.BetterInterface
             GUI.color = Color.white;
         }
 
+        static void DrawGameObjectIcon(GameObject go, bool isPrefab, bool isMissingPrefab, Rect rect)
+        {
+            Texture icon;
+
+            if (isPrefab)
+            {
+                if(isMissingPrefab)
+                    icon = EditorGUIUtility.IconContent("console.erroricon").image;
+                else
+                    icon = EditorGUIUtility.IconContent("Prefab Icon").image;
+            }
+            else
+            {
+                icon = EditorGUIUtility.IconContent("GameObject Icon").image;
+            }
+
+            GUI.DrawTexture(rect, icon);
+        }
+
+        static void DrawErrorIcon(Rect rect)
+        {
+            Texture icon = EditorGUIUtility.IconContent("console.erroricon").image;
+            if (icon == null) return;
+            GUIStyle iconStyle = new GUIStyle();
+            iconStyle.padding = new RectOffset(0, 0, 0, 0);
+            iconStyle.margin = new RectOffset(0, 0, 0, 0);
+            iconStyle.border = new RectOffset(0, 0, 0, 0);
+
+            GUI.DrawTexture(rect, icon);
+        }
         static void DrawComponentIcon(Rect rect, Component comp, Event e, bool isInteractible)
         {
             Texture icon = EditorGUIUtility.ObjectContent(null, comp.GetType()).image as Texture2D;
@@ -159,9 +214,9 @@ namespace MVsToolkit.BetterInterface
 
         static void SetGUIColor(GameObject go, bool isSelected, bool usePrefabColor = false)
         {
-            if (usePrefabColor && IsGameObjectPartOfAnyPrefab(go))
+            if (usePrefabColor && go.IsPartOfAnyPrefab())
             {
-                GUI.color = EditorGUIColorUtility.PrefabColor(GetTopParentActiveSelf(go), isSelected);
+                GUI.color = EditorGUIColorUtility.PrefabColor(GetTopParentActiveSelf(go), isSelected, go.IsPartOfMissingPrefab());
             }
             else
             {
@@ -187,9 +242,17 @@ namespace MVsToolkit.BetterInterface
 
             return expandedIDs != null && expandedIDs.Contains(instanceID);
         }
-        static bool IsGameObjectPartOfAnyPrefab(GameObject obj)
+        static bool IsPartOfAnyPrefab(this GameObject obj)
         {
             return PrefabUtility.IsPartOfAnyPrefab(obj);
+        }
+        static bool IsPartOfMissingPrefab(this GameObject go)
+        {
+            var root = PrefabUtility.GetNearestPrefabInstanceRoot(go);
+            if (root == null) return false;
+
+            var status = PrefabUtility.GetPrefabInstanceStatus(root);
+            return status != PrefabInstanceStatus.Connected;
         }
         static bool GetTopParentActiveSelf(GameObject go)
         {
