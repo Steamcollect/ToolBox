@@ -48,7 +48,9 @@ namespace MVsToolkit.BetterInterface
             if (isSelected) bgColor = EditorGUIColorUtility.HierarchySelectionColor;
 
             EditorGUI.DrawRect(new Rect(rect.x - 21, rect.y, rect.width + 44, rect.height), bgColor);
-            EditorGUI.DrawRect(new Rect(rect.x - 22, rect.y, 1, rect.height), new Color(.3f,.3f,.3f));
+            if (MVsToolkitPreferences.s_IsChildLine) 
+                EditorGUI.DrawRect(new Rect(rect.x - 22, rect.y, 1, rect.height), new Color(.3f,.3f,.3f));
+
             DrawSetActiveToggle(go, rect, e);
 
             SetGUIColor(go, isSelected, true);
@@ -122,7 +124,7 @@ namespace MVsToolkit.BetterInterface
             iconStyle.margin = new RectOffset(0, 0, 0, 0);
             iconStyle.border = new RectOffset(0, 0, 0, 0);
 
-            GUIContent content = new GUIContent(icon, comp.GetType().Name);
+            GUIContent content = new GUIContent(icon, comp.GetType().Name + (isInteractible ? "   <color=grey>Alt+LClick</color>" : ""));
             GUI.Label(rect, content, iconStyle);
 
             if (isInteractible)

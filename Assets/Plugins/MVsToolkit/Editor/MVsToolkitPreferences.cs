@@ -8,7 +8,7 @@ namespace MVsToolkit.BetterInterface
         #region Hierarchy Settings
 
         #region Boolean
-        const string k_DrawFolderIconInHierarchyKey = "ToolBox_DrawFolderIconInHierarchy";
+        const string k_DrawFolderIconInHierarchyKey = "ToolBox_DrawFolderIconInHierarchyKey";
         public static bool s_DrawFolderIconInHierarchy
         {
             get => EditorPrefs.GetBool(k_DrawFolderIconInHierarchyKey, true);
@@ -17,7 +17,7 @@ namespace MVsToolkit.BetterInterface
 
         //-----------------------------
 
-        const string k_OverrideGameObjectIconKey = "ToolBox_OverrideGameObjectIcon";
+        const string k_OverrideGameObjectIconKey = "ToolBox_OverrideGameObjectIconKey";
         public static bool s_OverrideGameObjectIcon
         {
             get => EditorPrefs.GetBool(k_OverrideGameObjectIconKey, true);
@@ -26,7 +26,7 @@ namespace MVsToolkit.BetterInterface
 
         //-----------------------------
 
-        const string k_ShowComponentsIconsKey = "k_ShowComponentsIcons";
+        const string k_ShowComponentsIconsKey = "k_ShowComponentsIconsKey";
         public static bool s_ShowComponentsIcon
         {
             get => EditorPrefs.GetBool(k_ShowComponentsIconsKey, true);
@@ -35,11 +35,20 @@ namespace MVsToolkit.BetterInterface
 
         //-----------------------------
 
-        const string k_IsZebraModeKey = "k_ZebraMode";
+        const string k_IsZebraModeKey = "k_ZebraModeKey";
         public static bool s_IsZebraMode
         {
             get => EditorPrefs.GetBool(k_IsZebraModeKey, true);
             set => EditorPrefs.SetBool(k_IsZebraModeKey, value);
+        }
+
+        //-----------------------------
+
+        const string k_IsChildLineKey = "k_IsChildLineKey";
+        public static bool s_IsChildLine
+        {
+            get => EditorPrefs.GetBool(k_IsChildLineKey, true);
+            set => EditorPrefs.SetBool(k_IsChildLineKey, value);
         }
         #endregion
 
@@ -168,6 +177,7 @@ namespace MVsToolkit.BetterInterface
 
                     EditorGUILayout.Space();
                     s_IsZebraMode = EditorGUILayout.Toggle("Zebra Mode", s_IsZebraMode);
+                    s_IsChildLine = EditorGUILayout.Toggle("Child Line", s_IsChildLine);
                     
                     EditorGUILayout.Space(30);
 
