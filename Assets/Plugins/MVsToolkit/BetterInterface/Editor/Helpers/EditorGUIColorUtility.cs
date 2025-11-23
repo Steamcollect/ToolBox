@@ -36,11 +36,37 @@ public static class EditorGUIColorUtility
         }
     }
 
-    public static Color PrefabColor(bool isActive)
+    public static Color PrefabColor(bool isActive, bool isSelected)
     {
-        if (EditorGUIUtility.isProSkin)
-            return isActive ? new Color(0.4132075f, 0.8216152f, 1) : new Color(0.466949f, 0.6383449f, 0.7132075f);
+        if (isActive)
+        {
+            if (isSelected)
+            {
+                return EditorGUIUtility.isProSkin ?
+                    Color.white :
+                    Color.black;
+            }
+            else
+            {
+                return EditorGUIUtility.isProSkin ?
+                    new Color(0.55f, 0.78f, 1.0f) :
+                    new Color(0.48f, 0.70f, 1.0f);
+            }
+        }
         else
-            return isActive ? new Color(0.4f, 0.6f, 0.4f) : new Color(0.8f, 0.4f, 0.4f);
+        {
+            if (isSelected)
+            {
+                return EditorGUIUtility.isProSkin ?
+                    new Color(0.55f, 0.78f, 1.0f) :
+                    new Color(0.48f, 0.70f, 1.0f);
+            }
+            else
+            {
+                return EditorGUIUtility.isProSkin ?
+                    new Color(0.63f, 0.67f, 0.74f) :
+                    new Color(0.74f, 0.78f, 0.85f);
+            }
+        }
     }
 }

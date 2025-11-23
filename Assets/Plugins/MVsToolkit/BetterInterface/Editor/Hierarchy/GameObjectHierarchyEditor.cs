@@ -47,7 +47,7 @@ namespace MVsToolkit.BetterInterface
             EditorGUI.DrawRect(new Rect(rect.x - 28, rect.y, rect.width + 44, rect.height), bgColor);
             DrawSetActiveToggle(go, rect, e);
 
-            SetGUIColor(go);
+            SetGUIColor(go, isSelected, true);
             EditorGUI.LabelField(new Rect(rect.x + iconSize, rect.y, rect.width + 44, rect.height), go.name);
 
             if (go.transform.childCount > 0)
@@ -67,7 +67,7 @@ namespace MVsToolkit.BetterInterface
                     GUI.color = Color.white;
                     EditorGUI.DrawRect(iconRect, bgColor);
                     
-                    SetGUIColor(go);
+                    SetGUIColor(go, isSelected, true);
                     GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
                 }
             }
@@ -84,13 +84,13 @@ namespace MVsToolkit.BetterInterface
                     GUI.color = Color.white;
                     EditorGUI.DrawRect(iconRect, bgColor);
 
-                    SetGUIColor(go);
+                    SetGUIColor(go, isSelected, true);
                     DrawComponentIcon(iconRect, comps[1], e, false);
                 }
 
                 if (MVsToolkitPreferences.s_ShowComponentsIcon)
                 {
-                    GUI.color = Color.white;
+                    SetGUIColor(go, isSelected);
 
                     for (int i = 1; i < comps.Length; i++)
                     {
@@ -151,15 +151,15 @@ namespace MVsToolkit.BetterInterface
             }
         }
 
-        static void SetGUIColor(GameObject go)
+        static void SetGUIColor(GameObject go, bool isSelected, bool usePrefabColor = false)
         {
-            if (IsGameObjectPartOfAnyPrefab(go))
+            if (usePrefabColor && IsGameObjectPartOfAnyPrefab(go))
             {
-                GUI.color = EditorGUIColorUtility.PrefabColor(go.activeSelf);
+                GUI.color = EditorGUIColorUtility.PrefabColor(GetTopParentActiveSelf(go), isSelected);
             }
             else
             {
-                GUI.color = go.activeSelf ? Color.white : Color.grey;
+                GUI.color = GetTopParentActiveSelf(go) ? Color.white : Color.grey;
             }
         }
 
@@ -184,6 +184,22 @@ namespace MVsToolkit.BetterInterface
         static bool IsGameObjectPartOfAnyPrefab(GameObject obj)
         {
             return PrefabUtility.IsPartOfAnyPrefab(obj);
+        }
+        static bool GetTopParentActiveSelf(GameObject go)
+        {
+            if (go == null) return false;
+
+            Transform t = go.transform;
+
+            while (t.parent != null)
+            {
+                if (!t.gameObject.activeSelf)
+                    return false;
+
+                t = t.parent;
+            }
+
+            return t.gameObject.activeSelf;
         }
     }
 }
