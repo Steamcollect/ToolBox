@@ -41,32 +41,16 @@ public static class EditorGUIColorUtility
         if (isActive)
         {
             if (isSelected)
-            {
-                return EditorGUIUtility.isProSkin ?
-                    Color.white :
-                    Color.black;
-            }
+                return MVsToolkitPreferences.s_EnableSelectedPrefabColor;
             else
-            {
-                return EditorGUIUtility.isProSkin ?
-                    new Color(0.55f, 0.78f, 1.0f) :
-                    new Color(0.48f, 0.70f, 1.0f);
-            }
+                return MVsToolkitPreferences.s_EnablePrefabColor;
         }
         else
         {
             if (isSelected)
-            {
-                return EditorGUIUtility.isProSkin ?
-                    new Color(0.55f, 0.78f, 1.0f) :
-                    new Color(0.48f, 0.70f, 1.0f);
-            }
+                return MVsToolkitPreferences.s_DisableSelectedPrefabColor;
             else
-            {
-                return EditorGUIUtility.isProSkin ?
-                    new Color(0.63f, 0.67f, 0.74f) :
-                    new Color(0.74f, 0.78f, 0.85f);
-            }
+                return MVsToolkitPreferences.s_DisablePrefabColor;
         }
     }
 }

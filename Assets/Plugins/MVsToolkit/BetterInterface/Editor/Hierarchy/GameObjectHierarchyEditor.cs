@@ -12,6 +12,8 @@ namespace MVsToolkit.BetterInterface
         static int iconSize = 16;
         static int iconsSpacing = 0;
 
+        static EditorWindow focusedWindow;
+
         static GameObjectHierarchyEditor()
         {
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
@@ -19,6 +21,8 @@ namespace MVsToolkit.BetterInterface
 
         static void OnHierarchyGUI(int instanceID, Rect rect)
         {
+            focusedWindow = EditorWindow.focusedWindow;
+
             Object obj = EditorUtility.InstanceIDToObject(instanceID);
 
             if (obj == null) return;
