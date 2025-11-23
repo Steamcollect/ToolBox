@@ -7,11 +7,11 @@ public static class EditorGUIColorUtility
     public static Color HierarchyBackgroundColor(bool isOdd = false)
     {
         if (EditorGUIUtility.isProSkin)
-            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ? 
-                new Color(0.2f, 0.2f, 0.2f) : new Color(0.219f, 0.219f, 0.219f);
+            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ?
+                MVsToolkitPreferences.s_ZebraSecondColor : new Color(0.219f, 0.219f, 0.219f);
         else
-            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ? 
-                new Color(0.92f, 0.92f, 0.92f) : new Color(0.76f, 0.76f, 0.76f);
+            return (MVsToolkitPreferences.s_IsZebraMode && isOdd) ?
+                 new Color(0.92f, 0.92f, 0.92f) : new Color(0.76f, 0.76f, 0.76f);
     }
 
     public static Color HierarchyHoverColor
