@@ -48,7 +48,7 @@ namespace MVsToolkit.BetterInterface
             if (isHover) bgColor = EditorGUIColorUtility.HierarchyHoverColor;
             if (isSelected) bgColor = EditorGUIColorUtility.HierarchySelectionColor;
 
-            EditorGUI.DrawRect(new Rect(rect.x - 28, rect.y, rect.width + 44, rect.height), bgColor);
+            EditorGUI.DrawRect(new Rect(rect.x - 24, rect.y, rect.width + 44, rect.height), bgColor);
             DrawSetActiveToggle(go, rect, e);
 
             SetGUIColor(go, isSelected, true);
@@ -88,7 +88,7 @@ namespace MVsToolkit.BetterInterface
                     GUI.color = Color.white;
                     EditorGUI.DrawRect(iconRect, bgColor);
 
-                    SetGUIColor(go, isSelected, true);
+                    SetGUIColor(go, isSelected);
                     DrawComponentIcon(iconRect, comps[1], e, false);
                 }
 
