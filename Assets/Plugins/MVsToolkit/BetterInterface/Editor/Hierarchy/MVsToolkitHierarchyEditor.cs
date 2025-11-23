@@ -67,13 +67,19 @@ namespace MVsToolkit.BetterInterface
                 if(MVsToolkitPreferences.s_DrawFolderIconInHierarchy)
                 {
                     iconRect = new Rect(rect.x - 1, rect.y, iconSize, iconSize);
-                    icon = EditorGUIUtility.IconContent("Folder Icon").image;
-
                     GUI.color = Color.white;
-                    EditorGUI.DrawRect(iconRect, bgColor);
-                    
-                    SetGUIColor(go, isSelected, true);
-                    GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+
+                    if(isPrefab && isMissingPrefab)
+                        DrawErrorIcon(iconRect);
+                    else
+                    {
+                        icon = EditorGUIUtility.IconContent("Folder Icon").image;
+
+                        EditorGUI.DrawRect(iconRect, bgColor);
+
+                        SetGUIColor(go, isSelected, true);
+                        GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
+                    }
                 }
                 else
                 {
