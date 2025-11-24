@@ -33,6 +33,7 @@ namespace MVsToolkit.BetterInterface
             if (go == null) return;
 
             Component[] comps = go.GetComponents<Component>();
+
             Rect iconRect;
             Texture icon;
             Event e = Event.current;
@@ -177,15 +178,27 @@ namespace MVsToolkit.BetterInterface
         }
         static void DrawComponentIcon(Rect rect, Component comp, Event e, bool isInteractible)
         {
-            Texture icon = EditorGUIUtility.ObjectContent(null, comp.GetType()).image as Texture2D;
-            if (icon == null) return;
-
             GUIStyle iconStyle = new GUIStyle();
             iconStyle.padding = new RectOffset(0, 0, 0, 0);
             iconStyle.margin = new RectOffset(0, 0, 0, 0);
             iconStyle.border = new RectOffset(0, 0, 0, 0);
 
-            GUIContent content = new GUIContent(icon, comp.GetType().Name + (isInteractible ? "   <color=grey>Alt+LClick</color>" : ""));
+            Texture icon;
+            GUIContent content;
+
+            if (comp == null)
+            {
+                icon = EditorGUIUtility.IconContent("console.erroricon").image;
+                content = new GUIContent(icon, "Missing Component");
+                GUI.Label(rect, content, iconStyle);
+
+                return;
+            }
+
+            icon = EditorGUIUtility.ObjectContent(null, comp.GetType()).image as Texture2D;
+            if (icon == null) return;
+
+            content = new GUIContent(icon, comp.GetType().Name + (isInteractible ? "   <color=grey>Alt+LClick</color>" : ""));
             GUI.Label(rect, content, iconStyle);
 
             if (isInteractible)
