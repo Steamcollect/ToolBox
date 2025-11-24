@@ -2,29 +2,60 @@
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using MVsToolkit.Dev;
 
 namespace MVsToolkit.Dev
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
-    public class CustomMonobehaviour : Editor
+    [CanEditMultipleObjects]
+    public class MVsToolkitMonobehaviour : Editor
     {
         private readonly Dictionary<string, Dictionary<string, List<SerializedProperty>>> tabs = new();
         private readonly List<string> tabOrder = new();
         private string currentTab;
 
-        // Default groups
         private readonly Dictionary<string, List<SerializedProperty>> globalFoldouts = new();
         private readonly List<string> globalFoldoutOrder = new();
 
         private void OnEnable()
         {
+            if (serializedObject == null)
+                return;
+
+            InitializeData();
+            ScanProperties(serializedObject, target);
+
+            if (tabOrder.Count > 0)
+                currentTab = tabOrder[0];
+        }
+
+        public override void OnInspectorGUI()
+        {
+            if (serializedObject == null)
+                return;
+
+            serializedObject.Update();
+
+            DrawScriptReference(serializedObject);
+            DrawGlobalFoldouts(serializedObject);
+            DrawTabs(serializedObject, target);
+
+            serializedObject.ApplyModifiedProperties();
+
+            DrawButtons();
+        }
+
+        #region Initialization & Scanning
+        private void InitializeData()
+        {
             tabs.Clear();
             tabOrder.Clear();
             globalFoldouts.Clear();
             globalFoldoutOrder.Clear();
+        }
 
-            SerializedProperty iterator = serializedObject.GetIterator();
+        private void ScanProperties(SerializedObject so, Object targetObj)
+        {
+            SerializedProperty iterator = so.GetIterator();
             if (!iterator.NextVisible(true))
                 return;
 
@@ -36,7 +67,7 @@ namespace MVsToolkit.Dev
                 if (iterator.name == "m_Script")
                     continue;
 
-                FieldInfo field = serializedObject.targetObject.GetType().GetField(
+                FieldInfo field = targetObj.GetType().GetField(
                     iterator.name,
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
                 );
@@ -47,7 +78,6 @@ namespace MVsToolkit.Dev
                 TabAttribute tabAttr = field.GetCustomAttribute<TabAttribute>();
                 FoldoutAttribute foldoutAttr = field.GetCustomAttribute<FoldoutAttribute>();
 
-                // Si on détecte un nouvel onglet
                 if (tabAttr != null)
                 {
                     currentTabName = tabAttr.tabName;
@@ -59,12 +89,9 @@ namespace MVsToolkit.Dev
                     }
                 }
 
-                // Détection d’un nouveau foldout
                 if (foldoutAttr != null)
                 {
                     currentFoldoutName = foldoutAttr.foldoutName;
-
-                    // Si aucun onglet actif : foldout global
                     if (currentTabName == null)
                     {
                         if (!globalFoldouts.ContainsKey(currentFoldoutName))
@@ -73,22 +100,20 @@ namespace MVsToolkit.Dev
                             globalFoldoutOrder.Add(currentFoldoutName);
                         }
                     }
-                    else // foldout dans tab
+                    else
                     {
                         if (!tabs[currentTabName].ContainsKey(currentFoldoutName))
                             tabs[currentTabName][currentFoldoutName] = new List<SerializedProperty>();
                     }
                 }
 
-                // Récupération de la propriété sérialisée
-                var prop = serializedObject.FindProperty(iterator.name);
+                var prop = so.FindProperty(iterator.name);
                 if (prop == null)
                     continue;
 
-                // Classement selon le contexte
+                string foldoutKey = string.IsNullOrEmpty(currentFoldoutName) ? "_root_" : currentFoldoutName;
                 if (currentTabName == null)
                 {
-                    string foldoutKey = string.IsNullOrEmpty(currentFoldoutName) ? "_root_" : currentFoldoutName;
                     if (!globalFoldouts.ContainsKey(foldoutKey))
                     {
                         globalFoldouts[foldoutKey] = new List<SerializedProperty>();
@@ -99,24 +124,19 @@ namespace MVsToolkit.Dev
                 }
                 else
                 {
-                    string foldoutKey = string.IsNullOrEmpty(currentFoldoutName) ? "_root_" : currentFoldoutName;
                     if (!tabs[currentTabName].ContainsKey(foldoutKey))
                         tabs[currentTabName][foldoutKey] = new List<SerializedProperty>();
                     tabs[currentTabName][foldoutKey].Add(prop);
                 }
 
             } while (iterator.NextVisible(false));
-
-            if (tabOrder.Count > 0)
-                currentTab = tabOrder[0];
         }
+        #endregion
 
-        public override void OnInspectorGUI()
+        #region Drawing
+        private void DrawScriptReference(SerializedObject so)
         {
-            serializedObject.Update();
-
-            // Script reference
-            SerializedProperty scriptProp = serializedObject.FindProperty("m_Script");
+            SerializedProperty scriptProp = so.FindProperty("m_Script");
             if (scriptProp != null)
             {
                 GUI.enabled = false;
@@ -124,8 +144,10 @@ namespace MVsToolkit.Dev
                 GUI.enabled = true;
                 EditorGUILayout.Space();
             }
+        }
 
-            // --- SECTION : Contenu global avant les tabs ---
+        private void DrawGlobalFoldouts(SerializedObject so)
+        {
             if (globalFoldouts.ContainsKey("_root_"))
             {
                 foreach (var prop in globalFoldouts["_root_"])
@@ -133,9 +155,7 @@ namespace MVsToolkit.Dev
             }
 
             foreach (string foldoutName in globalFoldoutOrder)
-            {
                 DrawFoldout(foldoutName, globalFoldouts[foldoutName], "Global");
-            }
 
             if (globalFoldouts.Count > 0 && tabs.Count > 0)
             {
@@ -143,42 +163,41 @@ namespace MVsToolkit.Dev
                 EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
                 EditorGUILayout.Space(4);
             }
+        }
 
-            // --- SECTION : Tabs ---
-            if (tabs.Count > 0)
+        private void DrawTabs(SerializedObject so, Object targetObj)
+        {
+            if (tabs.Count == 0)
+                return;
+
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            foreach (var tabName in tabOrder)
             {
-                EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-                foreach (var tabName in tabOrder)
-                {
-                    bool selected = (tabName == currentTab);
-                    if (GUILayout.Toggle(selected, tabName, EditorStyles.toolbarButton))
-                        currentTab = tabName;
-                }
-                EditorGUILayout.EndHorizontal();
-                EditorGUILayout.Space();
+                bool selected = (tabName == currentTab);
+                if (GUILayout.Toggle(selected, tabName, EditorStyles.toolbarButton))
+                    currentTab = tabName;
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
 
-                if (tabs.TryGetValue(currentTab, out var groups))
+            if (tabs.TryGetValue(currentTab, out var groups))
+            {
+                foreach (var kvp in groups)
                 {
-                    foreach (KeyValuePair<string, List<SerializedProperty>> kvp in groups)
+                    string foldoutName = kvp.Key;
+                    var props = kvp.Value;
+
+                    if (foldoutName == "_root_")
                     {
-                        string foldoutName = kvp.Key;
-                        var props = kvp.Value;
-
-                        if (foldoutName == "_root_")
-                        {
-                            foreach (SerializedProperty prop in props)
-                                EditorGUILayout.PropertyField(prop, true);
-                            EditorGUILayout.Space(4);
-                            continue;
-                        }
-
-                        DrawFoldout(foldoutName, props, currentTab);
+                        foreach (SerializedProperty prop in props)
+                            EditorGUILayout.PropertyField(prop, true);
+                        EditorGUILayout.Space(4);
+                        continue;
                     }
+
+                    DrawFoldout(foldoutName, props, currentTab);
                 }
             }
-
-            serializedObject.ApplyModifiedProperties();
-            DrawButtons();
         }
 
         private void DrawFoldout(string foldoutName, List<SerializedProperty> props, string context)
@@ -203,7 +222,6 @@ namespace MVsToolkit.Dev
         private void DrawButtons()
         {
             bool firstButton = true;
-
             var methods = target.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             foreach (var method in methods)
@@ -222,19 +240,23 @@ namespace MVsToolkit.Dev
 
                 if (GUILayout.Button(ObjectNames.NicifyVariableName(method.Name)))
                 {
-                    object[] parameters = ResolveButtonsParameters(buttonAttr.Parameters, target);
-                    method.Invoke(target, parameters);
+                    foreach (var t in targets)
+                    {
+                        object[] parameters = ResolveButtonsParameters(buttonAttr.Parameters, t);
+                        method.Invoke(t, parameters);
+                    }
                 }
             }
         }
+        #endregion
 
+        #region Helpers
         private object[] ResolveButtonsParameters(object[] rawParams, object target)
         {
             if (rawParams == null)
                 return null;
 
             object[] resolved = new object[rawParams.Length];
-
             for (int i = 0; i < rawParams.Length; i++)
             {
                 object param = rawParams[i];
@@ -249,8 +271,8 @@ namespace MVsToolkit.Dev
                 }
                 resolved[i] = param;
             }
-
             return resolved;
         }
+        #endregion
     }
 }

@@ -43,9 +43,9 @@ namespace MVsToolkit.BetterInterface
             bool isPrefab = go.IsPartOfAnyPrefab();
             bool isMissingPrefab = go.IsPartOfMissingPrefab();
 
-            Color bgColor = EditorGUIColorUtility.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
-            if (isHover) bgColor = EditorGUIColorUtility.HierarchyHoverColor;
-            if (isSelected) bgColor = EditorGUIColorUtility.HierarchySelectionColor;
+            Color bgColor = MVsToolkitColorUtility.HierarchyBackgroundColor(((int)rect.y / (int)rect.height) % 2 == 1);
+            if (isHover) bgColor = MVsToolkitColorUtility.HierarchyHoverColor;
+            if (isSelected) bgColor = MVsToolkitColorUtility.HierarchySelectionColor;
 
             EditorGUI.DrawRect(new Rect(rect.x - 21, rect.y, rect.width + 44, rect.height), bgColor);
             if (MVsToolkitPreferences.s_IsChildLine) 
@@ -235,7 +235,7 @@ namespace MVsToolkit.BetterInterface
         {
             if (usePrefabColor && go.IsPartOfAnyPrefab())
             {
-                GUI.color = EditorGUIColorUtility.PrefabColor(GetTopParentActiveSelf(go), isSelected, go.IsPartOfMissingPrefab());
+                GUI.color = MVsToolkitColorUtility.PrefabColor(GetTopParentActiveSelf(go), isSelected, go.IsPartOfMissingPrefab());
             }
             else
             {

@@ -69,7 +69,8 @@ namespace MVsToolkit.BetterInterface
         {
             if (targetComponent == null)
             {
-                EditorGUILayout.HelpBox("Aucun composant à afficher.", MessageType.Info);
+                Close();
+                GUIUtility.ExitGUI();
                 return;
             }
 
