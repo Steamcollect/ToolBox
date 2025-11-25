@@ -303,6 +303,11 @@ namespace MVsToolkit.BetterInterface
                             s_EnableSelectedPrefabColor = Color.white;
                             s_DisableSelectedPrefabColor = ColorUtility.TryParseHtmlString("#99B1DC", out var dsc) ? dsc : Color.white;
 
+                            s_EnableMissingPrefabColor = ColorUtility.TryParseHtmlString("#FF6767", out var emc) ? emc : Color.white;
+                            s_DisableMissingPrefabColor = ColorUtility.TryParseHtmlString("#B64B4B", out var dmc) ? dmc : Color.white;
+                            s_EnableSelectedMissingPrefabColor = Color.white;
+                            s_DisableSelectedMissingPrefabColor = ColorUtility.TryParseHtmlString("#E4AAAA", out var dsmc) ? dsmc : Color.white;
+
                             Debug.Log("MV's Toolkit preferences reset to default values.");
                         }
                     }
