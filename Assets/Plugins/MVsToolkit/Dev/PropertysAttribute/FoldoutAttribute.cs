@@ -2,14 +2,18 @@ using UnityEngine;
 
 namespace MVsToolkit.Dev
 {
+    /// <summary>
+    /// Groups fields under a collapsible foldout section in the Inspector.
+    /// <para>Example:</para>
+    /// <list type="bullet">
+    ///   <item><description><code>[Foldout("Player Settings")]</code> groups related fields</description></item>
+    /// </list>
+    /// </summary>
     public class FoldoutAttribute : PropertyAttribute
     {
         public string foldoutName;
 
-        /// <summary>
-        /// Nom du foldout
-        /// </summary>
-        /// <param name="tabName"></param>
+        /// <param name="foldoutName">Label for the foldout section.</param>
         public FoldoutAttribute(string foldoutName)
         {
             this.foldoutName = foldoutName;

@@ -4,23 +4,17 @@ using UnityEngine.UI;
 namespace MVsToolkit.Dev
 {
     /// <summary>
-    /// Affiche un dropdown dans l'inspector avec les valeurs donnée
-    /// 
+    /// Displays a dropdown in the Inspector with given values.
     /// <para>
-    /// Les valeurs peuvent être hard codé ou par référence
-    /// </para> 
-    /// <para>
-    /// La variable peut venir d'un script référencé
+    /// Values can be hardcoded or referenced from another field.
     /// </para>
-    /// 
     /// <para>
-    /// Soutient : String, Float, Int
+    /// Supported types: string, float, int
     /// </para>
-    ///  
-    /// <para>Exemple :</para>
+    /// <para>Examples:</para>
     /// <list type="bullet">
-    ///   <item><description><code>[Dropdown("ValuesReferences"]</code></description></item>
-    ///   <item><description><code>[Dropdown("Choice A", "Choice B", "Choice C")]</code></description></item>
+    ///   <item><description><code>[Dropdown("AvailableWeapons")]</code> uses a reference field</description></item>
+    ///   <item><description><code>[Dropdown("Easy", "Medium", "Hard")]</code> uses hardcoded values</description></item>
     /// </list>
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, AllowMultiple = false)]
@@ -30,23 +24,17 @@ namespace MVsToolkit.Dev
         public readonly string Path;
         public readonly object[] objects;
 
-        /// <summary>
-        /// Prend le chemin en paramètre
-        /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">Name of the field or property to reference for dropdown values.</param>
         public DropdownAttribute(string path)
         {
             isReference = true;
             Path = path;
         }
 
-        /// <summary>
-        /// Prend les valeurs en paramètre
-        /// </summary>
-        /// <param name="objects"></param>
+        /// <param name="objects">Hardcoded values to display in the dropdown.</param>
         public DropdownAttribute(params object[] objects)
         {
-            isReference= false;
+            isReference = false;
             this.objects = objects;
         }
     }

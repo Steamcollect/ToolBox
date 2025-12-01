@@ -3,21 +3,18 @@
 namespace MVsToolkit.Dev
 {
     /// <summary>
-    /// Cache la propriété dans l’inspecteur si la variable spécifiée correspond à la valeur donnée.
-    ///
-    /// <para>Fonctionne uniquement avec :</para>
+    /// Hides the field in the Inspector if the specified condition is met.
+    /// <para>
+    /// Works with bools and enums.
+    /// </para>
+    /// <para>
+    /// Can be used multiple times on the same field.
+    /// </para>
+    /// <para>Examples:</para>
     /// <list type="bullet">
-    ///   <item><description>bool → ex: [HideIf("isEnabled", true)]</description></item>
-    ///   <item><description>enum → ex: [HideIf("mode", GameMode.Debug)]</description></item>
+    ///   <item><description><code>[HideIf("isEnabled", true)]</code> hides if bool is true</description></item>
+    ///   <item><description><code>[HideIf("mode", GameMode.Debug)]</code> hides if enum matches</description></item>
     /// </list>
-    ///
-    /// <para>
-    /// Si la condition n’est pas remplie, la propriété est affichée normalement.
-    /// </para>
-    /// 
-    /// <para>
-    /// Peux être utlilisé plusieurs fois sur la même variable
-    /// </para>
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, AllowMultiple = true)]
     public class HideIfAttribute : PropertyAttribute
@@ -25,8 +22,8 @@ namespace MVsToolkit.Dev
         public readonly string ConditionField;
         public readonly object CompareValue;
 
-        /// <param name="conditionField">Nom du champ bool ou enum à tester.</param>
-        /// <param name="compareValue">Valeur de comparaison. Si le champ est égal à cette valeur, la propriété est cachée.</param>
+        /// <param name="conditionField">Name of the field to evaluate.</param>
+        /// <param name="compareValue">Value that triggers hiding.</param>
         public HideIfAttribute(string conditionField, object compareValue)
         {
             ConditionField = conditionField;

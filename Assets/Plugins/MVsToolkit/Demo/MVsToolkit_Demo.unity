@@ -477,6 +477,7 @@ MonoBehaviour:
   demoInterface:
     _object: {fileID: 478094156}
   sceneName: Test
+  tagName: Player
   valueWatched: 0
 --- !u!4 &1812672337
 Transform:

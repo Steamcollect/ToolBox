@@ -31,6 +31,7 @@ namespace MVsToolkit.Demo
 
         [Tab("Others")]
         [SerializeField, SceneName] string sceneName;
+        [SerializeField, TagName] string tagName;
         [SerializeField, Watch] int valueWatched;
 
         [Button]
