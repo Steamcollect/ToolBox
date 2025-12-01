@@ -5,7 +5,7 @@ namespace MVsToolkit.Dev
     using UnityEngine;
 
     [CustomPropertyDrawer(typeof(SceneNameAttribute))]
-    public class SceneNameDropdown_PropertyDrawer : PropertyDrawer
+    public class SceneName_PropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

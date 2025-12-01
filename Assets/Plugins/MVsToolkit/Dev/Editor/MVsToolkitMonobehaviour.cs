@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -128,10 +127,7 @@ namespace MVsToolkit.Dev
                 if (iterator.name == "m_Script")
                     continue;
 
-                FieldInfo field = targetObj.GetType().GetField(
-                    iterator.name,
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-                );
+                FieldInfo field = GetFieldRecursive(targetObj.GetType(), iterator.name);
 
                 if (field == null)
                     continue;
@@ -345,6 +341,22 @@ namespace MVsToolkit.Dev
             }
             return resolved;
         }
+        private FieldInfo GetFieldRecursive(System.Type type, string fieldName)
+        {
+            while (type != null)
+            {
+                FieldInfo field = type.GetField(
+                    fieldName,
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+                );
+                if (field != null)
+                    return field;
+
+                type = type.BaseType;
+            }
+            return null;
+        }
+
         #endregion
     }
 }

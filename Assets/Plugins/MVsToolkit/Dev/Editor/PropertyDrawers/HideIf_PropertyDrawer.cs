@@ -28,7 +28,7 @@ namespace MVsToolkit.Dev
             Object target = property.serializedObject.targetObject;
             System.Type type = target.GetType();
 
-            FieldInfo conditionField = type.GetField(attr.ConditionField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            FieldInfo conditionField = GetFieldRecursive(type, attr.ConditionField);
 
             if (conditionField == null)
             {
@@ -64,6 +64,22 @@ namespace MVsToolkit.Dev
 
             Debug.LogWarning($"[HideIf] Type non supporté : '{conditionField.Name}' doit être bool ou enum");
             return true;
+        }
+
+        private FieldInfo GetFieldRecursive(System.Type type, string fieldName)
+        {
+            while (type != null)
+            {
+                FieldInfo field = type.GetField(
+                    fieldName,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                );
+                if (field != null)
+                    return field;
+
+                type = type.BaseType;
+            }
+            return null;
         }
     }
 }
