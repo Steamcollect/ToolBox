@@ -239,7 +239,8 @@ namespace MVsToolkit.BetterInterface
             }
             else
             {
-                GUI.color = GetTopParentActiveSelf(go) ? Color.white : Color.grey;
+                if (isSelected) GUI.color = Color.white;
+                else GUI.color = GetTopParentActiveSelf(go) ? Color.white : Color.grey;
             }
         }
 
