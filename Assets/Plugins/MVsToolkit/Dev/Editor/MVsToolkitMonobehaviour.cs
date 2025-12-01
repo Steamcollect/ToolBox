@@ -112,10 +112,13 @@ namespace MVsToolkit.Dev
                     ? go.transform.InverseTransformPoint(newWorldValue)
                     : newWorldValue;
 
+                Undo.RecordObject(target, "Handle Move");
                 if (h.field.FieldType == typeof(Vector3))
                     h.field.SetValue(target, newLocalValue);
                 else if (h.field.FieldType == typeof(Vector2))
                     h.field.SetValue(target, (Vector2)newLocalValue);
+
+                EditorUtility.SetDirty(target);
             }
         }
         #endregion
@@ -254,14 +257,31 @@ namespace MVsToolkit.Dev
             if (tabs.Count == 0)
                 return;
 
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            foreach (var tabName in tabOrder)
+            // Get inspector width
+            float inspectorWidth = EditorGUIUtility.currentViewWidth;
+
+            // Estimate tab width (toolbar buttons are usually ~80–100px wide)
+            float tabWidth = 100f;
+            int tabsPerRow = Mathf.Max(1, Mathf.FloorToInt(inspectorWidth / tabWidth));
+
+            int totalTabs = tabOrder.Count;
+
+            for (int i = 0; i < totalTabs; i += tabsPerRow)
             {
-                bool selected = (tabName == currentTab);
-                if (GUILayout.Toggle(selected, tabName, EditorStyles.toolbarButton))
-                    currentTab = tabName;
+                EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+                int end = Mathf.Min(i + tabsPerRow, totalTabs);
+                for (int j = i; j < end; j++)
+                {
+                    string tabName = tabOrder[j];
+                    bool selected = (tabName == currentTab);
+                    if (GUILayout.Toggle(selected, tabName, EditorStyles.toolbarButton))
+                        currentTab = tabName;
+                }
+
+                EditorGUILayout.EndHorizontal();
             }
-            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.Space();
 
             if (tabs.TryGetValue(currentTab, out var groups))

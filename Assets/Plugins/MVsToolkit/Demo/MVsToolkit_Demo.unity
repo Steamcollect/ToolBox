@@ -468,14 +468,14 @@ MonoBehaviour:
   showVariable: 1
   variableToShow: 25
   variableToHide: 50
-  foldoutA: 5
-  foldoutB: 10
-  foldoutC: 15
   inlineClass:
     name: Some text
     isValid: 1
   demoInterface:
     _object: {fileID: 478094156}
+  pointA: {x: 0.5, y: 0.5, z: 0.5}
+  pointB: {x: 1, y: 1, z: 1}
+  pointC: {x: 1.5, y: 1.5, z: 1.5}
   sceneName: Test
   tagName: Player
   valueWatched: 0

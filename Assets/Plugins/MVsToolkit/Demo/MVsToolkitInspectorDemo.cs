@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MVsToolkit.Demo
 {
-    public class InspectorDemo : MonoBehaviour
+    public class MVsToolkitInspectorDemo : MonoBehaviour
     {
         [Tab("Dropdowns")]
         [SerializeField] string[] dropdownValues;
@@ -19,15 +19,15 @@ namespace MVsToolkit.Demo
 
         [SerializeField, HideIf("showVariable", false)] int variableToHide;
 
-        [Tab("Foldout")]
+        [Tab("Foldout & Class")]
         [Foldout("Foldout")]
-        [SerializeField] float foldoutA;
-        [SerializeField] float foldoutB;
-        [SerializeField] float foldoutC;
-
-        [Tab("Class")]
         [SerializeField, Inline] InlineClass inlineClass;
         [SerializeField] InterfaceReference<IDemoInterface> demoInterface;
+
+        [Tab("Handles")]
+        [Handle] public Vector3 pointA;
+        [Handle(TransformLocationType.Local, HandleDrawType.Sphere, ColorPreset.Red)] public Vector3 pointB;
+        [Handle(TransformLocationType.Global, HandleDrawType.Cube, ColorPreset.Cyan)] public Vector3 pointC;
 
         [Tab("Others")]
         [SerializeField, SceneName] string sceneName;
