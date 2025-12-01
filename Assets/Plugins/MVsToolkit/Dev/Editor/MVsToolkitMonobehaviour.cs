@@ -66,40 +66,56 @@ namespace MVsToolkit.Dev
 
             foreach (var h in handles)
             {
+                Vector3 localValue = Vector3.zero;
+                Vector3 worldValue = Vector3.zero;
+
                 if (h.field.FieldType == typeof(Vector3))
-                {
-                    Vector3 localValue = (Vector3)h.field.GetValue(target);
-
-                    // Convertit en monde si Local
-                    Vector3 worldValue = h.attribute.HandleType == TransformLocationType.Local
-                        ? go.transform.TransformPoint(localValue)
-                        : localValue;
-
-                    Vector3 newWorldValue = Handles.PositionHandle(worldValue, Quaternion.identity);
-
-                    // Convertit inverse si Local
-                    Vector3 newLocalValue = h.attribute.HandleType == TransformLocationType.Local
-                        ? go.transform.InverseTransformPoint(newWorldValue)
-                        : newWorldValue;
-
-                    h.field.SetValue(target, newLocalValue);
-                }
+                    localValue = (Vector3)h.field.GetValue(target);
                 else if (h.field.FieldType == typeof(Vector2))
+                    localValue = (Vector2)h.field.GetValue(target);
+
+                worldValue = h.attribute.HandleType == TransformLocationType.Local
+                    ? go.transform.TransformPoint(localValue)
+                    : localValue;
+
+                Handles.color = h.attribute.Color;
+
+                Vector3 newWorldValue = worldValue;
+
+                switch (h.attribute.DrawType)
                 {
-                    Vector2 localValue = (Vector2)h.field.GetValue(target);
+                    case HandleDrawType.Default:
+                        newWorldValue = Handles.PositionHandle(worldValue, Quaternion.identity);
 
-                    Vector3 worldValue = h.attribute.HandleType == TransformLocationType.Local
-                        ? go.transform.TransformPoint((Vector3)localValue)
-                        : (Vector3)localValue;
+                        float size = HandleUtility.GetHandleSize(worldValue) * h.attribute.Size;
+                        Handles.DrawWireCube(worldValue, Vector3.one * size);
+                        break;
 
-                    Vector3 newWorldValue = Handles.PositionHandle(worldValue, Quaternion.identity);
+                    case HandleDrawType.Sphere:
+                        newWorldValue = Handles.FreeMoveHandle(
+                            worldValue,
+                            HandleUtility.GetHandleSize(worldValue) * h.attribute.Size,
+                            Vector3.zero,
+                            Handles.SphereHandleCap);
+                        break;
 
-                    Vector2 newLocalValue = h.attribute.HandleType == TransformLocationType.Local
-                        ? (Vector2)go.transform.InverseTransformPoint(newWorldValue)
-                        : (Vector2)newWorldValue;
-
-                    h.field.SetValue(target, newLocalValue);
+                    case HandleDrawType.Cube:
+                        newWorldValue = Handles.FreeMoveHandle(
+                            worldValue,
+                            HandleUtility.GetHandleSize(worldValue) * h.attribute.Size,
+                            Vector3.zero,
+                            Handles.CubeHandleCap);
+                        break;
                 }
+
+                Vector3 newLocalValue = h.attribute.HandleType == TransformLocationType.Local
+                    ? go.transform.InverseTransformPoint(newWorldValue)
+                    : newWorldValue;
+
+                if (h.field.FieldType == typeof(Vector3))
+                    h.field.SetValue(target, newLocalValue);
+                else if (h.field.FieldType == typeof(Vector2))
+                    h.field.SetValue(target, (Vector2)newLocalValue);
             }
         }
         #endregion
