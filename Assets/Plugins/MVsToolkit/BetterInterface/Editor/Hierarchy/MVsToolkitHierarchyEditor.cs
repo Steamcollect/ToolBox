@@ -47,7 +47,7 @@ namespace MVsToolkit.BetterInterface
             if (isHover) bgColor = MVsToolkitColorUtility.HierarchyHoverColor;
             if (isSelected) bgColor = MVsToolkitColorUtility.HierarchySelectionColor;
 
-            EditorGUI.DrawRect(new Rect(rect.x - 21, rect.y, rect.width + 44, rect.height), bgColor);
+            EditorGUI.DrawRect(new Rect(rect.x - 21, rect.y, rect.width + 22, rect.height), bgColor);
             if (MVsToolkitPreferences.s_IsChildLine) 
                 EditorGUI.DrawRect(new Rect(rect.x - 22, rect.y, 1, rect.height), new Color(.3f,.3f,.3f));
 
