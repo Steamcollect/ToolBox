@@ -106,10 +106,11 @@
                     return null;
 
                 Type t = current.GetType();
-                FieldInfo field = t.GetField(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                PropertyInfo prop = t.GetProperty(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-                // Récupère la valeur
+                // Recherche récursive dans la hiérarchie
+                FieldInfo field = GetFieldRecursive(t, part);
+                PropertyInfo prop = GetPropertyRecursive(t, part);
+
                 if (field != null)
                     current = field.GetValue(current);
                 else if (prop != null)
@@ -124,13 +125,38 @@
                 }
             }
 
-            // Support des T[] et List<T>
             if (current is T[] array)
                 return array;
 
             if (current is List<T> list)
                 return list.ToArray();
 
+            return null;
+        }
+
+        private FieldInfo GetFieldRecursive(Type type, string fieldName)
+        {
+            while (type != null)
+            {
+                FieldInfo field = type.GetField(fieldName,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                    return field;
+                type = type.BaseType;
+            }
+            return null;
+        }
+
+        private PropertyInfo GetPropertyRecursive(Type type, string propertyName)
+        {
+            while (type != null)
+            {
+                PropertyInfo prop = type.GetProperty(propertyName,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (prop != null)
+                    return prop;
+                type = type.BaseType;
+            }
             return null;
         }
 
