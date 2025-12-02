@@ -39,6 +39,7 @@ namespace MVsToolkit.BetterInterface
             Event e = Event.current;
 
             bool isHover = rect.Contains(e.mousePosition);
+            bool isGameObjectExpand = IsGameObjectExpand(instanceID);
 
             bool isPrefab = go.IsPartOfAnyPrefab();
             bool isMissingPrefab = go.IsPartOfMissingPrefab();
@@ -60,7 +61,7 @@ namespace MVsToolkit.BetterInterface
             {
                 GUI.color = Color.white;
                 Rect foldoutRect = new Rect(rect.x - 14f, rect.y, 14f, rect.height);
-                EditorGUI.Foldout(foldoutRect, IsGameObjectExpand(instanceID), GUIContent.none, false);
+                EditorGUI.Foldout(foldoutRect, isGameObjectExpand, GUIContent.none, false);
             }
 
             if (comps.Length <= 1)
@@ -74,7 +75,12 @@ namespace MVsToolkit.BetterInterface
                         DrawErrorIcon(iconRect);
                     else
                     {
-                        icon = EditorGUIUtility.IconContent("Folder Icon").image;
+                        if(go.transform.childCount == 0) icon = EditorGUIUtility.IconContent("FolderEmpty Icon").image;
+                        else
+                        {
+                            if(isGameObjectExpand) icon = EditorGUIUtility.IconContent("FolderOpened Icon").image;
+                            else icon = EditorGUIUtility.IconContent("Folder Icon").image;
+                        }
 
                         EditorGUI.DrawRect(iconRect, bgColor);
 
