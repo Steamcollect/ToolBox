@@ -87,9 +87,14 @@ namespace MVsToolkit.Dev
                     case HandleDrawType.Default:
                         newWorldValue = Handles.PositionHandle(worldValue, Quaternion.identity);
 
-                        float size = HandleUtility.GetHandleSize(worldValue) * h.attribute.Size;
-                        Handles.DrawWireCube(worldValue, Vector3.one * size);
-                        break;
+                        float size = HandleUtility.GetHandleSize(worldValue) * h.attribute.Size * .5f;
+                        Handles.SphereHandleCap(
+                            0,
+                            worldValue,
+                            Quaternion.identity,
+                            size,
+                            EventType.Repaint
+                        ); break;
 
                     case HandleDrawType.Sphere:
                         newWorldValue = Handles.FreeMoveHandle(
