@@ -52,7 +52,6 @@ namespace MVsToolkit.BetterInterface
         }
         #endregion
 
-
         #region Colors
         
         // ZEBRA
@@ -62,7 +61,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_ZebraSecondColor, "#353535"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_ZebraSecondColor, "353535"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -82,7 +81,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_EnablePrefabColorKey, "#8CC7FF"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_EnablePrefabColorKey, "8CC7FF"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -102,7 +101,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_DisablePrefabColorKey, "#6B90AE"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_DisablePrefabColorKey, "6B90AE"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -122,7 +121,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_EnableSelectedPrefabColorKey, "#FFFFFF"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_EnableSelectedPrefabColorKey, "FFFFFF"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -142,7 +141,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_DisableSelectedPrefabColorKey, "#99B1DC"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_DisableSelectedPrefabColorKey, "99B1DC"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -162,7 +161,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_EnableMissingPrefabColorKey, "#FF6767"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_EnableMissingPrefabColorKey, "FF6767"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -182,7 +181,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_DisableMissingPrefabColorKey, "#B64B4B"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_DisableMissingPrefabColorKey, "B64B4B"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -202,7 +201,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_EnableSelectedMissingPrefabColorKey, "#FFFFFF"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_EnableSelectedMissingPrefabColorKey, "FFFFFF"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
@@ -222,7 +221,7 @@ namespace MVsToolkit.BetterInterface
         {
             get
             {
-                string colorString = EditorPrefs.GetString(k_DisableSelectedMissingPrefabColorKey, "#E4AAAA"); // valeur par défaut
+                string colorString = EditorPrefs.GetString(k_DisableSelectedMissingPrefabColorKey, "E4AAAA"); // valeur par défaut
                 if (ColorUtility.TryParseHtmlString("#" + colorString, out Color c))
                     return c;
 
