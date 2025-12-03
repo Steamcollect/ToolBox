@@ -19,15 +19,20 @@ namespace MVsToolkit.Demo
 
         [SerializeField, HideIf("showVariable", false)] int variableToHide;
 
-        [Tab("Foldout & Class")]
+        [Tab("Fodlout")]
         [Foldout("Foldout")]
+        [SerializeField] int foldoutIntA;
+        [SerializeField] int foldoutIntB;
+        [SerializeField] int foldoutIntC;
+        
+        [Tab("Class")]
         [SerializeField, Inline] InlineClass inlineClass;
         [SerializeField] InterfaceReference<IDemoInterface> demoInterface;
 
         [Tab("Handles")]
         [Handle] public Vector3 pointA;
-        [Handle(TransformLocationType.Local, HandleDrawType.Sphere, ColorPreset.Red)] public Vector3 pointB;
-        [Handle(TransformLocationType.Global, HandleDrawType.Cube, ColorPreset.Cyan)] public Vector3 pointC;
+        [Handle(Space.Self, HandleDrawType.Sphere, ColorPreset.Red)] public Vector3 pointB;
+        [Handle(Space.World, HandleDrawType.Cube, ColorPreset.Cyan)] public Vector3 pointC;
 
         [Tab("Others")]
         [SerializeField, SceneName] string sceneName;

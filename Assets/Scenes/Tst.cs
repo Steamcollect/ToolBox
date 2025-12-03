@@ -8,11 +8,11 @@ public class Tst : MonoBehaviour
     public Vector3 pointA;
 
     // Handle local, forme Sphere, couleur Rouge
-    [Handle(TransformLocationType.Local, HandleDrawType.Sphere, ColorPreset.Red)]
+    [Handle(Space.Self, HandleDrawType.Sphere, ColorPreset.Red)]
     public Vector3 pointB;
 
     // Handle global, forme Cube, couleur Cyan
-    [Handle(TransformLocationType.Global, HandleDrawType.Cube, ColorPreset.Cyan)]
+    [Handle(Space.World, HandleDrawType.Cube, ColorPreset.Cyan)]
     public Vector3 pointC;
 
 }

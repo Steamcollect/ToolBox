@@ -39,22 +39,22 @@ namespace MVsToolkit.Dev
     [System.AttributeUsage(System.AttributeTargets.Field, AllowMultiple = false)]
     public class HandleAttribute : PropertyAttribute
     {
-        public readonly TransformLocationType HandleType;
+        public readonly Space spaceType;
         public readonly HandleDrawType DrawType;
         public readonly Color Color;
         public readonly float Size;
 
-        /// <param name="handleType">Coordinate space (Local or Global). Default is Local.</param>
+        /// <param name="spaceType">Coordinate space (Self or World). Default is Self.</param>
         /// <param name="drawType">Handle shape (Default, Sphere, Cube). Default is Default.</param>
         /// <param name="preset">Handle color (see <see cref="ColorPreset"/>). Default is White.</param>
         /// <param name="size">Handle size. Default is 0.2.</param>
         public HandleAttribute(
-            TransformLocationType handleType = TransformLocationType.Local,
+            Space spaceType = Space.Self,
             HandleDrawType drawType = HandleDrawType.Default,
             ColorPreset preset = ColorPreset.White,
             float size = .2f)
         {
-            HandleType = handleType;
+            this.spaceType = spaceType;
             DrawType = drawType;
             Color = PresetToColor(preset);
             Size = size;
@@ -73,12 +73,6 @@ namespace MVsToolkit.Dev
                 _ => Color.white
             };
         }
-    }
-
-    public enum TransformLocationType
-    {
-        Global,
-        Local,
     }
 
     public enum HandleDrawType

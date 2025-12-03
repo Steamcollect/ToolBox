@@ -74,7 +74,7 @@ namespace MVsToolkit.Dev
                 else if (h.field.FieldType == typeof(Vector2))
                     localValue = (Vector2)h.field.GetValue(target);
 
-                worldValue = h.attribute.HandleType == TransformLocationType.Local
+                worldValue = h.attribute.spaceType == Space.Self
                     ? go.transform.TransformPoint(localValue)
                     : localValue;
 
@@ -113,7 +113,7 @@ namespace MVsToolkit.Dev
                         break;
                 }
 
-                Vector3 newLocalValue = h.attribute.HandleType == TransformLocationType.Local
+                Vector3 newLocalValue = h.attribute.spaceType == Space.Self
                     ? go.transform.InverseTransformPoint(newWorldValue)
                     : newWorldValue;
 
