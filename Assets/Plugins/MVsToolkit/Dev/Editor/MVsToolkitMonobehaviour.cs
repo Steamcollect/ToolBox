@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace MVsToolkit.Dev
 {
-    [CustomEditor(typeof(MonoBehaviour), true)]
-    [CanEditMultipleObjects]
+    //[CustomEditor(typeof(MonoBehaviour), true)]
+    //[CanEditMultipleObjects]
     public class MVsToolkitMonobehaviour : Editor
     {
         private readonly Dictionary<string, Dictionary<string, List<SerializedProperty>>> tabs = new();
