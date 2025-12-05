@@ -35,30 +35,51 @@ public class CustomMonobehaviour : Editor
 
         do
         {
-            FieldInfo field = GetFieldRecursive(targetObj.GetType(), iterator.name);
-            if(field == null) continue;
+            // Determine root field name from propertyPath (handles nested properties and arrays)
+            string path = iterator.propertyPath ?? iterator.name;
+            string rootName = path;
 
-            TabAttribute tabAttr = field.GetCustomAttribute<TabAttribute>();
-            CloseTabAttribute closeTabAttr = field.GetCustomAttribute<CloseTabAttribute>();
-
-            if(closeTabAttr != null) // Close Tab
+            int arrayIndex = path.IndexOf(".Array.data");
+            if (arrayIndex >= 0)
+                rootName = path.Substring(0, arrayIndex);
+            else
             {
-                if (propertyGroups.GetLast().tabs.Count == 0)
+                int dot = path.IndexOf('.');
+                if (dot >= 0)
+                    rootName = path.Substring(0, dot);
+            }
+
+            FieldInfo field = GetFieldRecursive(targetObj.GetType(), rootName);
+
+            // Get attributes only if field found. We still want to include properties like m_Script
+            TabAttribute tabAttr = field?.GetCustomAttribute<TabAttribute>();
+            CloseTabAttribute closeTabAttr = field?.GetCustomAttribute<CloseTabAttribute>();
+
+            if (closeTabAttr != null) // Close Tab
+            {
+                // Safe removal: ensure there's at least one group
+                if (propertyGroups.Count > 0 && propertyGroups.GetLast().tabs.Count == 0)
                     propertyGroups.RemoveAt(propertyGroups.Count - 1);
 
                 propertyGroups.Add(new PropertyGroup(true));
             }
 
-            if(tabAttr != null) // Tab
+            if (tabAttr != null) // Tab
             {
-                if (propertyGroups.GetLast().IsDrawByDefault)
+                if (propertyGroups.Count == 0 || propertyGroups.GetLast().IsDrawByDefault)
                     propertyGroups.Add(new PropertyGroup(false));
 
                 propertyGroups.GetLast().tabs.Add(new TabGroup(tabAttr.tabName));
             }
 
-            SerializedProperty prop = so.FindProperty(iterator.name);
-            if (prop == null) continue;
+            // Use a copy of the iterator so stored SerializedProperty isn't invalidated by iteration
+            SerializedProperty prop = iterator.Copy();
+            if (prop == null)
+                continue;
+
+            // Ensure we have at least one property group and one tab
+            if (propertyGroups.Count == 0)
+                InitializeData();
 
             if (propertyGroups.GetLast().tabs.Count == 0)
                 propertyGroups.GetLast().tabs.Add(new TabGroup());
