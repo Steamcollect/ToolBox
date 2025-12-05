@@ -1,22 +1,26 @@
+using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 
 public class PropertyGroup
 {
+    public bool IsDrawByDefault;
     public List<TabGroup> tabs = new List<TabGroup>();
+
+    public PropertyGroup(bool isDrawByDefault)
+    {
+        IsDrawByDefault = isDrawByDefault;
+    }
 }
 
 public class TabGroup
 {
     public string Name;
-    public bool IsInvisible;
-
     public List<PropertyItem> items = new List<PropertyItem>();
 
-    public TabGroup(string name, bool isInvisible)
+    public TabGroup(string name = "MVsDefaultTab")
     {
         Name = name;
-        IsInvisible = isInvisible;
     }
 }
 
@@ -35,5 +39,11 @@ public class FoldoutGroup : PropertyItem
 
 public class PropertyField : PropertyItem
 {
-    
+    public SerializedProperty property;
+
+    public PropertyField() { }
+    public PropertyField(SerializedProperty prop)
+    {
+        property = prop;
+    }
 }
