@@ -14,5 +14,13 @@ namespace MVsToolkit.Utils
             }
             return elems.ElementAt(UnityEngine.Random.Range(0, elems.Count()));
         }
+
+        public static T GetLast<T>(this IEnumerable<T> elems)
+        {
+            if (!elems.Any())
+                return default;
+
+            return elems.ElementAt(elems.Count() - 1);
+        }
     }
 }
