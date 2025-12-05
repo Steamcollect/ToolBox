@@ -10,6 +10,12 @@ public class CustomMonobehaviour : Editor
 {
     #region Fields
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
+
+    // Cache of generated 1x1 textures for background colors
+    private readonly System.Collections.Generic.Dictionary<Color, Texture2D> _colorTextureCache = new();
+
+    // Palette used to color tabs (no longer used for colored backgrounds)
+    private readonly Color[] _tabPalette = new Color[0];
     #endregion
 
     #region Unity Callbacks
@@ -134,6 +140,35 @@ public class CustomMonobehaviour : Editor
         return null;
     }
 
+    private Color GetTabColor(int index)
+    {
+        if (index < 0) index = 0;
+        if (index >= _tabPalette.Length) index = _tabPalette.Length - 1;
+        return _tabPalette[index];
+    }
+
+    private Texture2D GetColorTexture(Color color)
+    {
+        if (!_colorTextureCache.TryGetValue(color, out Texture2D texture) || texture == null)
+        {
+            texture = new Texture2D(1, 1)
+            {
+                hideFlags = HideFlags.DontSave,
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Repeat
+            };
+            texture.SetPixel(0, 0, color);
+            texture.Apply();
+            _colorTextureCache[color] = texture;
+        }
+        return texture;
+    }
+
+    private Color GetTabColor(PropertyGroup group, int tabIndex)
+    {
+        // kept for compatibility but now return neutral color
+        return EditorGUIUtility.isProSkin ? new Color(0.18f, 0.18f, 0.18f, 1f) : new Color(0.93f, 0.93f, 0.93f, 1f);
+    }
     #endregion
 
     #region Drawing
@@ -171,12 +206,8 @@ public class CustomMonobehaviour : Editor
 
                     if (tab != null)
                         DrawTab(tab);
-
-                    EditorGUILayout.Space(4);
                 }
 
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                EditorGUILayout.Space(4);
                 continue;
             }
 
@@ -212,18 +243,17 @@ public class CustomMonobehaviour : Editor
                 EditorGUILayout.EndHorizontal();
             }
 
-            EditorGUILayout.Space(4);
-
             // Draw selected tab content
             var selectedTab = group.tabs[group.selectedTabIndex];
             if (selectedTab != null)
+            {
+                // Use a helpBox vertical to ensure the content is visible with a subtle background
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 DrawTab(selectedTab);
+                EditorGUILayout.EndVertical();
+            }
 
             EditorGUILayout.Space(6);
-
-            // Optional separator between groups
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            EditorGUILayout.Space(4);
         }
     }
 
@@ -231,10 +261,13 @@ public class CustomMonobehaviour : Editor
     {
         if (tab == null || tab.items == null) return;
 
+        GUILayout.Space(3);
+
         foreach (var item in tab.items)
         {
             DrawPropertyItem(item);
         }
+        GUILayout.Space(3);
     }
 
     private void DrawPropertyItem(PropertyItem item)

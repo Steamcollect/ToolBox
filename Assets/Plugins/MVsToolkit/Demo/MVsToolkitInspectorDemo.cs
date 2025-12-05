@@ -25,7 +25,7 @@ namespace MVsToolkit.Demo
         [SerializeField] int foldoutIntB;
         [SerializeField] int foldoutIntC;
         
-        [Tab("Class")]
+        [CloseTab, Tab("Class")]
         [SerializeField, Inline] InlineClass inlineClass;
         [SerializeField] InterfaceReference<IDemoInterface> demoInterface;
 
