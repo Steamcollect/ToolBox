@@ -8,8 +8,11 @@ using UnityEngine;
 [CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
 public class CustomMonobehaviour : Editor
 {
+    #region Fields
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
+    #endregion
 
+    #region Unity Callbacks
     private void OnEnable()
     {
         if (serializedObject == null)
@@ -18,6 +21,7 @@ public class CustomMonobehaviour : Editor
         InitializeData();
         ScanProperties(serializedObject, target);
     }
+    #endregion
 
     #region Initialization & Scanning
     void InitializeData()
@@ -132,6 +136,7 @@ public class CustomMonobehaviour : Editor
 
     #endregion
 
+    #region Drawing
     public override void OnInspectorGUI()
     {
         if (serializedObject == null)
@@ -224,14 +229,7 @@ public class CustomMonobehaviour : Editor
 
     private void DrawTab(TabGroup tab)
     {
-        if (tab == null) return;
-
-        if (!string.IsNullOrEmpty(tab.Name) && tab.Name != "MVsDefaultTab")
-        {
-            EditorGUILayout.LabelField(tab.Name, EditorStyles.boldLabel);
-        }
-
-        if (tab.items == null) return;
+        if (tab == null || tab.items == null) return;
 
         foreach (var item in tab.items)
         {
@@ -310,4 +308,5 @@ public class CustomMonobehaviour : Editor
             }
         }
     }
+    #endregion
 }
