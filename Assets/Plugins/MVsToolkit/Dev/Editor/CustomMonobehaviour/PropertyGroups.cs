@@ -7,6 +7,9 @@ public class PropertyGroup
     public bool IsDrawByDefault;
     public List<TabGroup> tabs = new List<TabGroup>();
 
+    // Index of the currently selected tab in this group
+    public int selectedTabIndex = 0;
+
     public PropertyGroup(bool isDrawByDefault)
     {
         IsDrawByDefault = isDrawByDefault;
