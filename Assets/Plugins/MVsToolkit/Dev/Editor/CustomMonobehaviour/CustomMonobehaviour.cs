@@ -8,17 +8,11 @@ using UnityEngine;
 [CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
 public class CustomMonobehaviour : Editor
 {
-    #region Fields
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
 
-    // Cache of generated 1x1 textures for background colors
     private readonly System.Collections.Generic.Dictionary<Color, Texture2D> _colorTextureCache = new();
-
-    // Palette used to color tabs (no longer used for colored backgrounds)
     private readonly Color[] _tabPalette = new Color[0];
-    #endregion
 
-    #region Unity Callbacks
     private void OnEnable()
     {
         if (serializedObject == null)
@@ -27,7 +21,6 @@ public class CustomMonobehaviour : Editor
         InitializeData();
         ScanProperties(serializedObject, target);
     }
-    #endregion
 
     #region Initialization & Scanning
     void InitializeData()
@@ -278,7 +271,16 @@ public class CustomMonobehaviour : Editor
         {
             case PropertyField pf:
                 if (pf.property != null)
-                    EditorGUILayout.PropertyField(pf.property, true);
+                {
+                    if(pf.property.name == "m_Script")
+                    {
+                        GUI.enabled = false;
+                        EditorGUILayout.PropertyField(pf.property, true);
+                        GUI.enabled = true;
+                        GUILayout.Space(4);
+                    }
+                    else EditorGUILayout.PropertyField(pf.property, true);
+                }
                 break;
             case FoldoutGroup fg:
                 DrawFoldoutGroup(fg);
@@ -290,26 +292,7 @@ public class CustomMonobehaviour : Editor
 
     void DrawFoldoutGroup(FoldoutGroup fg)
     {
-        if (fg == null) return;
 
-        string foldoutKey = $"{target.GetType().Name}_Custom_{fg.Name}_Foldout";
-        bool isExpanded = EditorPrefs.GetBool(foldoutKey, true);
-        bool newExpanded = EditorGUILayout.Foldout(isExpanded, fg.Name, true, EditorStyles.foldout);
-
-        if (newExpanded != isExpanded)
-            EditorPrefs.SetBool(foldoutKey, newExpanded);
-
-        if (newExpanded)
-        {
-            EditorGUI.indentLevel++;
-            foreach (var field in fg.fields)
-            {
-                if (field?.property != null)
-                    EditorGUILayout.PropertyField(field.property, true);
-            }
-            EditorGUI.indentLevel--;
-            EditorGUILayout.Space(4);
-        }
     }
 
     void DrawButtons()
