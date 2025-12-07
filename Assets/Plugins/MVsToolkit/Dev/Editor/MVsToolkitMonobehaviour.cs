@@ -24,7 +24,6 @@ namespace MVsToolkit.Dev
             public HandleAttribute attribute;
         }
 
-
         private void OnEnable()
         {
             if (serializedObject == null)

@@ -10,7 +10,7 @@ public class CustomMonobehaviour : Editor
 {
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
 
-    private readonly System.Collections.Generic.Dictionary<Color, Texture2D> _colorTextureCache = new();
+    private readonly Dictionary<Color, Texture2D> _colorTextureCache = new();
     private readonly Color[] _tabPalette = new Color[0];
 
     private void OnEnable()
@@ -182,20 +182,16 @@ public class CustomMonobehaviour : Editor
     {
         if (propertyGroups == null) return;
 
-        foreach (var group in propertyGroups)
+        foreach (PropertyGroup group in propertyGroups)
         {
             if (group == null || group.tabs == null || group.tabs.Count == 0) continue;
 
             if (group.IsDrawByDefault)
             {
-                // Draw all tabs contents directly, no tab bar
-                foreach (var tab in group.tabs)
+                foreach (TabGroup tab in group.tabs)
                 {
-                    // Optionally show tab name if not default
                     if (!string.IsNullOrEmpty(tab?.Name) && tab.Name != "MVsDefaultTab")
-                    {
                         EditorGUILayout.LabelField(tab.Name, EditorStyles.boldLabel);
-                    }
 
                     if (tab != null)
                         DrawTab(tab);
@@ -204,13 +200,11 @@ public class CustomMonobehaviour : Editor
                 continue;
             }
 
-            // Non-default behaviour: draw horizontal tabs and show selected only
             string[] tabNames = new string[group.tabs.Count];
             for (int i = 0; i < group.tabs.Count; i++)
             {
                 string name = group.tabs[i]?.Name ?? "";
-                tabNames[i] = name == "MVsDefaultTab" ? "" : name;
-                if (string.IsNullOrEmpty(tabNames[i])) tabNames[i] = "Tab " + (i + 1);
+                tabNames[i] = name == "MVsDefaultTab" ? $"Tab_{i + 1}" : name;
             }
 
             // Ensure selected index is within bounds
