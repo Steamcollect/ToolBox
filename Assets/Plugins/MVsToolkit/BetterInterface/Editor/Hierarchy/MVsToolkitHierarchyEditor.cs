@@ -38,6 +38,8 @@ namespace MVsToolkit.BetterInterface
             Texture icon;
             Event e = Event.current;
 
+            int parentCount = GetParentCount(go);
+
             bool isHover = rect.Contains(e.mousePosition);
             bool isGameObjectExpand = IsGameObjectExpand(instanceID);
 
@@ -48,9 +50,14 @@ namespace MVsToolkit.BetterInterface
             if (isHover) bgColor = MVsToolkitColorUtility.HierarchyHoverColor;
             if (isSelected) bgColor = MVsToolkitColorUtility.HierarchySelectionColor;
 
-            EditorGUI.DrawRect(new Rect(rect.x - 21, rect.y, rect.width + 22, rect.height), bgColor);
-            if (MVsToolkitPreferences.s_IsChildLine) 
-                EditorGUI.DrawRect(new Rect(rect.x - 22, rect.y, 1, rect.height), new Color(.3f,.3f,.3f));
+            EditorGUI.DrawRect(new Rect(rect.x - 21 - (14 * parentCount), rect.y, rect.width + 22 + (14 * parentCount), rect.height), bgColor);
+            if (MVsToolkitPreferences.s_IsChildLine)
+            {
+                for (int i = 0; i < parentCount; i++)
+                {
+                    EditorGUI.DrawRect(new Rect(rect.x - 22 - (14 * i), rect.y, 1, rect.height), new Color(.3f, .3f, .3f));
+                }
+            }
 
             DrawSetActiveToggle(go, rect, e);
 
@@ -268,6 +275,21 @@ namespace MVsToolkit.BetterInterface
 
             return expandedIDs != null && expandedIDs.Contains(instanceID);
         }
+        static int GetParentCount(GameObject go)
+        {
+            if (go == null) return 0;
+
+            int count = 0;
+            Transform t = go.transform.parent;
+            while (t != null)
+            {
+                count++;
+                t = t.parent;
+            }
+
+            return count;
+        }
+
         static bool IsPartOfAnyPrefab(this GameObject obj)
         {
             return PrefabUtility.IsPartOfAnyPrefab(obj);
