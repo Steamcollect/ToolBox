@@ -1,9 +1,11 @@
+using UnityEngine;
+
 namespace MVsToolkit.BatchRename
 {
     [System.Serializable]
     public class RenameConfig
     {
-        public IRenameOperation[] Operations;
+        [UnityEngine.SerializeReference] public IRenameOperation[] Operations;
         public IRenameRule[] Rules;
 
 

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MVsToolkit.BatchRename
 {
-    public class RenameService : IRenamer
+    public class RenamerService : IRenamer
     {
         public IEnumerable<RenameResult> Preview(IEnumerable<IRenameTarget> targets, RenameConfig config)
         {
