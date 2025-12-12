@@ -9,6 +9,7 @@ using UnityEngine;
 public class CustomMonobehaviour : Editor
 {
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
+    public List<HandleAttribute> handles = new List<HandleAttribute>();
 
     private readonly Dictionary<Color, Texture2D> _colorTextureCache = new();
     private readonly Color[] _tabPalette = new Color[0];
@@ -52,22 +53,18 @@ public class CustomMonobehaviour : Editor
                     rootName = path.Substring(0, dot);
             }
 
-            FieldInfo field = GetFieldRecursive(targetObj.GetType(), rootName);
+            FieldInfo field = GetFieldRecursive(targetObj.GetType(), rootName, out bool isFirstField);
+            if(field == null)
+                continue;
 
-            // Get attributes only if field found. We still want to include properties like m_Script
-            TabAttribute tabAttr = field?.GetCustomAttribute<TabAttribute>();
-            CloseTabAttribute closeTabAttr = field?.GetCustomAttribute<CloseTabAttribute>();
-
-            if (closeTabAttr != null) // Close Tab
+            if (TryGetCustomAttribute(field, out CloseTabAttribute closeTabAttr) || isFirstField) // Close Tab
             {
-                // Safe removal: ensure there's at least one group
                 if (propertyGroups.Count > 0 && propertyGroups.GetLast().tabs.Count == 0)
                     propertyGroups.RemoveAt(propertyGroups.Count - 1);
 
                 propertyGroups.Add(new PropertyGroup(true));
             }
-
-            if (tabAttr != null) // Tab
+            if (TryGetCustomAttribute(field, out TabAttribute tabAttr)) // Tab
             {
                 if (propertyGroups.Count == 0 || propertyGroups.GetLast().IsDrawByDefault)
                     propertyGroups.Add(new PropertyGroup(false));
@@ -75,12 +72,14 @@ public class CustomMonobehaviour : Editor
                 propertyGroups.GetLast().tabs.Add(new TabGroup(tabAttr.tabName));
             }
 
-            // Use a copy of the iterator so stored SerializedProperty isn't invalidated by iteration
+            HandleAttribute handleAttr = field?.GetCustomAttribute<HandleAttribute>();
+            if(handleAttr != null)
+                handles.Add(handleAttr);
+
             SerializedProperty prop = iterator.Copy();
             if (prop == null)
                 continue;
 
-            // Ensure we have at least one property group and one tab
             if (propertyGroups.Count == 0)
                 InitializeData();
 
@@ -117,7 +116,7 @@ public class CustomMonobehaviour : Editor
         return resolved;
     }
 
-    private FieldInfo GetFieldRecursive(System.Type type, string fieldName)
+    private FieldInfo GetFieldRecursive(System.Type type, string fieldName, out bool isFirtField)
     {
         while (type != null)
         {
@@ -126,11 +125,25 @@ public class CustomMonobehaviour : Editor
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
             );
             if (field != null)
-                return field;
+            {
+                if(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0] == field)
+                    isFirtField = true;
+                else
+                    isFirtField = false;
 
+                return field;
+            }
             type = type.BaseType;
         }
+        isFirtField = false;
         return null;
+    }
+
+    bool TryGetCustomAttribute<T>(FieldInfo fieldInfo, out T attribute) where T : System.Attribute
+    {
+        attribute = fieldInfo.GetCustomAttribute<T>();
+        if (attribute != null) return true;
+        else return false;
     }
 
     private Color GetTabColor(int index)

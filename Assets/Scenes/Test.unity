@@ -166,7 +166,7 @@ MonoBehaviour:
   dropdownValues: []
   dropdownDemo_1: 0
   dropdownDemo_2: 
-  showVariable: 1
+  showVariable: 0
   variableToShow: 0
   variableToHide: 0
   foldoutIntA: 0
@@ -184,9 +184,9 @@ MonoBehaviour:
   sceneName: Test
   tagName: Untagged
   valueWatched: 0
-  pointA: {x: 0.43013132, y: 3.7792232, z: 3.451897}
-  pointB: {x: 1.4838184, y: 0.69229937, z: 0.87351745}
-  pointC: {x: -1.6127744, y: 1.5709743, z: -1.4087644}
+  pointD: {x: 0, y: 0, z: 0}
+  pointE: {x: 0, y: 0, z: 0}
+  pointF: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
