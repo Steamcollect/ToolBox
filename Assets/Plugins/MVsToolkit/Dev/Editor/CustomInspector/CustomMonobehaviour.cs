@@ -184,6 +184,19 @@ public class CustomMonobehaviour : Editor
             return;
 
         serializedObject.Update();
+
+        #region Draw Script Field
+        FieldInfo field = target.GetType().GetField(
+            "m_Script",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+        );
+        GUI.enabled = false;
+        GUILayout.Space(1);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"), true);
+        GUILayout.Space(3);
+        GUI.enabled = true;
+        #endregion
+
         DrawPropertyGroups();
 
         serializedObject.ApplyModifiedProperties();
