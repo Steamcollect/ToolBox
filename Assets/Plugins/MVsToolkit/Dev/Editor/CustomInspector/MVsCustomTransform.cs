@@ -1,5 +1,3 @@
-using MVsToolkit.Utils;
-using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +15,7 @@ namespace MVsToolkit.BetterInterface
         bool isPositionExpanded = false;
         bool isRotationExpanded = false;
         bool isScaleExpanded = false;
+        bool isScaleLinked = true;
 
         private GUIStyle IconButtonStyle
         {
@@ -147,14 +146,66 @@ namespace MVsToolkit.BetterInterface
             Rect labelRect = new Rect(rect.x + 14f + spacing, rect.y, labelWidth - 14f - spacing, rect.height);
             EditorGUI.LabelField(labelRect, "Scale");
 
+
             Rect linkButtonRect = new Rect(rect.x + labelWidth + spaceBetweenLabelAndField - spaceBetweenLinkIconAndField, rect.y + (rect.height - 14f) / 2f - 2, 16f, 16f);
-            if (GUI.Button(linkButtonRect, EditorGUIUtility.IconContent("d_Unlinked"), IconButtonStyle))
-                Debug.Log("dd");
+            if (GUI.Button(linkButtonRect, EditorGUIUtility.IconContent(isScaleLinked ? "d_Linked" : "d_Unlinked"), IconButtonStyle))
+                isScaleLinked = !isScaleLinked;
 
-                float fieldWidth = rect.width - (labelWidth + resetSize + spacing * 4 + spaceBetweenLabelAndField);
+            float fieldWidth = rect.width - (labelWidth + resetSize + spacing * 4 + spaceBetweenLabelAndField);
             Rect fieldRect = new Rect(rect.x + labelWidth + spaceBetweenLabelAndField, rect.y, fieldWidth, rect.height);
-            t.localScale = EditorGUI.Vector3Field(fieldRect, GUIContent.none, t.localScale);
-
+            
+            Vector3 prevLocal = t.localScale;
+            Vector3 editedLocal = EditorGUI.Vector3Field(fieldRect, GUIContent.none, prevLocal);
+            if (editedLocal != prevLocal)
+            {
+                if (isScaleLinked)
+                {
+                    const float eps = 1e-6f;
+                    // Détecte quelle composante a changé et applique un facteur relatif pour conserver les proportions
+                    if (Mathf.Abs(editedLocal.x - prevLocal.x) > eps)
+                    {
+                        if (Mathf.Abs(prevLocal.x) > eps)
+                        {
+                            float factor = editedLocal.x / prevLocal.x;
+                            t.localScale = prevLocal * factor;
+                        }
+                        else
+                        {
+                            // Si l'axe précédent était 0, on uniformise sur la valeur saisie
+                            t.localScale = Vector3.one * editedLocal.x;
+                        }
+                    }
+                    else if (Mathf.Abs(editedLocal.y - prevLocal.y) > eps)
+                    {
+                        if (Mathf.Abs(prevLocal.y) > eps)
+                        {
+                            float factor = editedLocal.y / prevLocal.y;
+                            t.localScale = prevLocal * factor;
+                        }
+                        else
+                        {
+                            t.localScale = Vector3.one * editedLocal.y;
+                        }
+                    }
+                    else // z changed (ou fallback)
+                    {
+                        if (Mathf.Abs(prevLocal.z) > eps)
+                        {
+                            float factor = editedLocal.z / prevLocal.z;
+                            t.localScale = prevLocal * factor;
+                        }
+                        else
+                        {
+                            t.localScale = Vector3.one * editedLocal.z;
+                        }
+                    }
+                }
+                else
+                {
+                    t.localScale = editedLocal;
+                }
+            }
+            
             Rect resetRect = new Rect(fieldRect.xMax + spacing, rect.y + (rect.height - resetSize) / 2f, resetSize, resetSize);
             if (GUI.Button(resetRect, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
                 t.localScale = Vector3.one;
@@ -175,7 +226,52 @@ namespace MVsToolkit.BetterInterface
                 Vector3 worldScale = t.lossyScale;
                 Vector3 newWorldScale = EditorGUI.Vector3Field(fieldRect2, GUIContent.none, worldScale);
                 if (newWorldScale != worldScale)
-                    SetWorldScale(t, newWorldScale);
+                {
+                    if (isScaleLinked)
+                    {
+                        const float eps = 1e-6f;
+                        if (Mathf.Abs(newWorldScale.x - worldScale.x) > eps)
+                        {
+                            if (Mathf.Abs(worldScale.x) > eps)
+                            {
+                                float ratio = newWorldScale.x / worldScale.x;
+                                SetWorldScale(t, worldScale * ratio);
+                            }
+                            else
+                            {
+                                SetWorldScale(t, Vector3.one * newWorldScale.x);
+                            }
+                        }
+                        else if (Mathf.Abs(newWorldScale.y - worldScale.y) > eps)
+                        {
+                            if (Mathf.Abs(worldScale.y) > eps)
+                            {
+                                float ratio = newWorldScale.y / worldScale.y;
+                                SetWorldScale(t, worldScale * ratio);
+                            }
+                            else
+                            {
+                                SetWorldScale(t, Vector3.one * newWorldScale.y);
+                            }
+                        }
+                        else
+                        {
+                            if (Mathf.Abs(worldScale.z) > eps)
+                            {
+                                float ratio = newWorldScale.z / worldScale.z;
+                                SetWorldScale(t, worldScale * ratio);
+                            }
+                            else
+                            {
+                                SetWorldScale(t, Vector3.one * newWorldScale.z);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SetWorldScale(t, newWorldScale);
+                    }
+                }
 
                 // Reset aligné
                 Rect resetRect2 = new Rect(fieldRect2.xMax + spacing, rect2.y + (rect2.height - resetSize) / 2f, resetSize, resetSize);
