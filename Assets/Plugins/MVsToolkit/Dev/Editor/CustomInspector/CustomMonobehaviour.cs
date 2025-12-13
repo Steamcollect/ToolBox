@@ -27,6 +27,9 @@ public class CustomMonobehaviour : Editor
 
         InitializeData();
         ScanProperties(serializedObject, target);
+
+        // Load saved tab and foldout states for this target
+        LoadPersistentStates();
     }
 
     #region Initialization & Scanning
@@ -231,8 +234,10 @@ public class CustomMonobehaviour : Editor
     {
         if (propertyGroups == null) return;
 
-        foreach (PropertyGroup group in propertyGroups)
+        for (int gIndex = 0; gIndex < propertyGroups.Count; gIndex++)
         {
+            PropertyGroup group = propertyGroups[gIndex];
+
             if (group == null || group.tabs == null || group.tabs.Count == 0) continue;
 
             if (group.IsDrawByDefault)
@@ -271,7 +276,13 @@ public class CustomMonobehaviour : Editor
                 {
                     bool selected = (j == group.selectedTabIndex);
                     if (GUILayout.Toggle(selected, tabNames[j], EditorStyles.toolbarButton))
-                        group.selectedTabIndex = j;
+                    {
+                        if (group.selectedTabIndex != j)
+                        {
+                            group.selectedTabIndex = j;
+                            SaveTabSelection(gIndex, j);
+                        }
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -337,7 +348,15 @@ public class CustomMonobehaviour : Editor
         // Get or initialize foldout state
         if (!_foldoutStates.TryGetValue(fg, out bool expanded))
         {
-            expanded = true; // default to expanded
+            // Try to load persisted state for this foldout
+            string foldNameKey = string.IsNullOrEmpty(fg.Name) ? "Foldout_" + fg.GetHashCode() : fg.Name;
+            string key = GetPrefsPrefix() + "_foldout_" + foldNameKey;
+            int saved = EditorPrefs.GetInt(key, -1);
+            if (saved >= 0)
+                expanded = saved == 1;
+            else
+                expanded = true; // default to expanded
+
             _foldoutStates[fg] = expanded;
         }
 
@@ -350,7 +369,13 @@ public class CustomMonobehaviour : Editor
 
         // Save state
         if (newExpanded != expanded)
+        {
             _foldoutStates[fg] = newExpanded;
+            // Persist change
+            string foldNameKey = string.IsNullOrEmpty(fg.Name) ? "Foldout_" + fg.GetHashCode() : fg.Name;
+            string key = GetPrefsPrefix() + "_foldout_" + foldNameKey;
+            EditorPrefs.SetInt(key, newExpanded ? 1 : 0);
+        }
 
         // Draw fields when expanded
         if (newExpanded && fg.fields != null)
@@ -469,6 +494,53 @@ public class CustomMonobehaviour : Editor
             _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
         }
         return _helpBoxNoTopMargin;
+    }
+
+    // Persistency helpers: store selections per target instance and component type
+    private string GetPrefsPrefix()
+    {
+        if (target == null) return "MVsToolkit_unknown";
+        return $"MVsToolkit_{target.GetInstanceID()}_{target.GetType().FullName}";
+    }
+
+    private void SaveTabSelection(int groupIndex, int selectedIndex)
+    {
+        string key = GetPrefsPrefix() + $"_group_{groupIndex}_selectedTab";
+        EditorPrefs.SetInt(key, selectedIndex);
+    }
+
+    private void LoadPersistentStates()
+    {
+        // Load tabs
+        for (int gIndex = 0; gIndex < propertyGroups.Count; gIndex++)
+        {
+            var group = propertyGroups[gIndex];
+            string key = GetPrefsPrefix() + $"_group_{gIndex}_selectedTab";
+            int saved = EditorPrefs.GetInt(key, group.selectedTabIndex);
+            if (saved >= 0 && saved < group.tabs.Count)
+                group.selectedTabIndex = saved;
+        }
+
+        // Load foldouts
+        for (int gIndex = 0; gIndex < propertyGroups.Count; gIndex++)
+        {
+            var group = propertyGroups[gIndex];
+            for (int tIndex = 0; tIndex < group.tabs.Count; tIndex++)
+            {
+                var tab = group.tabs[tIndex];
+                foreach (var item in tab.items)
+                {
+                    if (item is FoldoutGroup fg)
+                    {
+                        string foldNameKey = string.IsNullOrEmpty(fg.Name) ? "Foldout_" + fg.GetHashCode() : fg.Name;
+                        string key = GetPrefsPrefix() + "_foldout_" + foldNameKey;
+                        int saved = EditorPrefs.GetInt(key, -1);
+                        bool expanded = saved >= 0 ? (saved == 1) : true;
+                        _foldoutStates[fg] = expanded;
+                    }
+                }
+            }
+        }
     }
     #endregion
 }
