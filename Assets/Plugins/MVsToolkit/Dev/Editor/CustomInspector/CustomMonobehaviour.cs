@@ -9,13 +9,16 @@ using UnityEngine;
 public class CustomMonobehaviour : Editor
 {
     public List<PropertyGroup> propertyGroups = new List<PropertyGroup>();
-    public List<HandleAttribute> handles = new List<HandleAttribute>();
+    public List<HandleData> handles = new List<HandleData>();
 
     private readonly Dictionary<Color, Texture2D> _colorTextureCache = new();
     private readonly Color[] _tabPalette = new Color[0];
 
     // Cached help box style with zero top margin
     private GUIStyle _helpBoxNoTopMargin;
+
+    // Cache for foldout expanded/collapsed states per FoldoutGroup instance
+    private readonly Dictionary<FoldoutGroup, bool> _foldoutStates = new();
 
     private void OnEnable()
     {
@@ -42,7 +45,10 @@ public class CustomMonobehaviour : Editor
 
         do
         {
-            // Determine root field name from propertyPath (handles nested properties and arrays)
+            SerializedProperty prop = iterator.Copy();
+            if (prop == null)
+                continue;
+
             string path = iterator.propertyPath ?? iterator.name;
             string rootName = path;
 
@@ -90,12 +96,15 @@ public class CustomMonobehaviour : Editor
                 propertyGroups.GetLast().tabs.GetLast().currentFoldout = foldout;
             }
 
-            if(TryGetCustomAttribute(field, out HandleAttribute handleAttr))
-                handles.Add(handleAttr);
-
-            SerializedProperty prop = iterator.Copy();
-            if (prop == null)
-                continue;
+            if(TryGetCustomAttribute(field, out HandleAttribute handleAttr)) // Handle
+            {
+                handles.Add(new HandleData
+                {
+                    property = prop,
+                    field = field,
+                    attribute = handleAttr
+                });
+            }
 
             if (propertyGroups.Count == 0)
                 InitializeData();
@@ -112,7 +121,82 @@ public class CustomMonobehaviour : Editor
     }
     #endregion
 
-    #region Drawing
+    #region SceneDrawing
+    private void OnSceneGUI()
+    {
+        DrawHandles();
+    }
+
+    void DrawHandles()
+    {
+        GameObject go = ((MonoBehaviour)target).gameObject;
+        if (go != Selection.activeGameObject) return;
+
+        foreach (var h in handles)
+        {
+            Vector3 localValue = Vector3.zero;
+            Vector3 worldValue = Vector3.zero;
+
+            if (h.field.FieldType == typeof(Vector3))
+                localValue = (Vector3)h.field.GetValue(target);
+            else if (h.field.FieldType == typeof(Vector2))
+                localValue = (Vector2)h.field.GetValue(target);
+
+            worldValue = h.attribute.spaceType == Space.Self
+                ? go.transform.TransformPoint(localValue)
+                : localValue;
+
+            Handles.color = h.attribute.Color;
+
+            Vector3 newWorldValue = worldValue;
+
+            switch (h.attribute.DrawType)
+            {
+                case HandleDrawType.Default:
+                    newWorldValue = Handles.PositionHandle(worldValue, Quaternion.identity);
+
+                    float size = HandleUtility.GetHandleSize(worldValue) * h.attribute.Size * .5f;
+                    Handles.SphereHandleCap(
+                        0,
+                        worldValue,
+                        Quaternion.identity,
+                        size,
+                        EventType.Repaint
+                    ); break;
+
+                case HandleDrawType.Sphere:
+                    newWorldValue = Handles.FreeMoveHandle(
+                        worldValue,
+                        HandleUtility.GetHandleSize(worldValue) * h.attribute.Size,
+                        Vector3.zero,
+                        Handles.SphereHandleCap);
+                    break;
+
+                case HandleDrawType.Cube:
+                    newWorldValue = Handles.FreeMoveHandle(
+                        worldValue,
+                        HandleUtility.GetHandleSize(worldValue) * h.attribute.Size,
+                        Vector3.zero,
+                        Handles.CubeHandleCap);
+                    break;
+            }
+
+            Vector3 newLocalValue = h.attribute.spaceType == Space.Self
+                ? go.transform.InverseTransformPoint(newWorldValue)
+                : newWorldValue;
+
+            Undo.RecordObject(target, "Handle Move");
+            if (h.field.FieldType == typeof(Vector3))
+                h.field.SetValue(target, newLocalValue);
+            else if (h.field.FieldType == typeof(Vector2))
+                h.field.SetValue(target, (Vector2)newLocalValue);
+
+            EditorUtility.SetDirty(target);
+        }
+    }
+    #endregion
+
+    #region InspectorDrawing
     public override void OnInspectorGUI()
     {
         if (serializedObject == null)
@@ -248,7 +332,40 @@ public class CustomMonobehaviour : Editor
 
     void DrawFoldoutGroup(FoldoutGroup fg)
     {
+        if (fg == null) return;
 
+        // Get or initialize foldout state
+        if (!_foldoutStates.TryGetValue(fg, out bool expanded))
+        {
+            expanded = true; // default to expanded
+            _foldoutStates[fg] = expanded;
+        }
+
+        EditorGUILayout.BeginVertical(GetHelpBoxStyle());
+
+        // Foldout header
+        EditorGUI.indentLevel++;
+        bool newExpanded = EditorGUILayout.Foldout(expanded, string.IsNullOrEmpty(fg.Name) ? "" : fg.Name, true);
+        EditorGUI.indentLevel--;
+
+        // Save state
+        if (newExpanded != expanded)
+            _foldoutStates[fg] = newExpanded;
+
+        // Draw fields when expanded
+        if (newExpanded && fg.fields != null)
+        {
+            GUILayout.Space(2);
+            foreach (var field in fg.fields)
+            {
+                if (field != null)
+                    DrawPropertyItem(field);
+            }
+            GUILayout.Space(2);
+        }
+
+        EditorGUILayout.EndVertical();
+        GUILayout.Space(4);
     }
 
     void DrawButtons()

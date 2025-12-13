@@ -1,6 +1,8 @@
+using MVsToolkit.Dev;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class PropertyGroup
 {
@@ -51,4 +53,11 @@ public class PropertyField : PropertyItem
     {
         property = prop;
     }
+}
+
+public class HandleData
+{
+    public SerializedProperty property;
+    public FieldInfo field;
+    public HandleAttribute attribute;
 }

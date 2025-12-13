@@ -17,12 +17,6 @@ namespace MVsToolkit.Dev
         private readonly List<string> globalFoldoutOrder = new();
 
         private readonly List<HandleData> handles = new();
-        private class HandleData
-        {
-            public SerializedProperty property;
-            public FieldInfo field;
-            public HandleAttribute attribute;
-        }
 
         private void OnEnable()
         {
