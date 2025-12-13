@@ -21,6 +21,8 @@ public class TabGroup
     public string Name;
     public List<PropertyItem> items = new List<PropertyItem>();
 
+    public FoldoutGroup currentFoldout;
+
     public TabGroup(string name = "MVsDefaultTab")
     {
         Name = name;

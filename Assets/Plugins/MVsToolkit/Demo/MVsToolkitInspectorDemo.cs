@@ -25,10 +25,7 @@ namespace MVsToolkit.Demo
         [SerializeField] int foldoutIntB;
         [SerializeField] int foldoutIntC;
 
-        [CloseTab]
-        [SerializeField] float tmp;
-
-        [Tab("Class")]
+        [CloseTab, Tab("Class")]
         [SerializeField, Inline] InlineClass inlineClass;
         [SerializeField] InterfaceReference<IDemoInterface> demoInterface;
 
@@ -50,13 +47,13 @@ namespace MVsToolkit.Demo
             Debug.Log("Debug_A");
         }
 
-        [Button("Debug_B")]
+        [Button("Debug_B")] // Direct string parameter
         void DebugButtonB(string debugText)
         {
             Debug.Log(debugText);
         }
 
-        [Button(123456)]
+        [Button("dropdownDemo_1")] // Refers to variable name
         void DebugButtonC(int debugValue)
         {
             Debug.Log(debugValue);

@@ -75,8 +75,22 @@ public class CustomMonobehaviour : Editor
                 propertyGroups.GetLast().tabs.Add(new TabGroup(tabAttr.tabName));
             }
 
-            HandleAttribute handleAttr = field?.GetCustomAttribute<HandleAttribute>();
-            if(handleAttr != null)
+            if(TryGetCustomAttribute(field, out CloseFoldoutAttribute closeFoldoutAttr)) // Close Foldout
+            {
+                if (propertyGroups.Count > 0 &&
+                    propertyGroups.GetLast().tabs.Count > 0)
+                {
+                    propertyGroups.GetLast().tabs.GetLast().currentFoldout = null;
+                }
+            }
+            if (TryGetCustomAttribute(field, out FoldoutAttribute foldoutAttr)) // Foldout
+            {
+                FoldoutGroup foldout = new FoldoutGroup(foldoutAttr.foldoutName);
+                propertyGroups.GetLast().tabs.GetLast().items.Add(foldout);
+                propertyGroups.GetLast().tabs.GetLast().currentFoldout = foldout;
+            }
+
+            if(TryGetCustomAttribute(field, out HandleAttribute handleAttr))
                 handles.Add(handleAttr);
 
             SerializedProperty prop = iterator.Copy();
@@ -89,106 +103,12 @@ public class CustomMonobehaviour : Editor
             if (propertyGroups.GetLast().tabs.Count == 0)
                 propertyGroups.GetLast().tabs.Add(new TabGroup());
 
-            propertyGroups.GetLast().tabs.GetLast().items.Add(new PropertyField(prop));
+            if (propertyGroups.GetLast().tabs.GetLast().currentFoldout != null)
+                propertyGroups.GetLast().tabs.GetLast().currentFoldout.fields.Add(new PropertyField(prop));
+            else
+                propertyGroups.GetLast().tabs.GetLast().items.Add(new PropertyField(prop));
         }
         while (iterator.NextVisible(false));
-    }
-    #endregion
-
-    #region Helpers
-    private object[] ResolveButtonsParameters(object[] rawParams, object target)
-    {
-        if (rawParams == null)
-            return null;
-
-        object[] resolved = new object[rawParams.Length];
-        for (int i = 0; i < rawParams.Length; i++)
-        {
-            object param = rawParams[i];
-            if (param is string s)
-            {
-                var field = target.GetType().GetField(s, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (field != null)
-                {
-                    resolved[i] = field.GetValue(target);
-                    continue;
-                }
-            }
-            resolved[i] = param;
-        }
-        return resolved;
-    }
-
-    private FieldInfo GetFieldRecursive(System.Type type, string fieldName, out bool isFirtField)
-    {
-        while (type != null)
-        {
-            FieldInfo field = type.GetField(
-                fieldName,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-            );
-            if (field != null)
-            {
-                if(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0] == field)
-                    isFirtField = true;
-                else
-                    isFirtField = false;
-
-                return field;
-            }
-            type = type.BaseType;
-        }
-        isFirtField = false;
-        return null;
-    }
-
-    bool TryGetCustomAttribute<T>(FieldInfo fieldInfo, out T attribute) where T : System.Attribute
-    {
-        attribute = fieldInfo.GetCustomAttribute<T>();
-        if (attribute != null) return true;
-        else return false;
-    }
-
-    private Color GetTabColor(int index)
-    {
-        if (index < 0) index = 0;
-        if (index >= _tabPalette.Length) index = _tabPalette.Length - 1;
-        return _tabPalette[index];
-    }
-
-    private Texture2D GetColorTexture(Color color)
-    {
-        if (!_colorTextureCache.TryGetValue(color, out Texture2D texture) || texture == null)
-        {
-            texture = new Texture2D(1, 1)
-            {
-                hideFlags = HideFlags.DontSave,
-                filterMode = FilterMode.Point,
-                wrapMode = TextureWrapMode.Repeat
-            };
-            texture.SetPixel(0, 0, color);
-            texture.Apply();
-            _colorTextureCache[color] = texture;
-        }
-        return texture;
-    }
-
-    private Color GetTabColor(PropertyGroup group, int tabIndex)
-    {
-        // kept for compatibility but now return neutral color
-        return EditorGUIUtility.isProSkin ? new Color(0.18f, 0.18f, 0.18f, 1f) : new Color(0.93f, 0.93f, 0.93f, 1f);
-    }
-
-    // Return a help box style with zero top margin
-    private GUIStyle GetHelpBoxStyle()
-    {
-        if (_helpBoxNoTopMargin == null)
-        {
-            _helpBoxNoTopMargin = new GUIStyle(EditorStyles.helpBox);
-            var m = _helpBoxNoTopMargin.margin;
-            _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
-        }
-        return _helpBoxNoTopMargin;
     }
     #endregion
 
@@ -359,6 +279,79 @@ public class CustomMonobehaviour : Editor
                 }
             }
         }
+    }
+    #endregion
+
+    #region Helpers
+    private object[] ResolveButtonsParameters(object[] rawParams, object target)
+    {
+        if (rawParams == null)
+            return null;
+
+        object[] resolved = new object[rawParams.Length];
+        for (int i = 0; i < rawParams.Length; i++)
+        {
+            object param = rawParams[i];
+            if (param is string s)
+            {
+                var field = target.GetType().GetField(s, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                {
+                    resolved[i] = field.GetValue(target);
+                    continue;
+                }
+            }
+            resolved[i] = param;
+        }
+        return resolved;
+    }
+
+    private FieldInfo GetFieldRecursive(System.Type type, string fieldName, out bool isFirtField)
+    {
+        while (type != null)
+        {
+            FieldInfo field = type.GetField(
+                fieldName,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+            );
+            if (field != null)
+            {
+                if (type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0] == field)
+                    isFirtField = true;
+                else
+                    isFirtField = false;
+
+                return field;
+            }
+            type = type.BaseType;
+        }
+        isFirtField = false;
+        return null;
+    }
+
+    bool TryGetCustomAttribute<T>(FieldInfo fieldInfo, out T attribute) where T : System.Attribute
+    {
+        attribute = fieldInfo.GetCustomAttribute<T>();
+        if (attribute != null) return true;
+        else return false;
+    }
+
+    private Color GetTabColor(int index)
+    {
+        if (index < 0) index = 0;
+        if (index >= _tabPalette.Length) index = _tabPalette.Length - 1;
+        return _tabPalette[index];
+    }
+
+    private GUIStyle GetHelpBoxStyle()
+    {
+        if (_helpBoxNoTopMargin == null)
+        {
+            _helpBoxNoTopMargin = new GUIStyle(EditorStyles.helpBox);
+            var m = _helpBoxNoTopMargin.margin;
+            _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
+        }
+        return _helpBoxNoTopMargin;
     }
     #endregion
 }

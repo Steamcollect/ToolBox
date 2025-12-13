@@ -176,7 +176,7 @@ Transform:
   m_GameObject: {fileID: 232067080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -192,9 +192,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 232067080}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a64848d5e864b604bbda9fcc45e1ab2d, type: 3}
+  m_Script: {fileID: 11500000, guid: 5faffb7ea6877e046b822f572bc9d3f3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Tst
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::MVsToolkit.Demo.MVsToolkitInspectorDemo
   dropdownValues: []
   dropdownDemo_1: 0
   dropdownDemo_2: 
@@ -210,15 +210,12 @@ MonoBehaviour:
     isValid: 0
   demoInterface:
     _object: {fileID: 0}
-  pointA: {x: 0.43013132, y: 3.7792232, z: 3.451897}
-  pointB: {x: 1.4838184, y: 0.69229937, z: 0.87351745}
-  pointC: {x: -1.6127744, y: 1.5709743, z: -1.4087644}
+  pointA: {x: 0, y: 0, z: 0}
+  pointB: {x: 0, y: 0, z: 0}
+  pointC: {x: 0, y: 0, z: 0}
   sceneName: Test
   tagName: Untagged
   valueWatched: 0
-  pointD: {x: 0, y: 0, z: 0}
-  pointE: {x: 0, y: 0, z: 0}
-  pointF: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
