@@ -185,23 +185,27 @@ public class CustomMonobehaviour : Editor
 
         serializedObject.Update();
 
-        #region Draw Script Field
-        FieldInfo field = target.GetType().GetField(
-            "m_Script",
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
-        );
-        GUI.enabled = false;
-        GUILayout.Space(1);
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"), true);
-        GUILayout.Space(3);
-        GUI.enabled = true;
-        #endregion
+        DrawScriptField();
 
         DrawPropertyGroups();
 
         serializedObject.ApplyModifiedProperties();
 
         DrawButtons();
+    }
+
+    void DrawScriptField()
+    {
+        FieldInfo field = target.GetType().GetField(
+            "m_Script",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+        );
+
+        GUI.enabled = false;
+        GUILayout.Space(1);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"), true);
+        GUILayout.Space(3);
+        GUI.enabled = true;
     }
 
     private void DrawPropertyGroups()
@@ -216,9 +220,6 @@ public class CustomMonobehaviour : Editor
             {
                 foreach (TabGroup tab in group.tabs)
                 {
-                    if (!string.IsNullOrEmpty(tab?.Name) && tab.Name != "MVsDefaultTab")
-                        EditorGUILayout.LabelField(tab.Name, EditorStyles.boldLabel);
-
                     if (tab != null)
                         DrawTab(tab);
                 }
