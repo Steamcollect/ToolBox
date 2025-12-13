@@ -12,7 +12,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace MVsToolkit.BetterInterface
 {
-    public static class EditorInputManager
+    public static class MVsEditorInputManager
     {
         public static KeyCode[] GetKeys()
         {

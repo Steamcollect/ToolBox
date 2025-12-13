@@ -4,9 +4,9 @@ using UnityEngine;
 namespace MVsToolkit.BetterInterface
 {
     [InitializeOnLoad]
-    public static class HierarchyInputController
+    public static class MVsHierarchyInputController
     {
-        static HierarchyInputController()
+        static MVsHierarchyInputController()
         {
             // S’enregistre sur chaque redraw de la Hierarchy
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
