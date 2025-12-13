@@ -48,7 +48,7 @@ namespace MVsToolkit.BetterInterface
             EditorGUILayout.Space(2);
         }
 
-        void DrawPosition(Transform t)
+        void DrawPosition(Transform first)
         {
             EditorGUIUtility.labelWidth = labelWidth;
 
@@ -62,11 +62,31 @@ namespace MVsToolkit.BetterInterface
 
             float fieldWidth = rect.width - (labelWidth + resetSize + spacing * 4 + spaceBetweenLabelAndField);
             Rect fieldRect = new Rect(rect.x + labelWidth + spaceBetweenLabelAndField, rect.y, fieldWidth, rect.height);
-            t.localPosition = EditorGUI.Vector3Field(fieldRect, GUIContent.none, t.localPosition);
+
+            Vector3 prevLocal = first.localPosition;
+            Vector3 editedLocal = EditorGUI.Vector3Field(fieldRect, GUIContent.none, prevLocal);
+            if (editedLocal != prevLocal)
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Transform t = (Transform)targets[i];
+                    Undo.RecordObject(t, "Change Local Position");
+                    t.localPosition = editedLocal;
+                    EditorUtility.SetDirty(t);
+                }
+            }
 
             Rect resetRect = new Rect(fieldRect.xMax + spacing, rect.y + (rect.height - resetSize) / 2f, resetSize, resetSize);
             if (GUI.Button(resetRect, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                t.localPosition = Vector3.zero;
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Transform t = (Transform)targets[i];
+                    Undo.RecordObject(t, "Reset Local Position");
+                    t.localPosition = Vector3.zero;
+                    EditorUtility.SetDirty(t);
+                }
+            }
 
             if (isPositionExpanded)
             {
@@ -80,18 +100,38 @@ namespace MVsToolkit.BetterInterface
                 EditorGUI.LabelField(labelRect2, "<color=grey>World</color>", rich);
                 // Champ Vector3 aligné
                 Rect fieldRect2 = new Rect(rect2.x + labelWidth + spaceBetweenLabelAndField, rect2.y, fieldWidth, rect2.height);
-                t.position = EditorGUI.Vector3Field(fieldRect2, GUIContent.none, t.position);
+
+                Vector3 prevWorld = first.position;
+                Vector3 editedWorld = EditorGUI.Vector3Field(fieldRect2, GUIContent.none, prevWorld);
+                if (editedWorld != prevWorld)
+                {
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Change World Position");
+                        t.position = editedWorld;
+                        EditorUtility.SetDirty(t);
+                    }
+                }
 
                 // Reset aligné
                 Rect resetRect2 = new Rect(fieldRect2.xMax + spacing, rect2.y + (rect2.height - resetSize) / 2f, resetSize, resetSize);
                 if (GUI.Button(resetRect2, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                    t.position = Vector3.zero;
+                {
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Reset World Position");
+                        t.position = Vector3.zero;
+                        EditorUtility.SetDirty(t);
+                    }
+                }
 
                 EditorGUILayout.Space(1);
             }
         }
 
-        void DrawRotation(Transform t)
+        void DrawRotation(Transform first)
         {
             EditorGUIUtility.labelWidth = labelWidth;
 
@@ -105,11 +145,31 @@ namespace MVsToolkit.BetterInterface
 
             float fieldWidth = rect.width - (labelWidth + resetSize + spacing * 4 + spaceBetweenLabelAndField);
             Rect fieldRect = new Rect(rect.x + labelWidth + spaceBetweenLabelAndField, rect.y, fieldWidth, rect.height);
-            t.localRotation = Quaternion.Euler(EditorGUI.Vector3Field(fieldRect, GUIContent.none, t.localEulerAngles));
+
+            Vector3 prevLocalEuler = first.localEulerAngles;
+            Vector3 editedLocalEuler = EditorGUI.Vector3Field(fieldRect, GUIContent.none, prevLocalEuler);
+            if (editedLocalEuler != prevLocalEuler)
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Transform t = (Transform)targets[i];
+                    Undo.RecordObject(t, "Change Local Rotation");
+                    t.localRotation = Quaternion.Euler(editedLocalEuler);
+                    EditorUtility.SetDirty(t);
+                }
+            }
 
             Rect resetRect = new Rect(fieldRect.xMax + spacing, rect.y + (rect.height - resetSize) / 2f, resetSize, resetSize);
             if (GUI.Button(resetRect, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                t.localRotation = Quaternion.identity;
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Transform t = (Transform)targets[i];
+                    Undo.RecordObject(t, "Reset Local Rotation");
+                    t.localRotation = Quaternion.identity;
+                    EditorUtility.SetDirty(t);
+                }
+            }
 
             if (isRotationExpanded)
             {
@@ -123,18 +183,38 @@ namespace MVsToolkit.BetterInterface
                 EditorGUI.LabelField(labelRect2, "<color=grey>World</color>", rich);
                 // Champ Vector3 aligné
                 Rect fieldRect2 = new Rect(rect2.x + labelWidth + spaceBetweenLabelAndField, rect2.y, fieldWidth, rect2.height);
-                t.rotation = Quaternion.Euler(EditorGUI.Vector3Field(fieldRect2, GUIContent.none, t.eulerAngles));
+
+                Vector3 prevWorldEuler = first.eulerAngles;
+                Vector3 editedWorldEuler = EditorGUI.Vector3Field(fieldRect2, GUIContent.none, prevWorldEuler);
+                if (editedWorldEuler != prevWorldEuler)
+                {
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Change World Rotation");
+                        t.rotation = Quaternion.Euler(editedWorldEuler);
+                        EditorUtility.SetDirty(t);
+                    }
+                }
 
                 // Reset aligné
                 Rect resetRect2 = new Rect(fieldRect2.xMax + spacing, rect2.y + (rect2.height - resetSize) / 2f, resetSize, resetSize);
                 if (GUI.Button(resetRect2, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                    t.eulerAngles = Vector3.zero;
+                {
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Reset World Rotation");
+                        t.eulerAngles = Vector3.zero;
+                        EditorUtility.SetDirty(t);
+                    }
+                }
 
                 EditorGUILayout.Space(1);
             }
         }
         
-        void DrawScale(Transform t)
+        void DrawScale(Transform first)
         {
             EditorGUIUtility.labelWidth = labelWidth;
 
@@ -154,61 +234,87 @@ namespace MVsToolkit.BetterInterface
             float fieldWidth = rect.width - (labelWidth + resetSize + spacing * 4 + spaceBetweenLabelAndField);
             Rect fieldRect = new Rect(rect.x + labelWidth + spaceBetweenLabelAndField, rect.y, fieldWidth, rect.height);
             
-            Vector3 prevLocal = t.localScale;
+            Vector3 prevLocal = first.localScale;
             Vector3 editedLocal = EditorGUI.Vector3Field(fieldRect, GUIContent.none, prevLocal);
             if (editedLocal != prevLocal)
             {
                 if (isScaleLinked)
                 {
                     const float eps = 1e-6f;
-                    // Détecte quelle composante a changé et applique un facteur relatif pour conserver les proportions
-                    if (Mathf.Abs(editedLocal.x - prevLocal.x) > eps)
+                    // Determine which component changed based on the first selected transform
+                    bool xChanged = Mathf.Abs(editedLocal.x - prevLocal.x) > eps;
+                    bool yChanged = Mathf.Abs(editedLocal.y - prevLocal.y) > eps;
+                    // zChanged as fallback
+
+                    if (xChanged)
                     {
-                        if (Mathf.Abs(prevLocal.x) > eps)
+                        float factor = Mathf.Abs(prevLocal.x) > eps ? editedLocal.x / prevLocal.x : 0f;
+                        for (int i = 0; i < targets.Length; i++)
                         {
-                            float factor = editedLocal.x / prevLocal.x;
-                            t.localScale = prevLocal * factor;
-                        }
-                        else
-                        {
-                            // Si l'axe précédent était 0, on uniformise sur la valeur saisie
-                            t.localScale = Vector3.one * editedLocal.x;
+                            Transform t = (Transform)targets[i];
+                            Vector3 tPrev = t.localScale;
+                            Undo.RecordObject(t, "Change Local Scale");
+                            if (Mathf.Abs(tPrev.x) > eps)
+                                t.localScale = tPrev * factor;
+                            else
+                                t.localScale = Vector3.one * editedLocal.x;
+                            EditorUtility.SetDirty(t);
                         }
                     }
-                    else if (Mathf.Abs(editedLocal.y - prevLocal.y) > eps)
+                    else if (yChanged)
                     {
-                        if (Mathf.Abs(prevLocal.y) > eps)
+                        float factor = Mathf.Abs(prevLocal.y) > eps ? editedLocal.y / prevLocal.y : 0f;
+                        for (int i = 0; i < targets.Length; i++)
                         {
-                            float factor = editedLocal.y / prevLocal.y;
-                            t.localScale = prevLocal * factor;
-                        }
-                        else
-                        {
-                            t.localScale = Vector3.one * editedLocal.y;
+                            Transform t = (Transform)targets[i];
+                            Vector3 tPrev = t.localScale;
+                            Undo.RecordObject(t, "Change Local Scale");
+                            if (Mathf.Abs(tPrev.y) > eps)
+                                t.localScale = tPrev * factor;
+                            else
+                                t.localScale = Vector3.one * editedLocal.y;
+                            EditorUtility.SetDirty(t);
                         }
                     }
                     else // z changed (ou fallback)
                     {
-                        if (Mathf.Abs(prevLocal.z) > eps)
+                        float factor = Mathf.Abs(prevLocal.z) > eps ? editedLocal.z / prevLocal.z : 0f;
+                        for (int i = 0; i < targets.Length; i++)
                         {
-                            float factor = editedLocal.z / prevLocal.z;
-                            t.localScale = prevLocal * factor;
-                        }
-                        else
-                        {
-                            t.localScale = Vector3.one * editedLocal.z;
+                            Transform t = (Transform)targets[i];
+                            Vector3 tPrev = t.localScale;
+                            Undo.RecordObject(t, "Change Local Scale");
+                            if (Mathf.Abs(tPrev.z) > eps)
+                                t.localScale = tPrev * factor;
+                            else
+                                t.localScale = Vector3.one * editedLocal.z;
+                            EditorUtility.SetDirty(t);
                         }
                     }
                 }
                 else
                 {
-                    t.localScale = editedLocal;
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Change Local Scale");
+                        t.localScale = editedLocal;
+                        EditorUtility.SetDirty(t);
+                    }
                 }
             }
             
             Rect resetRect = new Rect(fieldRect.xMax + spacing, rect.y + (rect.height - resetSize) / 2f, resetSize, resetSize);
             if (GUI.Button(resetRect, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                t.localScale = Vector3.one;
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Transform t = (Transform)targets[i];
+                    Undo.RecordObject(t, "Reset Local Scale");
+                    t.localScale = Vector3.one;
+                    EditorUtility.SetDirty(t);
+                }
+            }
 
             if (isScaleExpanded)
             {
@@ -223,60 +329,86 @@ namespace MVsToolkit.BetterInterface
                 // Champ Vector3 aligné
                 Rect fieldRect2 = new Rect(rect2.x + labelWidth + spaceBetweenLabelAndField, rect2.y, fieldWidth, rect2.height);
                 
-                Vector3 worldScale = t.lossyScale;
+                Vector3 worldScale = first.lossyScale;
                 Vector3 newWorldScale = EditorGUI.Vector3Field(fieldRect2, GUIContent.none, worldScale);
                 if (newWorldScale != worldScale)
                 {
                     if (isScaleLinked)
                     {
                         const float eps = 1e-6f;
-                        if (Mathf.Abs(newWorldScale.x - worldScale.x) > eps)
+                        bool xChanged = Mathf.Abs(newWorldScale.x - worldScale.x) > eps;
+                        bool yChanged = Mathf.Abs(newWorldScale.y - worldScale.y) > eps;
+
+                        if (xChanged)
                         {
-                            if (Mathf.Abs(worldScale.x) > eps)
+                            float ratio = Mathf.Abs(worldScale.x) > eps ? newWorldScale.x / worldScale.x : 0f;
+                            for (int i = 0; i < targets.Length; i++)
                             {
-                                float ratio = newWorldScale.x / worldScale.x;
-                                SetWorldScale(t, worldScale * ratio);
-                            }
-                            else
-                            {
-                                SetWorldScale(t, Vector3.one * newWorldScale.x);
+                                Transform t = (Transform)targets[i];
+                                Undo.RecordObject(t, "Change World Scale");
+                                Vector3 tWorld = t.lossyScale;
+                                if (Mathf.Abs(tWorld.x) > eps)
+                                    SetWorldScale(t, tWorld * ratio);
+                                else
+                                    SetWorldScale(t, Vector3.one * newWorldScale.x);
+                                EditorUtility.SetDirty(t);
                             }
                         }
-                        else if (Mathf.Abs(newWorldScale.y - worldScale.y) > eps)
+                        else if (yChanged)
                         {
-                            if (Mathf.Abs(worldScale.y) > eps)
+                            float ratio = Mathf.Abs(worldScale.y) > eps ? newWorldScale.y / worldScale.y : 0f;
+                            for (int i = 0; i < targets.Length; i++)
                             {
-                                float ratio = newWorldScale.y / worldScale.y;
-                                SetWorldScale(t, worldScale * ratio);
-                            }
-                            else
-                            {
-                                SetWorldScale(t, Vector3.one * newWorldScale.y);
+                                Transform t = (Transform)targets[i];
+                                Undo.RecordObject(t, "Change World Scale");
+                                Vector3 tWorld = t.lossyScale;
+                                if (Mathf.Abs(tWorld.y) > eps)
+                                    SetWorldScale(t, tWorld * ratio);
+                                else
+                                    SetWorldScale(t, Vector3.one * newWorldScale.y);
+                                EditorUtility.SetDirty(t);
                             }
                         }
                         else
                         {
-                            if (Mathf.Abs(worldScale.z) > eps)
+                            float ratio = Mathf.Abs(worldScale.z) > eps ? newWorldScale.z / worldScale.z : 0f;
+                            for (int i = 0; i < targets.Length; i++)
                             {
-                                float ratio = newWorldScale.z / worldScale.z;
-                                SetWorldScale(t, worldScale * ratio);
-                            }
-                            else
-                            {
-                                SetWorldScale(t, Vector3.one * newWorldScale.z);
+                                Transform t = (Transform)targets[i];
+                                Undo.RecordObject(t, "Change World Scale");
+                                Vector3 tWorld = t.lossyScale;
+                                if (Mathf.Abs(tWorld.z) > eps)
+                                    SetWorldScale(t, tWorld * ratio);
+                                else
+                                    SetWorldScale(t, Vector3.one * newWorldScale.z);
+                                EditorUtility.SetDirty(t);
                             }
                         }
                     }
                     else
                     {
-                        SetWorldScale(t, newWorldScale);
+                        for (int i = 0; i < targets.Length; i++)
+                        {
+                            Transform t = (Transform)targets[i];
+                            Undo.RecordObject(t, "Change World Scale");
+                            SetWorldScale(t, newWorldScale);
+                            EditorUtility.SetDirty(t);
+                        }
                     }
                 }
 
                 // Reset aligné
                 Rect resetRect2 = new Rect(fieldRect2.xMax + spacing, rect2.y + (rect2.height - resetSize) / 2f, resetSize, resetSize);
                 if (GUI.Button(resetRect2, EditorGUIUtility.IconContent("Refresh"), IconButtonStyle))
-                    SetWorldScale(t, Vector3.one);
+                {
+                    for (int i = 0; i < targets.Length; i++)
+                    {
+                        Transform t = (Transform)targets[i];
+                        Undo.RecordObject(t, "Reset World Scale");
+                        SetWorldScale(t, Vector3.one);
+                        EditorUtility.SetDirty(t);
+                    }
+                }
 
                 EditorGUILayout.Space(1);
             }
