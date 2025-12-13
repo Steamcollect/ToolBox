@@ -14,6 +14,9 @@ public class CustomMonobehaviour : Editor
     private readonly Dictionary<Color, Texture2D> _colorTextureCache = new();
     private readonly Color[] _tabPalette = new Color[0];
 
+    // Cached help box style with zero top margin
+    private GUIStyle _helpBoxNoTopMargin;
+
     private void OnEnable()
     {
         if (serializedObject == null)
@@ -175,6 +178,18 @@ public class CustomMonobehaviour : Editor
         // kept for compatibility but now return neutral color
         return EditorGUIUtility.isProSkin ? new Color(0.18f, 0.18f, 0.18f, 1f) : new Color(0.93f, 0.93f, 0.93f, 1f);
     }
+
+    // Return a help box style with zero top margin
+    private GUIStyle GetHelpBoxStyle()
+    {
+        if (_helpBoxNoTopMargin == null)
+        {
+            _helpBoxNoTopMargin = new GUIStyle(EditorStyles.helpBox);
+            var m = _helpBoxNoTopMargin.margin;
+            _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
+        }
+        return _helpBoxNoTopMargin;
+    }
     #endregion
 
     #region Drawing
@@ -261,8 +276,8 @@ public class CustomMonobehaviour : Editor
             var selectedTab = group.tabs[group.selectedTabIndex];
             if (selectedTab != null)
             {
-                // Use a helpBox vertical to ensure the content is visible with a subtle background
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                // Use help box style with zero top margin so the draw box has top margin 0
+                EditorGUILayout.BeginVertical(GetHelpBoxStyle());
                 DrawTab(selectedTab);
                 EditorGUILayout.EndVertical();
             }
