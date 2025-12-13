@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e545b2df63cd33f43b05092a8a14b269, type: 3}
-  m_Name: NewSSO_ItemData
+  m_Name: d_WoddenSword
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::SSO_ItemData
-  itemName: 
-  itemDescription: 
-  visual: {fileID: 0}
-  prefab: {fileID: 0}
+  itemName: Wooden Sword
+  itemDescription: To kill some monsters
+  visual: {fileID: 21300000, guid: 70b51c6102ce6954c95079bc98b988c0, type: 3}
+  prefab: {fileID: 930748544807910572, guid: 5d73b60167e8f7d4a90cd52b292194aa, type: 3}

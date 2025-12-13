@@ -2,62 +2,64 @@ using MVsToolkit.Dev;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
-using UnityEngine;
 
-public class PropertyGroup
+namespace MVsToolkit.Dev
 {
-    public bool IsDrawByDefault;
-    public List<TabGroup> tabs = new List<TabGroup>();
-
-    // Index of the currently selected tab in this group
-    public int selectedTabIndex = 0;
-
-    public PropertyGroup(bool isDrawByDefault)
+    public class MVsInspectorPropertyGroup
     {
-        IsDrawByDefault = isDrawByDefault;
+        public bool IsDrawByDefault;
+        public List<MVsTabGroup> tabs = new List<MVsTabGroup>();
+
+        // Index of the currently selected tab in this group
+        public int selectedTabIndex = 0;
+
+        public MVsInspectorPropertyGroup(bool isDrawByDefault)
+        {
+            IsDrawByDefault = isDrawByDefault;
+        }
     }
-}
 
-public class TabGroup
-{
-    public string Name;
-    public List<PropertyItem> items = new List<PropertyItem>();
-
-    public FoldoutGroup currentFoldout;
-
-    public TabGroup(string name = "MVsDefaultTab")
+    public class MVsTabGroup
     {
-        Name = name;
+        public string Name;
+        public List<MVsPropertyItem> items = new List<MVsPropertyItem>();
+
+        public MVsFoldoutGroup currentFoldout;
+
+        public MVsTabGroup(string name = "MVsDefaultTab")
+        {
+            Name = name;
+        }
     }
-}
 
-public class PropertyItem { }
+    public class MVsPropertyItem { }
 
-public class FoldoutGroup : PropertyItem
-{
-    public string Name;
-    public List<PropertyField> fields = new List<PropertyField>();
-
-    public FoldoutGroup(string name)
+    public class MVsFoldoutGroup : MVsPropertyItem
     {
-        Name = name;
+        public string Name;
+        public List<MVsPropertyField> fields = new List<MVsPropertyField>();
+
+        public MVsFoldoutGroup(string name)
+        {
+            Name = name;
+        }
     }
-}
 
-public class PropertyField : PropertyItem
-{
-    public SerializedProperty property;
-
-    public PropertyField() { }
-    public PropertyField(SerializedProperty prop)
+    public class MVsPropertyField : MVsPropertyItem
     {
-        property = prop;
-    }
-}
+        public SerializedProperty property;
 
-public class HandleData
-{
-    public SerializedProperty property;
-    public FieldInfo field;
-    public HandleAttribute attribute;
+        public MVsPropertyField() { }
+        public MVsPropertyField(SerializedProperty prop)
+        {
+            property = prop;
+        }
+    }
+
+    public class MVsHandleData
+    {
+        public SerializedProperty property;
+        public FieldInfo field;
+        public HandleAttribute attribute;
+    }
 }

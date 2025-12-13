@@ -6,8 +6,6 @@ using UnityEngine;
 
 public class ScriptableObjectSpeadsheetWindow : EditorWindow
 {
-    string spreadsheetsPath = "Assets/Plugins/MVsToolkit/BetterInterface/ScriptableObjectSpreadsheets/";
-
     // folder selector
     DefaultAsset folderObject;
     string folderPath = string.Empty;

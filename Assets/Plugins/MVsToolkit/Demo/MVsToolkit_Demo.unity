@@ -468,6 +468,9 @@ MonoBehaviour:
   showVariable: 1
   variableToShow: 25
   variableToHide: 50
+  foldoutIntA: 0
+  foldoutIntB: 0
+  foldoutIntC: 0
   inlineClass:
     name: Some text
     isValid: 1

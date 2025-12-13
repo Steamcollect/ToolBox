@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e545b2df63cd33f43b05092a8a14b269, type: 3}
-  m_Name: NewSSO_ItemData 5
+  m_Name: d_Axe
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::SSO_ItemData
-  itemName: 
-  itemDescription: 
-  visual: {fileID: 0}
-  prefab: {fileID: 0}
+  itemName: Axe
+  itemDescription: To cut some wood
+  visual: {fileID: 21300000, guid: 7db759cb1ac9d2d4e82aad0abcf1f484, type: 3}
+  prefab: {fileID: 930748544807910572, guid: 5d73b60167e8f7d4a90cd52b292194aa, type: 3}
