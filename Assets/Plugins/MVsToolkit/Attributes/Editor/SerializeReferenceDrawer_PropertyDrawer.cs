@@ -10,18 +10,16 @@ namespace MVsToolkit.Dev
     [CustomPropertyDrawer(typeof(SerializeReferenceDrawerAttribute), true)]
     public class SerializeReferenceDrawer_PropertyDrawer : PropertyDrawer
     {
+        private const string k_ShortTypeNameDefault = "None";
         private static readonly Dictionary<Type, Dictionary<string, Type>> s_TypeCache = new();
         private static readonly Dictionary<string, Type> s_BaseTypeCache = new(); // Cache des types de base
-        
-        private const string k_ShortTypeNameDefault = "None";
-        
+
         private static GUIStyle s_LabelStyle;
         private static GUIStyle s_TypeDisplayStyle;
 
         private static GUIStyle LabelStyle => s_LabelStyle ??= new GUIStyle(EditorStyles.label);
         private static GUIStyle TypeDisplayStyle => s_TypeDisplayStyle ??= new GUIStyle(EditorStyles.objectField);
-        
-        // Invalidation du cache à la recompilation
+
         [InitializeOnLoadMethod]
         private static void ClearCacheOnReload()
         {
@@ -30,7 +28,7 @@ namespace MVsToolkit.Dev
             s_LabelStyle = null;
             s_TypeDisplayStyle = null;
         }
-        
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             if (property.propertyType != SerializedPropertyType.ManagedReference)
@@ -43,9 +41,7 @@ namespace MVsToolkit.Dev
             float height = EditorGUIUtility.singleLineHeight;
 
             if (property.isExpanded && property.managedReferenceValue != null)
-            {
                 height += EditorGUIUtility.standardVerticalSpacing + GetChildrenHeight(property);
-            }
 
             return height;
         }
@@ -55,9 +51,9 @@ namespace MVsToolkit.Dev
             float height = 0f;
             SerializedProperty iterator = property.Copy();
             SerializedProperty end = iterator.GetEndProperty();
-            
+
             if (!iterator.NextVisible(true)) return height;
-            
+
             do
             {
                 if (SerializedProperty.EqualContents(iterator, end)) break;
@@ -91,27 +87,27 @@ namespace MVsToolkit.Dev
 
         private void DrawHeader(Rect position, SerializedProperty property, GUIContent label, Type baseType)
         {
-            
             string typeName = property.managedReferenceFullTypename;
-            string displayTypeName = string.IsNullOrEmpty(typeName) ? k_ShortTypeNameDefault : GetShortTypeName(typeName);
-        
+            string displayTypeName =
+                string.IsNullOrEmpty(typeName) ? k_ShortTypeNameDefault : GetShortTypeName(typeName);
+
             string labelDisplayText = $"{displayTypeName} ({GetBaseTypeCached(property).Name})";
-            
+
             Rect headerRect = new(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
             bool hasFoldout = property.managedReferenceValue != null && property.hasVisibleChildren;
-            
+
             if (hasFoldout)
             {
                 Rect foldoutRect = new(headerRect.x, headerRect.y, EditorGUIUtility.labelWidth, headerRect.height);
                 property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, GUIContent.none, true);
             }
-        
+
             Rect labelRect = new(headerRect.x, headerRect.y, EditorGUIUtility.labelWidth, headerRect.height);
             EditorGUI.LabelField(labelRect, label, LabelStyle);
-            
+
             Rect dropdownRect = new(headerRect.x + EditorGUIUtility.labelWidth + 2, headerRect.y,
                 headerRect.width - EditorGUIUtility.labelWidth - 2, headerRect.height);
-            
+
             DrawTypeDropdown(dropdownRect, labelDisplayText, property, baseType, typeName);
 
             if (!property.isExpanded || !hasFoldout) return;
@@ -122,7 +118,7 @@ namespace MVsToolkit.Dev
 
         private Type GetBaseTypeCached(SerializedProperty property)
         {
-            var fullTypeName = property.managedReferenceFieldTypename;
+            string fullTypeName = property.managedReferenceFieldTypename;
             if (string.IsNullOrEmpty(fullTypeName)) return null;
 
             if (s_BaseTypeCache.TryGetValue(fullTypeName, out Type cached))
@@ -134,7 +130,7 @@ namespace MVsToolkit.Dev
             Assembly assembly = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name == parts[0]);
             Type type = assembly?.GetType(parts[1]);
-            
+
             s_BaseTypeCache[fullTypeName] = type;
             return type;
         }
@@ -142,9 +138,19 @@ namespace MVsToolkit.Dev
         private void EnsureTypeCacheBuilt(Type baseType)
         {
             if (s_TypeCache.ContainsKey(baseType)) return;
-            
+
             s_TypeCache[baseType] = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(asm => { try { return asm.GetTypes(); } catch { return Array.Empty<Type>(); } })
+                .SelectMany(asm =>
+                {
+                    try
+                    {
+                        return asm.GetTypes();
+                    }
+                    catch
+                    {
+                        return Array.Empty<Type>();
+                    }
+                })
                 .Where(t => !t.IsAbstract && !t.IsInterface && baseType.IsAssignableFrom(t))
                 .ToDictionary(t => ObjectNames.NicifyVariableName(t.Name), t => t);
         }
@@ -152,77 +158,72 @@ namespace MVsToolkit.Dev
         private static string GetShortTypeName(string fullTypename)
         {
             if (string.IsNullOrEmpty(fullTypename)) return k_ShortTypeNameDefault;
-            var lastDot = fullTypename.LastIndexOf('.');
+            int lastDot = fullTypename.LastIndexOf('.');
             return lastDot >= 0 ? fullTypename.Substring(lastDot + 1) : fullTypename;
         }
-        
-        private void DrawTypeDropdown(Rect rect, string displayText, SerializedProperty property, Type baseType, string currentTypeName)
+
+        private void DrawTypeDropdown(Rect rect, string displayText, SerializedProperty property, Type baseType,
+            string currentTypeName)
         {
             // Draw the background with objectField style
             if (Event.current.type == EventType.Repaint)
-            {
                 TypeDisplayStyle.Draw(rect, GUIContent.none, false, false, false, false);
-            }
 
             // Calculate icon rect for the popup arrow (right side)
             float arrowWidth = 16f;
             Rect arrowRect = new(rect.xMax - arrowWidth - 2, rect.y, arrowWidth, rect.height);
-            
+
             // Draw the text content (with some padding)
             Rect textRect = new(rect.x + 4, rect.y, rect.width - arrowWidth - 6, rect.height);
             EditorGUI.LabelField(textRect, displayText, EditorStyles.label);
-            
+
             // Draw the popup arrow icon
             if (Event.current.type == EventType.Repaint)
             {
                 Rect iconRect = new(arrowRect.x, arrowRect.y + (arrowRect.height - 12) / 2, 12, 12);
                 GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("icon dropdown").image);
             }
-            
+
             // Handle click
             if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
-            {
                 ShowTypeSelectionMenu(property, baseType, currentTypeName);
-            }
         }
-        
+
         private void DrawChildProperties(SerializedProperty property, Rect contentRect)
         {
             SerializedProperty iterator = property.Copy();
             SerializedProperty end = iterator.GetEndProperty();
-        
+
             if (!iterator.NextVisible(true)) return;
-        
+
             float yOffset = contentRect.y;
-            int indentLevel = EditorGUI.indentLevel;
+            EditorGUI.indentLevel++;
             do
             {
-                EditorGUI.indentLevel++;
                 if (SerializedProperty.EqualContents(iterator, end)) break;
-        
-                var propHeight = EditorGUI.GetPropertyHeight(iterator, true);
-                var propRect = new Rect(contentRect.x, yOffset, contentRect.width, propHeight);
+
+                float propHeight = EditorGUI.GetPropertyHeight(iterator, true);
+                Rect propRect = new(contentRect.x, yOffset, contentRect.width, propHeight);
                 EditorGUI.PropertyField(propRect, iterator, true);
                 yOffset += propHeight + EditorGUIUtility.standardVerticalSpacing;
             } while (iterator.NextVisible(false));
-            
-            EditorGUI.indentLevel = indentLevel;
+
+            EditorGUI.indentLevel--;
         }
-        
+
         private void ShowTypeSelectionMenu(SerializedProperty property, Type baseType, string currentTypeName)
         {
             GenericMenu menu = new();
-            
+
             menu.AddItem(new GUIContent(k_ShortTypeNameDefault), string.IsNullOrEmpty(currentTypeName), () =>
             {
                 property.managedReferenceValue = null;
                 property.serializedObject.ApplyModifiedProperties();
             });
-            
+
             menu.AddSeparator("");
-            
-            if (s_TypeCache.TryGetValue(baseType, out var types))
-            {
+
+            if (s_TypeCache.TryGetValue(baseType, out Dictionary<string, Type> types))
                 foreach (KeyValuePair<string, Type> kvp in types.OrderBy(k => k.Key))
                 {
                     Type type = kvp.Value;
@@ -233,8 +234,7 @@ namespace MVsToolkit.Dev
                         property.serializedObject.ApplyModifiedProperties();
                     });
                 }
-            }
-            
+
             menu.ShowAsContext();
         }
     }
