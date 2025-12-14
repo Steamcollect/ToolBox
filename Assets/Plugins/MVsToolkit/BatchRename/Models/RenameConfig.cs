@@ -5,10 +5,9 @@ namespace MVsToolkit.BatchRename
     [System.Serializable]
     public class RenameConfig
     {
-        [UnityEngine.SerializeReference] public IRenameOperation[] Operations;
-        public IRenameRule[] Rules;
-
-
+        [SerializeReference, Dev.SerializeReferenceDrawer] public IRenameOperation[] Operations;
+        [SerializeReference, Dev.SerializeReferenceDrawer] public IRenameRule[] Rules;
+        
         public bool UseHierarchyOrdering;
         public bool UseBreadthFirstOrdering;
         public bool AutoPadding;

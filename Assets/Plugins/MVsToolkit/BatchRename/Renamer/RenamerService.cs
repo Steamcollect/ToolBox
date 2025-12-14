@@ -7,29 +7,28 @@ namespace MVsToolkit.BatchRename
     {
         public IEnumerable<RenameResult> Preview(IEnumerable<IRenameTarget> targets, RenameConfig config)
         {
-            IEnumerable<IRenameTarget> filteredTargets = targets.Where(t => config.Rules.All(r => r.Matches(t, null)));
-            List<RenameResult> results = new List<RenameResult>(capacity: filteredTargets.Count());
+            IEnumerable<IRenameTarget> filteredTargets = targets.Where(t => config.Rules.All(r => r?.Matches(t, null) ?? true));
+            IEnumerable<IRenameTarget> renameTargets = filteredTargets.ToArray();
+            List<RenameResult> results = new List<RenameResult>(capacity: renameTargets.Count());
             
             int index = 0;
-            int total = filteredTargets.Count();
+            int total = renameTargets.Count();
 
-            foreach (var target in filteredTargets)
+            foreach (IRenameTarget target in renameTargets)
             {
-                var ctx = new RenameContext
+                RenameContext ctx = new()
                 {
                     GlobalIndex = index,
                     TotalCount = total,
                     AssetPath = target.Path,
-                    IsAsset = target.UnityObject as UnityEngine.GameObject == null,
+                    IsAsset = !(target.UnityObject as UnityEngine.GameObject),
                     TargetObject = target.UnityObject
                 };
-                
+
                 string newName = target.Name;
-                foreach (var operation in config.Operations)
-                {
-                    newName = operation.Apply(newName, ctx);
-                }
-                
+                foreach (IRenameOperation operation in config.Operations)
+                    newName = operation?.Apply(newName, ctx);
+
                 results.Add(new RenameResult
                 {
                     Target = target,
@@ -46,7 +45,7 @@ namespace MVsToolkit.BatchRename
 
         public void Apply(IEnumerable<RenameResult> results, RenameConfig config)
         {
-            foreach (var result in results)
+            foreach (RenameResult result in results)
             {
                 result.Target.SetName(result.NewName);
             }
