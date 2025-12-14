@@ -62,7 +62,7 @@ namespace MVsToolkit.BetterInterface
             DrawSetActiveToggle(go, rect, e);
 
             SetGUIColor(go, isSelected, true);
-            EditorGUI.LabelField(new Rect(rect.x + iconSize, rect.y, rect.width + 44, rect.height), go.name);
+            EditorGUI.LabelField(new Rect(rect.x + iconSize + 1, rect.y - 1, rect.width + 44, rect.height), go.name);
 
             if (go.transform.childCount > 0)
             {
