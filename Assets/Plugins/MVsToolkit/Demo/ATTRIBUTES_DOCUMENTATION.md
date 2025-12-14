@@ -689,15 +689,13 @@ public class CharacterController : MonoBehaviour
 
 ## Namespace Reference
 
-All attributes (except CloseFoldout and CloseTab) are in the `MVsToolkit.Dev` namespace:
+All attributes are in the `MVsToolkit.Dev` namespace:
 
 ```csharp
 using MVsToolkit.Dev;
 ```
 
-The following attributes are in the global namespace:
-- `CloseFoldout`
-- `CloseTab`
+This includes all 16 attributes documented in this guide.
 
 ---
 
