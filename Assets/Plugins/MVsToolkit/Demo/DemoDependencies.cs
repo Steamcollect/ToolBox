@@ -1,6 +1,9 @@
 namespace MVsToolkit.Demo
 {
-    public interface IDemoInterface { }
+    public interface IDemoInterface 
+    {
+        public void DemoMethod();
+    }
 
     [System.Serializable]
     public struct InlineClass

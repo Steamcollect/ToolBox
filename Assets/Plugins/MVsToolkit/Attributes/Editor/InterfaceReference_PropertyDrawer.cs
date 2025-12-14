@@ -1,5 +1,7 @@
 namespace MVsToolkit.Dev
 {
+    using System;
+    using System.Collections.Generic;
     using UnityEditor;
     using UnityEngine;
 
@@ -11,7 +13,7 @@ namespace MVsToolkit.Dev
             SerializedProperty objProp = property.FindPropertyRelative("_object");
 
             EditorGUI.BeginProperty(position, label, property);
-            Object assignedObj = EditorGUI.ObjectField(position, label, objProp.objectReferenceValue, typeof(Object), true);
+            UnityEngine.Object assignedObj = EditorGUI.ObjectField(position, label, objProp.objectReferenceValue, typeof(UnityEngine.Object), true);
 
             if (assignedObj != objProp.objectReferenceValue)
             {
@@ -21,18 +23,58 @@ namespace MVsToolkit.Dev
                 }
                 else
                 {
-                    var targetType = fieldInfo.FieldType.GetGenericArguments()[0];
-
-                    if (assignedObj is GameObject go)
+                    // Safely resolve the target generic type argument (T)
+                    Type targetType = null;
+                    if (fieldInfo != null)
                     {
-                        // Autoriser si le GameObject a un composant qui implémente l’interface
-                        var comp = go.GetComponent(targetType);
-                        if (comp != null)
-                            objProp.objectReferenceValue = comp as Object;
+                        var args = fieldInfo.FieldType.IsGenericType ? fieldInfo.FieldType.GetGenericArguments() : Array.Empty<Type>();
+                        if (args.Length > 0)
+                            targetType = args[0];
                     }
-                    else if (targetType.IsAssignableFrom(assignedObj.GetType()))
+
+                    if (targetType != null && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                     {
-                        objProp.objectReferenceValue = assignedObj;
+                        // IEnumerable<> support: store GameObject or its GameObject when component assigned
+                        if (assignedObj is GameObject go)
+                        {
+                            objProp.objectReferenceValue = go;
+                        }
+                        else if (assignedObj is Component comp)
+                        {
+                            objProp.objectReferenceValue = comp.gameObject;
+                        }
+                        else if (targetType.IsAssignableFrom(assignedObj.GetType()))
+                        {
+                            objProp.objectReferenceValue = assignedObj;
+                        }
+                    }
+                    else if (targetType != null)
+                    {
+                        if (assignedObj is GameObject go)
+                        {
+                            // Autoriser si le GameObject a un composant qui implémente l’interface
+                            var comp = go.GetComponent(targetType);
+                            if (comp != null)
+                                objProp.objectReferenceValue = comp as UnityEngine.Object;
+                        }
+                        else if (targetType.IsAssignableFrom(assignedObj.GetType()))
+                        {
+                            objProp.objectReferenceValue = assignedObj;
+                        }
+                        else
+                        {
+                            // Fallback: if target type known but assignment invalid, clear
+                            objProp.objectReferenceValue = null;
+                        }
+                    }
+                    else
+                    {
+                        // When we cannot resolve generic argument (e.g., in lists), be permissive:
+                        // Store GameObject or Component directly; InterfaceReference.Value will attempt casting.
+                        if (assignedObj is Component c)
+                            objProp.objectReferenceValue = c;
+                        else
+                            objProp.objectReferenceValue = assignedObj;
                     }
                 }
             }
