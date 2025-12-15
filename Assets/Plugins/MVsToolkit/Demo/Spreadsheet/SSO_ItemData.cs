@@ -1,11 +1,14 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SSO_ItemData", menuName = "MVsToolkitDemo/SSO_ItemData")]
-public class SSO_ItemData : ScriptableObject
+namespace MVsToolkit.Demo
 {
-    public string itemName;
-    [TextArea] public string itemDescription;
+    [CreateAssetMenu(fileName = "SSO_ItemData", menuName = "MVsToolkitDemo/SSO_ItemData")]
+    public class SSO_ItemData : ScriptableObject
+    {
+        public string itemName;
+        [TextArea] public string itemDescription;
 
-    public Sprite visual;
-    public GameObject prefab;
+        public Sprite visual;
+        public GameObject prefab;
+    }
 }
