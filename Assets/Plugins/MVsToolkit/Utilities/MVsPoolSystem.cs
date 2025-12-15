@@ -5,22 +5,51 @@ using UnityEngine;
 namespace MVsToolkit.Dev
 {
     [System.Serializable]
+    /// <summary>
+    /// Generic pool for Unity objects.
+    /// 
+    /// <para>
+    /// Use <see cref="Init"/> to initialize/prewarm, <see cref="Get"/> to obtain an active instance,
+    /// </para>
+    /// <para>
+    /// and <see cref="Release"/> to return it to the pool. Configure <see cref="prefab"/>, <see cref="parent"/>, 
+    /// </para>
+    /// <para>
+    /// <see cref="MaximumPoolSize"/> and <see cref="PrewarmCount"/> as needed.
+    /// </para>
     public class MVsPool<T> where T : Object
     {
+        /// <summary>
+        /// Prefab used to instantiate pool items.
+        /// Should be a <see cref="GameObject"/> or a <see cref="Component"/> to preserve hierarchy.
+        /// </summary>
         public T prefab;
         Queue<T> queue;
 
         int objCount = 0;
 
         [SerializeField] bool m_SetParent;
+        /// <summary>
+        /// Parent transform assigned to instances when retrieved and released.
+        /// </summary>
         public Transform parent;
 
         [SerializeField] bool m_LimitSize;
+        /// <summary>
+        /// Maximum pool size. If > 0, limits the total number of instances created and stored.
+        /// </summary>
         public int MaximumPoolSize;
 
         [SerializeField] bool m_Prewarm;
+        /// <summary>
+        /// Number of instances created at initialization to avoid runtime allocations.
+        /// </summary>
         public int PrewarmCount;
 
+        /// <summary>
+        /// Initializes the pool. Creates and deactivates <see cref="PrewarmCount"/> instances if prewarming is enabled.
+        /// Call before use or it will be called automatically on first access.
+        /// </summary>
         public MVsPool<T> Init()
         {
             queue = new Queue<T>();
@@ -39,6 +68,12 @@ namespace MVsToolkit.Dev
         }
 
 
+        /// <summary>
+        /// Retrieves an instance from the pool and activates it.
+        /// Returns <c>true</c> if an instance is provided; otherwise <c>false</c> if the maximum size is reached.
+        /// </summary>
+        /// <param name="t">Retrieved instance.</param>
+        /// <param name="parent">Optional parent for the retrieved instance, otherwise uses <see cref="MVsPool{T}.parent"/>.</param>
         public bool Get(out T t, Transform parent = null)
         {
             if (queue == null) Init();
@@ -63,6 +98,11 @@ namespace MVsToolkit.Dev
             return true;
         }
 
+        /// <summary>
+        /// Returns an instance to the pool. The instance is deactivated and reassigned under <see cref="parent"/>.
+        /// If the limit is reached, the instance is destroyed.
+        /// </summary>
+        /// <param name="c">Instance to return.</param>
         public void Release(T c)
         {
             if (c == null) return;
@@ -80,6 +120,10 @@ namespace MVsToolkit.Dev
             queue.Enqueue(c);
         }
 
+        /// <summary>
+        /// Creates a new instance from the <see cref="prefab"/> and increments the internal counter.
+        /// Automatically called if the pool is empty.
+        /// </summary>
         public T Create()
         {
             if (queue == null) Init();
@@ -89,6 +133,11 @@ namespace MVsToolkit.Dev
             return instance;
         }
 
+        /// <summary>
+        /// Sets the default parent used during pool operations.
+        /// </summary>
+        /// <param name="parent">Parent transform to use.</param>
+        /// <returns>Pool reference for chaining.</returns>
         public MVsPool<T> SetParent(Transform parent)
         {
             this.parent = parent;
