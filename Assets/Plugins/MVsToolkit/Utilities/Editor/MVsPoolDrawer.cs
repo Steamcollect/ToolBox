@@ -6,7 +6,9 @@ namespace MVsToolkit.Dev
     [CustomPropertyDrawer(typeof(MVsPool<>))]
     public class MVsPoolDrawer : PropertyDrawer
     {
-        private GUIStyle _helpBoxNoTopMargin;
+        // Visual padding inside the helpBox
+        private readonly RectOffset _boxPadding = new RectOffset(16, 8, 4, 4);
+        private GUIStyle _helpBox;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -14,12 +16,24 @@ namespace MVsToolkit.Dev
 
             float lineH = EditorGUIUtility.singleLineHeight;
             float vsp = EditorGUIUtility.standardVerticalSpacing;
-            float y = position.y;
 
-            // Foldout header
-            var headerRect = new Rect(position.x, y, position.width, lineH);
+            // Ensure style
+            if (_helpBox == null)
+            {
+                _helpBox = new GUIStyle(EditorStyles.helpBox)
+                {
+                };
+            }
+
+            float totalHeight = GetPropertyHeight(property, label);
+
+            var boxRect = new Rect(position.x, position.y, position.width, totalHeight);
+            GUI.Box(boxRect, GUIContent.none, _helpBox);
+
+            var headerRect = new Rect(boxRect.x + _boxPadding.left, boxRect.y + _boxPadding.top, boxRect.width - _boxPadding.horizontal, lineH);
             property.isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, label, true);
-            y += lineH + vsp;
+
+            float y = headerRect.y + lineH + vsp;
 
             if (property.isExpanded)
             {
@@ -33,50 +47,25 @@ namespace MVsToolkit.Dev
                 SerializedProperty prewarmProp = property.FindPropertyRelative("m_Prewarm");
                 SerializedProperty prewarmCountProp = property.FindPropertyRelative("PrewarmCount");
 
-                EditorGUILayout.BeginVertical(GetHelpBoxStyle());
+                // Prefab row
                 if (prefabProp != null)
                 {
-                    Rect rowRect = new Rect(position.x - 16, y, position.width, lineH);
+                    Rect rowRect = new Rect(position.x - 16 + _boxPadding.left, y, position.width - _boxPadding.horizontal, lineH);
                     rowRect = EditorGUI.IndentedRect(rowRect);
                     EditorGUI.LabelField(new Rect(rowRect.x, rowRect.y, 96, lineH), "Prefab");
 
-                    Rect fieldRect = new Rect(rowRect.x + 128, rowRect.y, rowRect.width - 112, lineH);
+                    Rect fieldRect = new Rect(rowRect.x + 124, rowRect.y, rowRect.width - 108, lineH);
                     EditorGUI.PropertyField(fieldRect, prefabProp, GUIContent.none);
 
                     y += lineH + vsp + 5;
                 }
 
-                DrawToggleAndFieldSameLine("Set Parent", setParentProp, parentProp);
-                DrawToggleAndFieldSameLine("Limit Count", limitSizeProp, maxSizeProp);
-                DrawToggleAndFieldSameLine("Prewarm", prewarmProp, prewarmCountProp);
+                // Toggles + fields rows
+                DrawToggleAndFieldSameLine(ref y, position, lineH, vsp, "Set Parent", setParentProp, parentProp);
+                DrawToggleAndFieldSameLine(ref y, position, lineH, vsp, "Limit Count", limitSizeProp, maxSizeProp);
+                DrawToggleAndFieldSameLine(ref y, position, lineH, vsp, "Prewarm", prewarmProp, prewarmCountProp);
 
                 EditorGUI.indentLevel--;
-
-                void DrawToggleAndFieldSameLine(string label, SerializedProperty toggleProp, SerializedProperty fieldProp)
-                {
-                    Rect rowRect = new Rect(position.x - 16, y, position.width, lineH);
-                    rowRect = EditorGUI.IndentedRect(rowRect);
-
-                    EditorGUI.LabelField(new Rect(rowRect.x, rowRect.y, 96, lineH), label);
-
-                    if (toggleProp == null) return;
-
-                    Rect toggleRect = new Rect(rowRect.x + 96, rowRect.y, 16, lineH);
-                    bool newVal = EditorGUI.Toggle(toggleRect, GUIContent.none, toggleProp.boolValue);
-                    if (newVal != toggleProp.boolValue)
-                        toggleProp.boolValue = newVal;
-
-                    if (toggleProp == null || !toggleProp.boolValue || fieldProp == null)
-                        GUI.enabled = false;
-                    
-                    Rect fieldRect = new Rect(rowRect.x + 128, rowRect.y, rowRect.width - 112, lineH);
-                    EditorGUI.PropertyField(fieldRect, fieldProp, GUIContent.none);
-                    GUI.enabled = true;
-
-                    y += lineH + vsp;
-                }
-
-                EditorGUILayout.EndVertical();
             }
 
             EditorGUI.EndProperty();
@@ -84,31 +73,54 @@ namespace MVsToolkit.Dev
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float height = EditorGUIUtility.singleLineHeight;
+            float height = EditorGUIUtility.singleLineHeight; // header
             float vsp = EditorGUIUtility.standardVerticalSpacing;
+
+            // Add spacing below header
+            height += vsp;
 
             if (property.isExpanded)
             {
                 var prefabProp = property.FindPropertyRelative("prefab");
-
                 if (prefabProp != null)
-                    height += EditorGUI.GetPropertyHeight(prefabProp, true) + vsp;
+                    height += EditorGUIUtility.singleLineHeight + vsp + 5; // prefab row
 
+                // Three rows for toggles
                 height += (EditorGUIUtility.singleLineHeight + vsp) * 3f;
             }
 
+            // Add visual padding from helpBox
+            height += _boxPadding.vertical;
             return height;
         }
 
-        private GUIStyle GetHelpBoxStyle()
+        private void DrawToggleAndFieldSameLine(ref float y, Rect position, float lineH, float vsp, string label, SerializedProperty toggleProp, SerializedProperty fieldProp)
         {
-            if (_helpBoxNoTopMargin == null)
+            Rect rowRect = new Rect(position.x - 16 + _boxPadding.left, y, position.width - _boxPadding.horizontal, lineH);
+            rowRect = EditorGUI.IndentedRect(rowRect);
+
+            // Left: static label + checkbox right next to it
+            var labelRect = new Rect(rowRect.x, rowRect.y, 96, lineH);
+            EditorGUI.LabelField(labelRect, label);
+
+            var toggleRect = new Rect(labelRect.xMax, rowRect.y, 16, lineH);
+            if (toggleProp != null)
             {
-                _helpBoxNoTopMargin = new GUIStyle(EditorStyles.helpBox);
-                var m = _helpBoxNoTopMargin.margin;
-                _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
+                bool newVal = EditorGUI.Toggle(toggleRect, GUIContent.none, toggleProp.boolValue);
+                if (newVal != toggleProp.boolValue)
+                    toggleProp.boolValue = newVal;
             }
-            return _helpBoxNoTopMargin;
+
+            // Right: field starts exactly after the toggle
+            bool enabled = toggleProp != null && toggleProp.boolValue && fieldProp != null;
+            using (new EditorGUI.DisabledScope(!enabled))
+            {
+                var fieldRect = new Rect(toggleRect.xMax + 12, rowRect.y, rowRect.width - (toggleRect.xMax - rowRect.x - 4), lineH);
+                if (fieldProp != null)
+                    EditorGUI.PropertyField(fieldRect, fieldProp, GUIContent.none);
+            }
+
+            y += lineH + vsp;
         }
     }
 }

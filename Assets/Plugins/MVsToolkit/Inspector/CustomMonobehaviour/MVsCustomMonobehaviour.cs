@@ -479,13 +479,6 @@ namespace MVsToolkit.Dev
             else return false;
         }
 
-        private Color GetTabColor(int index)
-        {
-            if (index < 0) index = 0;
-            if (index >= _tabPalette.Length) index = _tabPalette.Length - 1;
-            return _tabPalette[index];
-        }
-
         private GUIStyle GetHelpBoxStyle()
         {
             if (_helpBoxNoTopMargin == null)
