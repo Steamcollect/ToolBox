@@ -1,15 +1,26 @@
-using MVsToolkit.Demo;
 using MVsToolkit.Dev;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class Tst : MonoBehaviour
 {
-    [SerializeField] MVsPool<Camera> bulletPool;
+    [SerializeField] MVsPool<GameObject> bulletPool;
+
+    void Start()
+    {
+        bulletPool.Init();
+    }
 
     [Button]
-    public void TestA()
+    void Test()
     {
-        bulletPool.Get();
+        StartCoroutine(TestCor());
+    }
+
+    IEnumerator TestCor()
+    {
+        bulletPool.Get(out GameObject c);
+        yield return new WaitForSeconds(1f);
+        bulletPool.Release(c);
     }
 }

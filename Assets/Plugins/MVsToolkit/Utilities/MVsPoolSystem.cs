@@ -10,6 +10,8 @@ namespace MVsToolkit.Dev
         public T prefab;
         Queue<T> queue;
 
+        int objCount = 0;
+
         [SerializeField] bool m_SetParent;
         public Transform parent;
 
@@ -19,13 +21,16 @@ namespace MVsToolkit.Dev
         [SerializeField] bool m_Prewarm;
         public int PrewarmCount;
 
-        public MVsPool<T> Init(Transform parent = null)
+        public MVsPool<T> Init()
         {
             queue = new Queue<T>();
 
+            if(m_LimitSize && m_Prewarm && MaximumPoolSize < PrewarmCount)
+                PrewarmCount = MaximumPoolSize;
+
             for (int i = 0; i < PrewarmCount; i++)
             {
-                T instance = CreateInternal();
+                T instance = Create();
                 SetActive(instance, false);
                 queue.Enqueue(instance);
             }
@@ -34,23 +39,28 @@ namespace MVsToolkit.Dev
         }
 
 
-        public T Get()
+        public bool Get(out T t, Transform parent = null)
         {
             if (queue == null) Init();
 
-            T instance;
             if (queue.Count > 0)
             {
-                instance = queue.Dequeue();
+                t = queue.Dequeue();
+            }
+            else if(m_LimitSize && MaximumPoolSize > 0 && objCount >= MaximumPoolSize)
+            {
+                t = default;
+                return false;
             }
             else
             {
-                instance = CreateInternal();
+                t = Create();
             }
 
-            SetParent(instance, parent);
-            SetActive(instance, true);
-            return instance;
+            SetParent(t, parent == null ? this.parent : parent);
+            SetActive(t, true);
+
+            return true;
         }
 
         public void Release(T c)
@@ -75,6 +85,7 @@ namespace MVsToolkit.Dev
             if (queue == null) Init();
 
             T instance = CreateInternal();
+            objCount++;
             return instance;
         }
 
@@ -101,7 +112,7 @@ namespace MVsToolkit.Dev
             }
 
             var obj = Object.Instantiate(prefab);
-            return obj as T;
+            return obj;
         }
 
         void DestroyInternal(T c)
@@ -112,7 +123,7 @@ namespace MVsToolkit.Dev
 
         void SetParent(T c, Transform newParent)
         {
-            var go = GetGameObject(c);
+            GameObject go = GetGameObject(c);
             if (go != null)
             {
                 go.transform.SetParent(newParent, worldPositionStays: false);
