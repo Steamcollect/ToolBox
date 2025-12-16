@@ -8,7 +8,6 @@ namespace MVsToolkit.BatchRename
         public AssetTarget(string assetPath)
         {
             UnityObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
-            Debug.Log(UnityObject.name);
             Path = assetPath;
         }
 

@@ -8,11 +8,11 @@ namespace MVsToolkit.Demo
 
         [Header("Settings")]
 
-        [SerializeReference] private BaseClass[] m_DemoClassPrivateArray;
-        [SerializeReference] public BaseClass DemoClass;
-        [SerializeReference] private BaseClass m_DemoClassPrivate;
+        [SerializeReference, Dev.SerializeReferenceDrawer] private BaseClass[] m_DemoClassPrivateArray;
+        [SerializeReference, Dev.SerializeReferenceDrawer] public BaseClass DemoClass;
+        [SerializeReference, Dev.SerializeReferenceDrawer] private BaseClass m_DemoClassPrivate;
         
-        [SerializeReference] public IInterfaceExample DemoInterfaceImpl;
+        [SerializeReference, Dev.SerializeReferenceDrawer] public IInterfaceExample DemoInterfaceImpl;
     }
 
 
