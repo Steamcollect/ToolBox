@@ -99,12 +99,14 @@ namespace MVsToolkit.Dev
             if (hasFoldout)
             {
                 Rect foldoutRect = new(headerRect.x, headerRect.y, EditorGUIUtility.labelWidth, headerRect.height);
-                property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, GUIContent.none, true);
+                property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, label, true);
             }
-
-            Rect labelRect = new(headerRect.x, headerRect.y, EditorGUIUtility.labelWidth, headerRect.height);
-            EditorGUI.LabelField(labelRect, label, LabelStyle);
-
+            else
+            {
+                Rect labelRect = new(headerRect.x, headerRect.y, EditorGUIUtility.labelWidth, headerRect.height);
+                EditorGUI.LabelField(labelRect, label, LabelStyle);
+            }
+            
             Rect dropdownRect = new(headerRect.x + EditorGUIUtility.labelWidth + 2, headerRect.y,
                 headerRect.width - EditorGUIUtility.labelWidth - 2, headerRect.height);
 

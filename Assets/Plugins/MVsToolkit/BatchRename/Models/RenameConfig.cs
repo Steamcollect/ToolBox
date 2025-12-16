@@ -1,19 +1,16 @@
+using System;
+using MVsToolkit.Dev;
 using UnityEngine;
 
 namespace MVsToolkit.BatchRename
 {
-    [System.Serializable]
+    [Serializable]
     public class RenameConfig
     {
-        [SerializeReference, Dev.SerializeReferenceDrawer] public IRenameOperation[] Operations;
-        [SerializeReference, Dev.SerializeReferenceDrawer] public IRenameRule[] Rules;
-        
-        public bool UseHierarchyOrdering;
-        public bool UseBreadthFirstOrdering;
-        public bool AutoPadding;
+        [SerializeReference] [SerializeReferenceDrawer]
+        public IRenameOperation[] Operations;
 
-        public int NumberStart = 0;
-        public int NumberStep = 1;
-        public int NumberPadding = 2;
+        [SerializeReference] [SerializeReferenceDrawer]
+        public IRenameRule[] Rules;
     }
 }

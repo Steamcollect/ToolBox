@@ -9,7 +9,7 @@ namespace MVsToolkit.BatchRename
         {
             if (!go) return string.Empty;
 
-            List<string> parts = new List<string>(capacity:10);
+            var parts = new List<string>(10);
             Transform t = go.transform;
             while (t)
             {

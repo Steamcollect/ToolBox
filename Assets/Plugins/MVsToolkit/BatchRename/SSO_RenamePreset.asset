@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::MVsToolkit.BatchRename.SSO_RenamePreset
   Config:
     Operations:
-    - rid: 4705919995988934765
-    - rid: 4705919995988934766
+    - rid: 4705920008883011651
     Rules: []
     UseHierarchyOrdering: 0
     UseBreadthFirstOrdering: 0
@@ -26,11 +25,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 4705919995988934765
+    - rid: 4705920008883011651
       type: {class: CaseOperation, ns: MVsToolkit.BatchRename, asm: Assembly-CSharp-firstpass}
       data:
         Type: 0
-    - rid: 4705919995988934766
-      type: {class: PrefixOperation, ns: MVsToolkit.BatchRename, asm: Assembly-CSharp-firstpass}
-      data:
-        Prefix: T_

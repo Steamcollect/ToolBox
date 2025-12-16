@@ -1,13 +1,31 @@
+using System;
+using System.Text;
+
 namespace MVsToolkit.BatchRename
 {
-    [System.Serializable]
+    [Serializable]
     public class RemoveOperation : IRenameOperation
     {
         public string Search;
-        
-        public string Apply(string original, RenameContext ctx)
+        public bool IsEnabled { get; set; } = true;
+
+        public bool Apply(StringBuilder original, RenameContext ctx)
         {
-            return original.Replace(Search, string.Empty);
+            if (!IsEnabled)
+                return false;
+
+            if (string.IsNullOrEmpty(Search))
+                return false;
+
+            try
+            {
+                original.Replace(Search, string.Empty);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

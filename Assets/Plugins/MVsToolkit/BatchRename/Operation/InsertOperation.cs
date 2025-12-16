@@ -1,24 +1,43 @@
 using System;
+using System.Text;
 
 namespace MVsToolkit.BatchRename
 {
-    [System.Serializable]
+    [Serializable]
     public class InsertOperation : IRenameOperation
     {
         public string Search;
         public string Text;
         public bool After;
-        
-        public string Apply(string original, RenameContext ctx)
+        public bool IsEnabled { get; set; } = true;
+
+        public bool Apply(StringBuilder original, RenameContext ctx)
         {
-            int index = original.IndexOf(Search, StringComparison.Ordinal);
-            if (index < 0) return original;
-            
-            if (After)
+            if (!IsEnabled)
+                return false;
+
+            if (string.IsNullOrEmpty(Search) || string.IsNullOrEmpty(Text))
+                return false;
+
+            try
             {
-                index += Search.Length;
+                int index = original.ToString().IndexOf(Search, StringComparison.Ordinal);
+
+                if (index < 0)
+                    return false;
+
+                if (After) index += Search.Length;
+
+                if (index < 0 || index > original.Length)
+                    return false;
+
+                original.Insert(index, Text);
+                return true;
             }
-            return original.Insert(index, Text);
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

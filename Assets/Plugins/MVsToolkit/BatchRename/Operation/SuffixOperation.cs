@@ -1,13 +1,32 @@
+using System;
+using System.Text;
+using UnityEngine;
+
 namespace MVsToolkit.BatchRename
 {
-    [System.Serializable]
+    [Serializable]
     public class SuffixOperation : IRenameOperation
     {
         public string Suffix;
-        
-        public string Apply(string original, RenameContext ctx)
+        public bool IsEnabled { get; set; } = true;
+
+        public bool Apply(StringBuilder original, RenameContext ctx)
         {
-            return $"{original}{Suffix}";
+            if (!IsEnabled)
+                return false;
+
+            if (Suffix == null)
+                return false;
+
+            try
+            {
+                original.Append(Suffix);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

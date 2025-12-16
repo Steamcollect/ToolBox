@@ -1,13 +1,31 @@
+using System;
+using System.Text;
+
 namespace MVsToolkit.BatchRename
 {
-    [System.Serializable]
+    [Serializable]
     public class PrefixOperation : IRenameOperation
     {
         public string Prefix;
-        
-        public string Apply(string original, RenameContext ctx)
+        public bool IsEnabled { get; set; } = true;
+
+        public bool Apply(StringBuilder original, RenameContext ctx)
         {
-            return $"{Prefix}{original}";
+            if (!IsEnabled)
+                return false;
+
+            if (Prefix == null)
+                return false;
+
+            try
+            {
+                original.Insert(0, Prefix);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace MVsToolkit.BatchRename
         #region Fields
 
         private SSO_RenamePreset m_Preset;
+        private SSO_RenamePreset m_DefaultPreset;
         private RenameConfig m_Config;
         private IRenamer m_Renamer;
 
@@ -19,23 +21,29 @@ namespace MVsToolkit.BatchRename
 
         private Vector2 m_TargetListScroll;
         private Vector2 m_ConfigScroll;
-        
+
         private SerializedObject m_PresetSerializedObject;
+        private SerializedObject m_DefaultPresetSerializedObject;
         private SerializedProperty m_PresetConfigProp;
-        
+
         private Object[] m_SelectionSnapshot;
+
+        private static string s_PathLastUsedPreset;
+        private static readonly string s_BatchRenamerTitle = "Batch Renamer";
+        private static readonly string s_PropertyPresetName = "Config";
+        private const int k_PriorityMenuItem = 0;
 
         #endregion
 
         #region Menu Items
 
-        [MenuItem("GameObject/MVsToolkit/Batch Rename", false, 20)]
+        [MenuItem("GameObject/MVsToolkit/Batch Rename", false, k_PriorityMenuItem)]
         private static void ShowWindowFromGameObject()
         {
             ShowWindow();
         }
 
-        [MenuItem("Assets/MVsToolkit/Batch Rename", false, 20)]
+        [MenuItem("Assets/MVsToolkit/Batch Rename", false, k_PriorityMenuItem)]
         private static void ShowWindowFromAssets()
         {
             ShowWindow();
@@ -53,25 +61,44 @@ namespace MVsToolkit.BatchRename
 
         private void OnEnable()
         {
+            InitFields();
+
+            InitializeTargetsFromSnapshot();
+
+            InitializeDefaultPresetSerialize();
+
+            if (!string.IsNullOrEmpty(s_PathLastUsedPreset)) LoadLastPreset();
+        }
+
+        private void LoadLastPreset()
+        {
+            SSO_RenamePreset lastPreset =
+                AssetDatabase.LoadAssetAtPath<SSO_RenamePreset>(s_PathLastUsedPreset);
+            if (lastPreset) InitializePresetSerialize(lastPreset);
+        }
+
+        private void OnDisable()
+        {
+            if (m_Preset) s_PathLastUsedPreset = AssetDatabase.GetAssetPath(m_Preset);
+        }
+
+        [InitializeOnLoadMethod]
+        private static void InitRecompilation()
+        {
+            s_PathLastUsedPreset = null;
+        }
+
+        private void InitFields()
+        {
             m_Renamer = new RenamerService();
             m_Targets = new List<IRenameTarget>();
             m_PreviewResults = new List<RenameResult>();
-            m_PresetSerializedObject = null;
-            m_PresetConfigProp = null;
-            m_Preset = null;
-            m_Config = null;
-            titleContent = new GUIContent("Batch Renamer");
-            
+            m_ConfigScroll = Vector2.zero;
+
             m_SelectionSnapshot = new Object[Selection.objects.Length];
             Selection.objects.CopyTo(m_SelectionSnapshot, 0);
-            
-            InitializeTargetsFromSnapshot();
-            
-            // Trigger initial preview if targets are available (config will be null until preset is set)
-            if (m_Targets.Count > 0 && m_Config != null)
-            {
-                PreviewRename();
-            }
+
+            titleContent = new GUIContent(s_BatchRenamerTitle);
         }
 
         #endregion
@@ -82,38 +109,30 @@ namespace MVsToolkit.BatchRename
         {
             m_Targets.Clear();
             m_PreviewResults.Clear();
-            
+
             if (m_SelectionSnapshot == null || m_SelectionSnapshot.Length == 0)
                 return;
 
             foreach (Object obj in m_SelectionSnapshot)
             {
-                // Skip nullified objects from domain reloads
                 if (obj == null)
                     continue;
 
-                IRenameTarget target = null;
-                
-                if (obj is GameObject go)
-                {
-                    target = new GameObjectTarget(go);
-                }
-                else
-                {
-                    string assetPath = AssetDatabase.GetAssetPath(obj);
-                    if (!string.IsNullOrEmpty(assetPath))
-                    {
-                        target = new AssetTarget(assetPath);
-                    }
-                }
+                IRenameTarget target = obj is GameObject go 
+                    ? new GameObjectTarget(go) 
+                    : CreateAssetTarget(obj);
 
-                if (target != null)
-                {
+                if (target != null) 
                     m_Targets.Add(target);
-                }
             }
         }
-        
+
+        private IRenameTarget CreateAssetTarget(Object obj)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(obj);
+            return string.IsNullOrEmpty(assetPath) ? null : new AssetTarget(assetPath);
+        }
+
         private void InitializePresetSerialize(SSO_RenamePreset newPreset)
         {
             if (newPreset == m_Preset) return;
@@ -129,22 +148,32 @@ namespace MVsToolkit.BatchRename
             }
 
             m_PresetSerializedObject = new SerializedObject(m_Preset);
-            m_PresetConfigProp = m_PresetSerializedObject?.FindProperty("Config");
-            
-            // Null-check: SerializedObject or Config property might be null if asset is invalid
+            m_PresetConfigProp = m_PresetSerializedObject.FindProperty(s_PropertyPresetName);
+
             if (m_PresetSerializedObject == null || m_PresetConfigProp == null)
             {
                 m_Config = null;
                 return;
             }
 
+
+            Debug.Log("Initialized preset: " + newPreset.name);
             m_Config = m_Preset.Config;
-            
-            // Only preview if targets exist and config is valid
-            if (m_Targets.Count > 0 && m_Config != null)
-            {
-                PreviewRename();
-            }
+
+            PreviewRename();
+        }
+
+        private void InitializeDefaultPresetSerialize()
+        {
+            m_DefaultPreset = SSO_RenamePreset.DefaultPreset();
+            m_DefaultPresetSerializedObject = new SerializedObject(m_DefaultPreset);
+            m_PresetConfigProp = m_PresetSerializedObject?.FindProperty("Config");
+
+            // SerializedObject or property must be null due to Instance lifetime, but work magic
+
+            m_Config = m_DefaultPreset.Config;
+
+            PreviewRename();
         }
 
         private void CreateNewPreset()
@@ -158,7 +187,7 @@ namespace MVsToolkit.BatchRename
 
             if (string.IsNullOrEmpty(savePath)) return;
 
-            var newPreset = CreateInstance<SSO_RenamePreset>();
+            SSO_RenamePreset newPreset = CreateInstance<SSO_RenamePreset>();
             AssetDatabase.CreateAsset(newPreset, savePath);
             AssetDatabase.SaveAssets();
 
@@ -166,58 +195,47 @@ namespace MVsToolkit.BatchRename
         }
 
         #endregion
-        
+
         #region Rendering
 
         private void OnGUI()
         {
             if (!hasFocus) return;
-            
-            Label("Batch Renamer", EditorStyles.boldLabel);
+
+            Label(s_BatchRenamerTitle, EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
-            // Horizontal split: left pane (config) and right pane (targets)
             using (new EditorGUILayout.HorizontalScope())
             {
-                // Left Pane: Preset and Config
                 DrawLeftPane();
-                
-                // Right Pane: Targets
+
                 DrawRightPane();
             }
 
             EditorGUILayout.Space();
 
-            // Apply/Cancel Buttons at Bottom
             DrawButtonPanel();
         }
 
         private void DrawLeftPane()
         {
-            using (new EditorGUILayout.VerticalScope( EditorStyles.helpBox ,Width(position.width*0.4f)))
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, Width(position.width * 0.4f)))
             {
-                // Preset Asset Section
                 DrawPresetSection();
                 EditorGUILayout.Space();
 
-                // Config Panel Section
-                if (m_Config != null)
-                {
+                if (m_Preset)
                     DrawConfigPanel();
-                }
                 else
-                {
-                    EditorGUILayout.HelpBox("No preset selected. Create or assign one.", MessageType.Info);
-                }
+                    DrawDefaultConfigFallback();
 
-                // Flexible space to push content up
                 FlexibleSpace();
             }
         }
 
         private void DrawRightPane()
         {
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox,ExpandWidth(true)))
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, ExpandWidth(true)))
             {
                 DrawTargetsPanel();
             }
@@ -233,81 +251,136 @@ namespace MVsToolkit.BatchRename
 
                 InitializePresetSerialize(newPreset);
 
-                if (Button("Create New", Width(100)))
-                {
-                    CreateNewPreset();
-                }
+                if (Button("Create New", Width(100))) CreateNewPreset();
             }
         }
 
         private void DrawConfigPanel()
         {
-            // Guard: null-check serialized fields
             if (m_PresetSerializedObject == null || m_PresetConfigProp == null)
             {
                 EditorGUILayout.HelpBox("Config property not available.", MessageType.Warning);
                 return;
             }
 
-            // Draw the preset's serialized Config property directly so the SSO is displayed "as-is".
-            EditorGUILayout.LabelField("Configuration Summary", EditorStyles.boldLabel);
+            DrawConfigSection(
+                "Configuration Summary",
+                false,
+                m_PresetSerializedObject,
+                m_PresetConfigProp,
+                OnPresetConfigChanged);
+        }
+
+        private void DrawDefaultConfigFallback()
+        {
+            EditorGUILayout.HelpBox(
+                "No preset selected. Showing default configuration for preview. " +
+                "Create or assign a preset to save your configuration.",
+                MessageType.Info);
+
+            EditorGUILayout.Space();
+
+            // Guard: null-check serialized fields
+            if (m_DefaultPresetSerializedObject == null)
+            {
+                EditorGUILayout.HelpBox("Default config not available.", MessageType.Warning);
+                return;
+            }
+
+            SerializedProperty configProp = m_DefaultPresetSerializedObject.FindProperty(s_PropertyPresetName);
+            if (configProp == null)
+            {
+                EditorGUILayout.HelpBox("Config property not found in default preset.", MessageType.Warning);
+                return;
+            }
+
+            DrawConfigSection(
+                "Default Configuration",
+                true,
+                m_DefaultPresetSerializedObject,
+                configProp,
+                OnDefaultConfigChanged);
+        }
+
+        /// <summary>
+        ///     Shared config rendering logic for both preset and default config.
+        /// </summary>
+        private void DrawConfigSection(
+            string titleSection,
+            bool isDefault,
+            SerializedObject serializedObject,
+            SerializedProperty configProperty,
+            Action onChanged)
+        {
+            EditorGUILayout.LabelField(titleSection, EditorStyles.boldLabel);
 
             using (new EditorGUI.IndentLevelScope())
             {
-                using (var scrollView = new EditorGUILayout.ScrollViewScope(m_ConfigScroll, MaxHeight(300)))
+                using (EditorGUILayout.ScrollViewScope scrollView = new(m_ConfigScroll, ExpandHeight(true)))
                 {
                     m_ConfigScroll = scrollView.scrollPosition;
-                    
-                    m_PresetSerializedObject.Update();
 
-                    // Detect config changes with BeginChangeCheck/EndChangeCheck
+                    serializedObject.Update();
+
                     EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(m_PresetConfigProp,
-                        new GUIContent("Config"),
-                        true);
-                    
+                    EditorGUILayout.PropertyField(configProperty, new GUIContent(s_PropertyPresetName), true);
+
                     if (EditorGUI.EndChangeCheck())
                     {
-                        m_PresetSerializedObject.ApplyModifiedProperties();
-                        
-                        // Refresh config reference and trigger preview
-                        if (m_Preset != null)
-                        {
-                            m_Config = m_Preset.Config;
-                        }
-                        
-                        PreviewRename();
+                        serializedObject.ApplyModifiedProperties();
+                        onChanged?.Invoke();
+                    }
+
+                    EditorGUILayout.Space();
+
+                    if (!isDefault) return;
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.HelpBox(
+                            "This is a preview of the default configuration. " +
+                            "Assign or create a preset to save your settings.",
+                            MessageType.Info, true);
+
+                        if (Button("Reset", Height(EditorGUIUtility.singleLineHeight * 2)))
+                            InitializeDefaultPresetSerialize();
                     }
                 }
             }
         }
 
+        private void OnPresetConfigChanged()
+        {
+            if (m_Preset) m_Config = m_Preset.Config;
+
+            PreviewRename();
+        }
+
+        private void OnDefaultConfigChanged()
+        {
+            m_Config = m_DefaultPreset.Config;
+            PreviewRename();
+        }
+
         private void DrawTargetsPanel()
         {
             EditorGUILayout.LabelField("Target List", EditorStyles.boldLabel);
-            
+
             using (new EditorGUI.IndentLevelScope())
             {
-                // Header with Old and New columns
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.largeLabel))
                 {
                     EditorGUILayout.LabelField("Old Name", ExpandWidth(true));
                     EditorGUILayout.LabelField("New Name", ExpandWidth(true));
                 }
-                
-                using (var scrollView =
-                       new EditorGUILayout.ScrollViewScope(m_TargetListScroll, MaxHeight(400)))
+
+                using (EditorGUILayout.ScrollViewScope scrollView = new(m_TargetListScroll, MaxHeight(400)))
                 {
                     m_TargetListScroll = scrollView.scrollPosition;
 
                     if (m_Targets is { Count: 0 })
-                    {
                         EditorGUILayout.HelpBox("No targets selected", MessageType.Info);
-                    }
                     else
-                    {
                         DrawTargetList();
-                    }
                 }
             }
         }
@@ -321,55 +394,49 @@ namespace MVsToolkit.BatchRename
 
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
-                    // Old Name (left side)
                     EditorGUILayout.LabelField(target.Name, ExpandWidth(true));
-                    
-                    // New Name (right side) with status
-                    if (result != null)
-                    {
-                        if (result.HasError)
-                        {
-                            EditorGUILayout.LabelField(result.ErrorMessage, EditorStyles.miniLabel, ExpandWidth(true));
-                        }
-                        else if (result.HasConflict)
-                        {
-                            EditorGUILayout.LabelField(result.NewName, EditorStyles.miniLabel, ExpandWidth(true));
-                            EditorGUILayout.LabelField("(conflict)", EditorStyles.miniLabel, Width(60));
-                        }
-                        else
-                        {
-                            EditorGUILayout.LabelField(result.NewName, EditorStyles.miniLabel, ExpandWidth(true));
-                        }
-                    }
-                    else
-                    {
-                        EditorGUILayout.LabelField("(no preview)", EditorStyles.miniLabel, ExpandWidth(true));
-                    }
+                    DrawResultDisplay(result);
                 }
+            }
+        }
+
+        private void DrawResultDisplay(RenameResult result)
+        {
+            if (result == null)
+            {
+                EditorGUILayout.LabelField("(no preview)", EditorStyles.miniLabel, ExpandWidth(true));
+                return;
+            }
+
+            if (result.HasError)
+            {
+                EditorGUILayout.LabelField(result.ErrorMessage, EditorStyles.miniLabel, ExpandWidth(true));
+            }
+            else if (result.HasConflict)
+            {
+                EditorGUILayout.LabelField(result.NewName, EditorStyles.miniLabel, ExpandWidth(true));
+                EditorGUILayout.LabelField("(conflict)", EditorStyles.miniLabel, Width(60));
+            }
+            else
+            {
+                EditorGUILayout.LabelField(result.NewName, EditorStyles.miniLabel, ExpandWidth(true));
             }
         }
 
         private void DrawButtonPanel()
         {
             bool hasValidPreview = m_PreviewResults.Count > 0 && m_PreviewResults.TrueForAll(r => !r.HasError);
-            
+            bool canApply = hasValidPreview && m_Config != null;
+
             using (new EditorGUILayout.HorizontalScope())
             {
-                // Cancel button (always enabled)
-                if (Button("Cancel", Height(30)))
-                {
-                    Close();
-                }
+                if (Button("Cancel", Height(30))) Close();
 
                 EditorGUILayout.Space();
 
-                // Apply button (disabled if no valid preview or errors exist)
-                using (new EditorGUI.DisabledScope(!hasValidPreview))
+                using (new EditorGUI.DisabledScope(!canApply))
                 {
-                    if (Button("Apply Rename", Height(30)))
-                    {
-                        ApplyRename();
-                    }
+                    if (Button("Apply Rename", Height(30))) ApplyRename();
                 }
             }
         }
@@ -380,15 +447,17 @@ namespace MVsToolkit.BatchRename
 
         private void PreviewRename()
         {
+            Debug.Log("PreviewRename called");
             if (m_Targets.Count == 0)
             {
                 EditorUtility.DisplayDialog("No targets", "Please select objects to rename.", "OK");
                 return;
             }
 
+
             if (m_Config == null)
             {
-                EditorUtility.DisplayDialog("No config", "Please select or create a preset.", "OK");
+                EditorUtility.DisplayDialog("No config", "No configuration available for preview.", "OK");
                 return;
             }
 
@@ -404,13 +473,23 @@ namespace MVsToolkit.BatchRename
                 return;
             }
 
-            // Short-circuit if any errors or conflicts exist
+            if (m_Config == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Preset Required",
+                    "You must select or create a preset before applying the rename. " +
+                    "The default configuration is for preview only.",
+                    "OK");
+                return;
+            }
+
             bool hasErrors = m_PreviewResults.Exists(r => r.HasError);
             bool hasConflicts = m_PreviewResults.Exists(r => r.HasConflict);
 
             if (hasErrors)
             {
-                EditorUtility.DisplayDialog("Rename Failed", "Cannot apply rename: one or more results have errors.", "OK");
+                EditorUtility.DisplayDialog("Rename Failed", "Cannot apply rename: one or more results have errors.",
+                    "OK");
                 return;
             }
 
@@ -423,7 +502,7 @@ namespace MVsToolkit.BatchRename
                     "Continue",
                     ""
                 );
-                if (choice != 1) // User did not click "Continue"
+                if (choice != 1)
                     return;
             }
 
@@ -431,8 +510,7 @@ namespace MVsToolkit.BatchRename
 
             m_PreviewResults.Clear();
             Repaint();
-            
-            // Auto-close window after successful apply
+
             Close();
         }
 
