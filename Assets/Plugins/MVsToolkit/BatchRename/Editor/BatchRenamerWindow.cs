@@ -447,7 +447,6 @@ namespace MVsToolkit.BatchRename
 
         private void PreviewRename()
         {
-            Debug.Log("PreviewRename called");
             if (m_Targets.Count == 0)
             {
                 EditorUtility.DisplayDialog("No targets", "Please select objects to rename.", "OK");
