@@ -30,9 +30,9 @@ namespace MVsToolkit.Demo
         [SerializeField] InterfaceReference<IDemoInterface> demoInterface;
 
         [Tab("Handles")]
-        [Handle] public Vector3 pointA;
-        [Handle(Space.Self, HandleDrawType.Sphere, ColorPreset.Red)] public Vector3 pointB;
-        [Handle(Space.World, HandleDrawType.Cube, ColorPreset.Cyan)] public Vector3 pointC;
+        [SerializeField, Handle] Vector3 pointA;
+        [SerializeField, Handle(Space.Self, HandleDrawType.Sphere, ColorPreset.Red)] Vector3 pointB;
+        [SerializeField, Handle(Space.World, HandleDrawType.Cube, ColorPreset.Cyan)] Vector3 pointC;
 
         [Tab("Others")]
         [SerializeField, SceneName] string sceneName;

@@ -43,6 +43,9 @@ namespace MVsToolkit.Dev
 
         private void ScanProperties(SerializedObject so, Object targetObj)
         {
+            if(so == null || targetObj == null)
+                return;
+
             SerializedProperty iterator = so.GetIterator();
             if (!iterator.NextVisible(true))
                 return;
@@ -85,6 +88,8 @@ namespace MVsToolkit.Dev
                     propertyGroups.GetLast().tabs.Add(new MVsTabGroup(tabAttr.tabName));
                 }
 
+                EnsureTabExists();
+
                 if (TryGetCustomAttribute(field, out CloseFoldoutAttribute closeFoldoutAttr)) // Close Foldout
                 {
                     if (propertyGroups.Count > 0 &&
@@ -122,6 +127,15 @@ namespace MVsToolkit.Dev
                     propertyGroups.GetLast().tabs.GetLast().items.Add(new MVsPropertyField(prop));
             }
             while (iterator.NextVisible(false));
+        }
+
+        void EnsureTabExists()
+        {
+            if (propertyGroups.Count == 0)
+                propertyGroups.Add(new MVsInspectorPropertyGroup(true));
+
+            if (propertyGroups.GetLast().tabs.Count == 0)
+                propertyGroups.GetLast().tabs.Add(new MVsTabGroup());
         }
         #endregion
 

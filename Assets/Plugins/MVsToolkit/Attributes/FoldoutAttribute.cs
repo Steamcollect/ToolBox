@@ -8,6 +8,8 @@ namespace MVsToolkit.Dev
     /// <list type="bullet">
     ///   <item><description><code>[Foldout("Player Settings")]</code> groups related fields</description></item>
     /// </list>
+    /// 
+    /// Close the foldout with [CloseFoldout] attribute.
     /// </summary>
     public class FoldoutAttribute : PropertyAttribute
     {
