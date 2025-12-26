@@ -1,25 +1,28 @@
 using UnityEngine;
 
-public class MinMaxRangeAttribute : PropertyAttribute
+namespace MVsToolkit.Dev
 {
-    public readonly float FMin, FMax;
-    public readonly int IMin, IMax;
-
-    public MinMaxRangeAttribute(int min, int max)
+    public class MinMaxRangeAttribute : PropertyAttribute
     {
-        IMin = min;
-        IMax = max;
+        public readonly float FMin, FMax;
+        public readonly int IMin, IMax;
 
-        FMin = min;
-        FMax = max;
-    }
+        public MinMaxRangeAttribute(int min, int max)
+        {
+            IMin = min;
+            IMax = max;
 
-    public MinMaxRangeAttribute(float min, float max)
-    {
-        FMin = min;
-        FMax = max;
+            FMin = min;
+            FMax = max;
+        }
 
-        IMin = Mathf.RoundToInt(min);
-        IMax = Mathf.RoundToInt(max);
+        public MinMaxRangeAttribute(float min, float max)
+        {
+            FMin = min;
+            FMax = max;
+
+            IMin = Mathf.RoundToInt(min);
+            IMax = Mathf.RoundToInt(max);
+        }
     }
 }
