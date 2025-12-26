@@ -5,10 +5,26 @@ using System.Reflection;
 
 namespace MVsToolkit.Dev
 {
+    /// <summary>
+    /// Runtime display system for fields marked with [Watch] attribute.
+    /// <para>
+    /// Automatically created at runtime to show watched variable values on screen during Play Mode.
+    /// </para>
+    /// <para>
+    /// This class should not be added manually to GameObjects - it is automatically instantiated.
+    /// </para>
+    /// <para>
+    /// Displays all fields marked with [Watch] in the bottom-left corner of the screen.
+    /// </para>
+    /// </summary>
     public class WatchDisplay : MonoBehaviour
     {
         private static List<(string name, Func<string> getter)> watchedVars = new();
 
+        /// <summary>
+        /// Initializes the watch display system after scene load.
+        /// Scans all MonoBehaviours for fields marked with [Watch] attribute.
+        /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
@@ -29,13 +45,16 @@ namespace MVsToolkit.Dev
                 }
             }
 
-            // Crée un GameObject pour l’affichage
+            // Create a GameObject for display
             var go = new GameObject("WatchDisplay");
             go.hideFlags = HideFlags.HideAndDontSave;
             go.AddComponent<WatchDisplay>();
             DontDestroyOnLoad(go);
         }
 
+        /// <summary>
+        /// Renders watched variable values on screen using Unity's immediate mode GUI.
+        /// </summary>
         void OnGUI()
         {
             GUIStyle style = new GUIStyle(GUI.skin.label);
