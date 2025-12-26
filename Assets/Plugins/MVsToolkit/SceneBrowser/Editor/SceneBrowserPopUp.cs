@@ -24,7 +24,8 @@ namespace MVsToolkit.SceneBrowser
 
         public override Vector2 GetWindowSize()
         {
-            return SceneBrowserContent.GetWindowSize();
+            Vector2 contentSize = SceneBrowserContent.GetWindowSize();
+            return new Vector2(contentSize.x, Mathf.Min(maxHeight + searchHeight + 12, contentSize.y + searchHeight + 12));
         }
     }
 }
