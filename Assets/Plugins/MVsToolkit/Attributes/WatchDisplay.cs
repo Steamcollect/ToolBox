@@ -6,7 +6,7 @@ using System.Reflection;
 namespace MVsToolkit.Dev
 {
     /// <summary>
-    /// Runtime display system for fields marked with [Watch] attribute.
+    /// MonoBehaviour component that provides runtime display for fields marked with [Watch] attribute.
     /// <para>
     /// Automatically created at runtime to show watched variable values on screen during Play Mode.
     /// </para>
