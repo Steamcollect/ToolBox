@@ -427,8 +427,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a64848d5e864b604bbda9fcc45e1ab2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tst
-  MoveSpeed: {x: 16.5, y: 99.09}
-  DashForceDeLaMortQuiTueCaRace: {x: 44, y: 77}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

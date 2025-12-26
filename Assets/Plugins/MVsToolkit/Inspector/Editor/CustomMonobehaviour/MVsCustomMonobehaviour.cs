@@ -498,7 +498,7 @@ namespace MVsToolkit.Dev
             if (_helpBoxNoTopMargin == null)
             {
                 _helpBoxNoTopMargin = new GUIStyle(EditorStyles.helpBox);
-                var m = _helpBoxNoTopMargin.margin;
+                RectOffset m = _helpBoxNoTopMargin.margin;
                 _helpBoxNoTopMargin.margin = new RectOffset(m.left, m.right, 0, m.bottom);
             }
             return _helpBoxNoTopMargin;

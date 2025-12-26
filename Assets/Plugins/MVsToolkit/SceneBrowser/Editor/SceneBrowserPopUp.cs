@@ -1,36 +1,30 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
-using System.IO;
-using UnityEditor;
-using UnityEditor.SceneManagement;
+﻿using UnityEditor;
 using UnityEngine;
 
-namespace MVsToolkit.BetterInterface
+namespace MVsToolkit.SceneBrower
 {
     public class SceneBrowserPopUp : PopupWindowContent
     {
+        int searchHeight = 20;
         int maxHeight = 300;
         string searchTxt;
 
         public override void OnOpen()
         {
-            SceneBrowserContent.OnOpen();
-        }
-        public override void OnClose()
-        {
-            SceneBrowserContent.OnClose();
+            SceneBrowserContent.RefreshScenesList();
         }
 
         public override void OnGUI(Rect rect)
         {
-            searchTxt = EditorGUILayout.TextField(searchTxt, searchTxt);
+            searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
+
+            Rect contentR = new Rect(rect.x, rect.y + searchHeight, rect.width, Mathf.Min(maxHeight, rect.height - searchHeight));
             SceneBrowserContent.OnGUI(rect, searchTxt);
         }
 
         public override Vector2 GetWindowSize()
         {
-            return SceneBrowserContent.GetWindowSize(maxHeight);
+            return SceneBrowserContent.GetWindowSize();
         }
     }
 }
-#endif

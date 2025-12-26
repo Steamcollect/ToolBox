@@ -1,12 +1,13 @@
 using UnityEditor;
 using UnityEngine;
+using MVsToolkit.SceneBrower;
 
-namespace MVsToolkit.BetterInterface
+namespace MVsToolkit
 {
     [InitializeOnLoad]
-    public static class MVsHierarchyInputController
+    public static class MVsHierarchyInputManager
     {
-        static MVsHierarchyInputController()
+        static MVsHierarchyInputManager()
         {
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
         }

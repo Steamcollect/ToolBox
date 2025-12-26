@@ -285,6 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd9ef5004aa180b4e8d684564b55d02c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::DemoInterface
+  debugText: 
 --- !u!4 &478094157
 Transform:
   m_ObjectHideFlags: 0
@@ -456,6 +457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e44af6c35281445391e34515e2762ab8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp-firstpass::MVsToolkit.Demo.DemoSerializeReference
+  m_DemoClassPrivateArray: []
   DemoClass:
     rid: 4705919842378580040
   m_DemoClassPrivate:
