@@ -17,7 +17,7 @@ namespace MVsToolkit.Dev
     /// <para>
     /// <see cref="MaximumPoolSize"/> and <see cref="PrewarmCount"/> as needed.
     /// </para>
-    public class MVsPool<T> where T : Object
+    public class PoolObject<T> where T : Object
     {
         /// <summary>
         /// Prefab used to instantiate pool items.
@@ -50,7 +50,7 @@ namespace MVsToolkit.Dev
         /// Initializes the pool. Creates and deactivates <see cref="PrewarmCount"/> instances if prewarming is enabled.
         /// Call before use or it will be called automatically on first access.
         /// </summary>
-        public MVsPool<T> Init()
+        public PoolObject<T> Init()
         {
             queue = new Queue<T>();
 
@@ -73,7 +73,7 @@ namespace MVsToolkit.Dev
         /// Returns <c>true</c> if an instance is provided; otherwise <c>false</c> if the maximum size is reached.
         /// </summary>
         /// <param name="t">Retrieved instance.</param>
-        /// <param name="parent">Optional parent for the retrieved instance, otherwise uses <see cref="MVsPool{T}.parent"/>.</param>
+        /// <param name="parent">Optional parent for the retrieved instance, otherwise uses <see cref="PoolObject{T}.parent"/>.</param>
         public bool Get(out T t, Transform parent = null)
         {
             if (queue == null) Init();
@@ -138,7 +138,7 @@ namespace MVsToolkit.Dev
         /// </summary>
         /// <param name="parent">Parent transform to use.</param>
         /// <returns>Pool reference for chaining.</returns>
-        public MVsPool<T> SetParent(Transform parent)
+        public PoolObject<T> SetParent(Transform parent)
         {
             this.parent = parent;
             return this;
