@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace MVsToolkit.SceneBrower
+namespace MVsToolkit.SceneBrowser
 {
     [InitializeOnLoad]
     public static class SceneBrowserContent
@@ -14,41 +14,106 @@ namespace MVsToolkit.SceneBrower
         static List<SceneBrowerData> scenes = new();
         const string SaveKey = "SceneBrowser_Data";
 
-        static List<SceneBrowerData> favoriteScenes = new(), otherScenes = new();
+        static int buttonHeight = 18;
+        static int buttonSpacing = 2;
 
-        static GUIStyle buttonStyle;
+        static float panelHeight;
+
+        static GUIStyle sceneButtonStyle, favoriteButtonStyle;
 
         static SceneBrowserContent()
         {
             RefreshScenesList();
-            InitButtonStyle();
         }
 
         #region Drawing
         public static void OnGUI(Rect rect, string searchQuery)
         {
-            foreach (var scene in GetScenesWithQuery(searchQuery))
+            EnsureButtonStyle();
+
+            Event e = Event.current;
+
+            SceneBrowerData[] _scenes = GetScenesWithQuery(searchQuery);
+            _scenes = _scenes.OrderBy(c => !c.isFavorite).ToArray();
+
+            //bool useScrollView = rect.height < _scenes.Length * buttonHeight + _scenes.Length * buttonSpacing;
+
+            float currentHeight = 0;
+
+            for (int i = 0; i < _scenes.Length; i++)
             {
-                DrawSceneItem(scene);
+                if (!_scenes[i].isFavorite && i - 1 >= 0 && scenes[i - 1].isFavorite)
+                {
+                    EditorGUI.DrawRect(new Rect(rect.x + rect.width * .05f, rect.y + currentHeight + 4, rect.width * .9f, 1), Color.grey);
+                    currentHeight += 9;
+                }
+
+                Rect buttonRect = new Rect(rect.x, rect.y + currentHeight, rect.width, buttonHeight);
+
+                bool mouseInButton = buttonRect.Contains(e.mousePosition);
+                if (mouseInButton)
+                    EditorGUI.DrawRect(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height), new Color(0.172549f, 0.3647059f, 0.5294118f));
+                else if (i % 2 == 0)
+                    EditorGUI.DrawRect(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height), new Color(1, 1, 1, 0.02f));
+                
+                DrawSceneItem(_scenes[i], buttonRect, e, mouseInButton);
+
+                currentHeight += buttonHeight + buttonSpacing;
             }
+
+            panelHeight = currentHeight;
         }
 
-        static void DrawSceneItem(SceneBrowerData sceneData)
+        static void DrawSceneItem(SceneBrowerData sceneData, Rect r, Event e, bool mouseInButton)
         {
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(sceneData.asset.name, buttonStyle))
+            if(sceneData.isFavorite || mouseInButton)
             {
-                if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                Rect favoriteRect = new Rect(r.x + r.width - r.height * 2, r.y, r.height * 2, r.height);
+
+                bool favoriteContainMouse = favoriteRect.Contains(e.mousePosition);
+                string favoriteButtonText = "☆";
+
+                if (sceneData.isFavorite || (!sceneData.isFavorite && favoriteContainMouse)) favoriteButtonText = "★";
+                if (!sceneData.isFavorite || (sceneData.isFavorite && favoriteContainMouse)) favoriteButtonText = "☆";
+
+                if (GUI.Button(favoriteRect, favoriteButtonText, favoriteButtonStyle))
                 {
-                    EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(sceneData.asset));
+                    sceneData.isFavorite = !sceneData.isFavorite;
+                    SaveScenesData();
                 }
             }
-            EditorGUILayout.EndHorizontal();
+            
+            if (GUI.Button(r, sceneData.asset.name, sceneButtonStyle))
+                {
+                    if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                    {
+                        EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(sceneData.asset));
+                    }
+                }
         }
 
         public static Vector2 GetWindowSize()
         {
-            return new Vector2(250, 300);
+            return new Vector2(250, panelHeight);
+        }
+
+        static void EnsureButtonStyle()
+        {
+            if (sceneButtonStyle != null) return;
+
+            sceneButtonStyle = new GUIStyle(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 12,
+                padding = new RectOffset(10, 0, 0, 0)
+            };
+
+            favoriteButtonStyle = new GUIStyle(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleRight,
+                fontSize = buttonHeight,
+                padding = new RectOffset(0, 10, 0, 0)
+            };
         }
         #endregion
 
@@ -56,9 +121,6 @@ namespace MVsToolkit.SceneBrower
         public static void RefreshScenesList()
         {
             LoadScenesData();
-
-            favoriteScenes.Clear();
-            otherScenes.Clear();
 
             SceneAsset[] allScenes = GetAllScenesInAssetsRoot();
 
@@ -71,11 +133,6 @@ namespace MVsToolkit.SceneBrower
             {
                 if (!allScenes.Contains(scene.asset))
                     scenes.Remove(scene);
-
-                if(scene.isFavorite)
-                    favoriteScenes.Add(scene);
-                else
-                    otherScenes.Add(scene);
             }
         }
 
@@ -127,24 +184,6 @@ namespace MVsToolkit.SceneBrower
                 return scenes.ToArray();
             else
                 return scenes.Where(s => s.asset.name.ToLower().Contains(query.ToLower())).ToArray();
-        }
-        #endregion
-
-        #region GUI Style
-        static void InitButtonStyle()
-        {
-            buttonStyle = new GUIStyle(EditorStyles.label);
-
-            buttonStyle.alignment = TextAnchor.MiddleLeft;
-            buttonStyle.padding = new RectOffset(5, 0, 0, 0);
-            buttonStyle.fontSize = 12;
-
-            buttonStyle.normal.background = null;
-
-            buttonStyle.hover.background = TextureUtils.MakeColorTex(1, 1, new Color(0.24f, 0.48f, 0.90f, 0.6f));
-            buttonStyle.hover.textColor = Color.white;
-
-            buttonStyle.normal.textColor = Color.white;
         }
         #endregion
     }

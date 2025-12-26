@@ -5,4 +5,5 @@ using UnityEngine.SceneManagement;
 
 public class Tst : MonoBehaviour
 {
+    public Color color;
 }

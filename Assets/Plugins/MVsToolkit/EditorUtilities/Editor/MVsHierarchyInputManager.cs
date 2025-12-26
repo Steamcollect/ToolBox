@@ -1,6 +1,6 @@
 using UnityEditor;
 using UnityEngine;
-using MVsToolkit.SceneBrower;
+using MVsToolkit.SceneBrowser;
 
 namespace MVsToolkit
 {

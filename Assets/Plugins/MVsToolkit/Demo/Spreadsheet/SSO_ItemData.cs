@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SSO_ItemData", menuName = "MVsToolkitDemo/SSO_ItemData")]
+[CreateAssetMenu(fileName = "SSO_ItemData", menuName = "MVsToolkit/Demo/SSO_ItemData")]
 public class SSO_ItemData : ScriptableObject
 {
     public string itemName;

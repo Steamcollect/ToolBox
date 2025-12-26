@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace MVsToolkit.SceneBrower
+namespace MVsToolkit.SceneBrowser
 {
     public class SceneBrowserPopUp : PopupWindowContent
     {
@@ -18,8 +18,8 @@ namespace MVsToolkit.SceneBrower
         {
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
 
-            Rect contentR = new Rect(rect.x, rect.y + searchHeight, rect.width, Mathf.Min(maxHeight, rect.height - searchHeight));
-            SceneBrowserContent.OnGUI(rect, searchTxt);
+            Rect contentR = new Rect(rect.x, rect.y + searchHeight + 12, rect.width, Mathf.Min(maxHeight, rect.height - searchHeight));
+            SceneBrowserContent.OnGUI(contentR, searchTxt);
         }
 
         public override Vector2 GetWindowSize()
