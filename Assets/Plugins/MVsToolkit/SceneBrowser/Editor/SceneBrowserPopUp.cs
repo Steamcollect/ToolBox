@@ -18,9 +18,19 @@ namespace MVsToolkit.SceneBrowser
         {
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
 
-            Rect contentR = new Rect(rect.x, rect.y + searchHeight + 12, rect.width, Mathf.Min(maxContentHeight, rect.height) + searchHeight + 12);
+            float contentY = searchHeight + 12;
+            float contentHeight = Mathf.Min(maxContentHeight, rect.height - contentY);
+
+            Rect contentR = new Rect(
+                rect.x,
+                rect.y + contentY,
+                rect.width,
+                contentHeight
+            );
+
             SceneBrowserContent.DrawContent(contentR, searchTxt);
         }
+
 
         public override Vector2 GetWindowSize()
         {

@@ -42,11 +42,14 @@ namespace MVsToolkit.SceneBrowser
 
             panelHeight = _scenes.Length * (buttonHeight + buttonSpacing);
 
-            Rect viewRect = new Rect(0, 0, rect.width - scrollbarWidth, panelHeight);
+            float innerWidth = rect.width - scrollbarWidth - 2;
+
+            Rect viewRect = new Rect(0, 0, innerWidth, panelHeight);
+
             scrollPos = GUI.BeginScrollView(
                 rect,
                 scrollPos,
-                new Rect(0, 0, rect.width - scrollbarWidth - 10, panelHeight),
+                new Rect(0,0, viewRect.width - 10, viewRect.height),
                 false,
                 true
             );
@@ -55,13 +58,14 @@ namespace MVsToolkit.SceneBrowser
             {
                 if (!_scenes[i].isFavorite && i - 1 >= 0 && _scenes[i - 1].isFavorite)
                 {
-                    EditorGUI.DrawRect(new Rect(10, currentHeight + 4, rect.width * .9f, 1), Color.grey);
+                    EditorGUI.DrawRect(new Rect(10, currentHeight + 4, innerWidth - 20, 1), Color.grey);
                     currentHeight += 9;
                 }
 
-                Rect buttonRect = new Rect(0, currentHeight, viewRect.width, buttonHeight);
+                Rect buttonRect = new Rect(0, currentHeight, innerWidth, buttonHeight);
 
                 bool mouseInButton = buttonRect.Contains(e.mousePosition);
+
                 if (mouseInButton)
                     EditorGUI.DrawRect(buttonRect, new Color(0.172549f, 0.3647059f, 0.5294118f));
                 else if (i % 2 == 0)
@@ -74,7 +78,6 @@ namespace MVsToolkit.SceneBrowser
 
             GUI.EndScrollView();
         }
-
 
         static void DrawSceneItem(SceneBrowerData sceneData, Rect r, Event e, bool mouseInButton)
         {
