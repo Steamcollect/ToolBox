@@ -16,7 +16,14 @@ namespace MVsToolkit.SceneBrowser
 
         public override void OnGUI(Rect rect)
         {
+            GUILayout.BeginHorizontal();
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
+
+            if (GUILayout.Button("W"))
+            {
+                EditorWindow.GetWindow<SceneBrowserWindow>("Scene Browser");
+            }
+            GUILayout.EndHorizontal();
 
             float contentY = searchHeight + 12;
             float contentHeight = Mathf.Min(maxContentHeight, rect.height - contentY);
@@ -28,7 +35,7 @@ namespace MVsToolkit.SceneBrowser
                 contentHeight
             );
 
-            SceneBrowserContent.DrawContent(contentR, searchTxt);
+            SceneBrowserContent.DrawContent(contentR, searchTxt, maxContentHeight);
         }
 
 

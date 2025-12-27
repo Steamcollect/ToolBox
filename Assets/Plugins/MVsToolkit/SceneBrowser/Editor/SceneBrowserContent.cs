@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using MVsToolkit.Utils;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -30,30 +29,44 @@ namespace MVsToolkit.SceneBrowser
         }
 
         #region Drawing
-        public static void DrawContent(Rect rect, string searchQuery)
+        public static void DrawContent(Rect rect, string searchQuery, float maxContentHeight)
         {
             EnsureButtonStyle();
 
             Event e = Event.current;
-            float currentHeight = 0;
 
             SceneBrowerData[] _scenes = GetScenesWithQuery(searchQuery);
             _scenes = _scenes.OrderBy(c => !c.isFavorite).ToArray();
 
-            panelHeight = _scenes.Length * (buttonHeight + buttonSpacing);
+            bool needScroll = panelHeight > maxContentHeight;
 
-            float innerWidth = rect.width - scrollbarWidth - 2;
-
+            float innerWidth = rect.width - (needScroll ? scrollbarWidth : 0) - 2;
             Rect viewRect = new Rect(0, 0, innerWidth, panelHeight);
+
+            float currentHeight = 0;
+            for (int i = 0; i < _scenes.Length; i++)
+            {
+                if (!_scenes[i].isFavorite && i - 1 >= 0 && _scenes[i - 1].isFavorite)
+                    currentHeight += 9;
+
+                currentHeight += buttonHeight;
+
+                if (i < _scenes.Length - 1)
+                    currentHeight += buttonSpacing;
+            }
+
+            panelHeight = currentHeight;
+
 
             scrollPos = GUI.BeginScrollView(
                 rect,
                 scrollPos,
-                new Rect(0,0, viewRect.width - 10, viewRect.height),
+                new Rect(0,0,viewRect.width - 10, viewRect.height),
                 false,
-                true
+                needScroll
             );
 
+            currentHeight = 0;
             for (int i = 0; i < _scenes.Length; i++)
             {
                 if (!_scenes[i].isFavorite && i - 1 >= 0 && _scenes[i - 1].isFavorite)
@@ -94,11 +107,12 @@ namespace MVsToolkit.SceneBrowser
                 if (GUI.Button(favoriteRect, favoriteButtonText, favoriteButtonStyle))
                 {
                     sceneData.isFavorite = !sceneData.isFavorite;
+                    scenes = scenes.OrderBy(scenes => !scenes.isFavorite).ToList();
                     SaveScenesData();
                 }
             }
             
-            if (GUI.Button(r, sceneData.asset.name, sceneButtonStyle))
+            if (GUI.Button(r, sceneData.asset == null ? sceneData.assetName : sceneData.asset.name, sceneButtonStyle))
                 {
                     if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     {
@@ -149,6 +163,8 @@ namespace MVsToolkit.SceneBrowser
                 if (!allScenes.Contains(scene.asset))
                     scenes.Remove(scene);
             }
+
+            scenes = scenes.OrderBy(scenes => !scenes.isFavorite).ToList();
         }
 
         public static void SaveScenesData()
@@ -207,11 +223,13 @@ namespace MVsToolkit.SceneBrowser
     class SceneBrowerData
     {
         public SceneAsset asset;
+        public string assetName;
         public bool isFavorite;
 
         public SceneBrowerData(SceneAsset scene, bool isFavorite)
         {
             this.asset = scene;
+            this.assetName = scene.name;
             this.isFavorite = isFavorite;
         }
     }
