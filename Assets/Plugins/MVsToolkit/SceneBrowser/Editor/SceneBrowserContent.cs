@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEditor.SceneManagement;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace MVsToolkit.SceneBrowser
@@ -36,7 +35,6 @@ namespace MVsToolkit.SceneBrowser
             Event e = Event.current;
 
             SceneBrowerData[] _scenes = GetScenesWithQuery(searchQuery);
-            _scenes = _scenes.OrderBy(c => !c.isFavorite).ToArray();
 
             bool needScroll = panelHeight > maxContentHeight;
 
@@ -69,6 +67,12 @@ namespace MVsToolkit.SceneBrowser
             currentHeight = 0;
             for (int i = 0; i < _scenes.Length; i++)
             {
+                if (_scenes[i].asset == null)
+                {
+                    scenes.Remove(_scenes[i]);
+                    continue;
+                }
+
                 if (!_scenes[i].isFavorite && i - 1 >= 0 && _scenes[i - 1].isFavorite)
                 {
                     EditorGUI.DrawRect(new Rect(10, currentHeight + 4, innerWidth - 20, 1), Color.grey);
@@ -114,7 +118,7 @@ namespace MVsToolkit.SceneBrowser
             
             if (GUI.Button(r, sceneData.asset == null ? sceneData.assetName : sceneData.asset.name, sceneButtonStyle))
                 {
-                    if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                    if (sceneData.asset != null && EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     {
                         EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(sceneData.asset));
                     }

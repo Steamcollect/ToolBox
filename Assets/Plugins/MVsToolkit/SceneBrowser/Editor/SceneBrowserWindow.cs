@@ -1,4 +1,3 @@
-using MVsToolkit.SceneBrowser;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,6 +8,8 @@ namespace MVsToolkit.SceneBrowser
         int searchHeight = 20;
         string searchTxt;
 
+        GUIStyle iconStyle;
+
         [MenuItem("Window/MVsToolkit/Scene Browser")]
         public static void ShowWindow()
         {
@@ -17,17 +18,25 @@ namespace MVsToolkit.SceneBrowser
 
         private void OnGUI()
         {
-            // --- Barre de recherche + bouton W ---
+            if(iconStyle == null)
+            {
+                iconStyle = new GUIStyle(GUI.skin.button)
+                {
+                    padding = new RectOffset(2, 2, 2, 2),
+                    margin = new RectOffset(0, 0, 0, 0),
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
             GUILayout.BeginHorizontal();
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
 
-            if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh")))
+            if (GUILayout.Button(EditorGUIUtility.IconContent("Refresh"), GUILayout.Width(searchHeight * 1.5f)))
             {
                 SceneBrowserContent.RefreshScenesList();
             }
             GUILayout.EndHorizontal();
 
-            // --- Zone de contenu ---
             float contentY = searchHeight + 12;
             float contentHeight = position.height - contentY;
 
@@ -38,7 +47,6 @@ namespace MVsToolkit.SceneBrowser
                 contentHeight
             );
 
-            // Même API que le popup, mais sans maxContentHeight
             SceneBrowserContent.DrawContent(contentR, searchTxt, contentHeight);
         }
     }

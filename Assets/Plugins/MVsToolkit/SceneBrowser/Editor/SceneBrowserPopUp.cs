@@ -6,6 +6,7 @@ namespace MVsToolkit.SceneBrowser
     public class SceneBrowserPopUp : PopupWindowContent
     {
         int searchHeight = 20;
+
         int maxContentHeight = 300;
         string searchTxt;
 
@@ -19,7 +20,9 @@ namespace MVsToolkit.SceneBrowser
             GUILayout.BeginHorizontal();
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
 
-            if (GUILayout.Button("W"))
+            if (GUILayout.Button(EditorGUIUtility.IconContent("ScaleTool On"), 
+                GUILayout.Width(searchHeight * 1.5f),
+                GUILayout.Height(searchHeight)))
             {
                 EditorWindow.GetWindow<SceneBrowserWindow>("Scene Browser");
             }
