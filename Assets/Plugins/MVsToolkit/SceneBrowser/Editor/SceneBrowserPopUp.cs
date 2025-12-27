@@ -6,7 +6,7 @@ namespace MVsToolkit.SceneBrowser
     public class SceneBrowserPopUp : PopupWindowContent
     {
         int searchHeight = 20;
-        int maxHeight = 300;
+        int maxContentHeight = 300;
         string searchTxt;
 
         public override void OnOpen()
@@ -18,14 +18,14 @@ namespace MVsToolkit.SceneBrowser
         {
             searchTxt = EditorGUILayout.TextField(string.Empty, searchTxt);
 
-            Rect contentR = new Rect(rect.x, rect.y + searchHeight + 12, rect.width, Mathf.Min(maxHeight, rect.height - searchHeight));
-            SceneBrowserContent.OnGUI(contentR, searchTxt);
+            Rect contentR = new Rect(rect.x, rect.y + searchHeight + 12, rect.width, Mathf.Min(maxContentHeight, rect.height) + searchHeight + 12);
+            SceneBrowserContent.DrawContent(contentR, searchTxt);
         }
 
         public override Vector2 GetWindowSize()
         {
             Vector2 contentSize = SceneBrowserContent.GetWindowSize();
-            return new Vector2(contentSize.x, Mathf.Min(maxHeight + searchHeight + 12, contentSize.y + searchHeight + 12));
+            return new Vector2(contentSize.x, Mathf.Min(maxContentHeight, contentSize.y) + searchHeight + 12);
         }
     }
 }

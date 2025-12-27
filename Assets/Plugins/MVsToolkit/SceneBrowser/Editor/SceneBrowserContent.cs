@@ -14,12 +14,15 @@ namespace MVsToolkit.SceneBrowser
         static List<SceneBrowerData> scenes = new();
         const string SaveKey = "SceneBrowser_Data";
 
+        static GUIStyle sceneButtonStyle, favoriteButtonStyle;
+        
         static int buttonHeight = 18;
         static int buttonSpacing = 2;
+        static int scrollbarWidth = 8;
 
         static float panelHeight;
 
-        static GUIStyle sceneButtonStyle, favoriteButtonStyle;
+        static Vector2 scrollPos;
 
         static SceneBrowserContent()
         {
@@ -27,42 +30,51 @@ namespace MVsToolkit.SceneBrowser
         }
 
         #region Drawing
-        public static void OnGUI(Rect rect, string searchQuery)
+        public static void DrawContent(Rect rect, string searchQuery)
         {
             EnsureButtonStyle();
 
             Event e = Event.current;
+            float currentHeight = 0;
 
             SceneBrowerData[] _scenes = GetScenesWithQuery(searchQuery);
             _scenes = _scenes.OrderBy(c => !c.isFavorite).ToArray();
 
-            //bool useScrollView = rect.height < _scenes.Length * buttonHeight + _scenes.Length * buttonSpacing;
+            panelHeight = _scenes.Length * (buttonHeight + buttonSpacing);
 
-            float currentHeight = 0;
+            Rect viewRect = new Rect(0, 0, rect.width - scrollbarWidth, panelHeight);
+            scrollPos = GUI.BeginScrollView(
+                rect,
+                scrollPos,
+                new Rect(0, 0, rect.width - scrollbarWidth - 10, panelHeight),
+                false,
+                true
+            );
 
             for (int i = 0; i < _scenes.Length; i++)
             {
-                if (!_scenes[i].isFavorite && i - 1 >= 0 && scenes[i - 1].isFavorite)
+                if (!_scenes[i].isFavorite && i - 1 >= 0 && _scenes[i - 1].isFavorite)
                 {
-                    EditorGUI.DrawRect(new Rect(rect.x + rect.width * .05f, rect.y + currentHeight + 4, rect.width * .9f, 1), Color.grey);
+                    EditorGUI.DrawRect(new Rect(10, currentHeight + 4, rect.width * .9f, 1), Color.grey);
                     currentHeight += 9;
                 }
 
-                Rect buttonRect = new Rect(rect.x, rect.y + currentHeight, rect.width, buttonHeight);
+                Rect buttonRect = new Rect(0, currentHeight, viewRect.width, buttonHeight);
 
                 bool mouseInButton = buttonRect.Contains(e.mousePosition);
                 if (mouseInButton)
-                    EditorGUI.DrawRect(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height), new Color(0.172549f, 0.3647059f, 0.5294118f));
+                    EditorGUI.DrawRect(buttonRect, new Color(0.172549f, 0.3647059f, 0.5294118f));
                 else if (i % 2 == 0)
-                    EditorGUI.DrawRect(new Rect(buttonRect.x, buttonRect.y, buttonRect.width, buttonRect.height), new Color(1, 1, 1, 0.02f));
-                
+                    EditorGUI.DrawRect(buttonRect, new Color(1, 1, 1, 0.02f));
+
                 DrawSceneItem(_scenes[i], buttonRect, e, mouseInButton);
 
                 currentHeight += buttonHeight + buttonSpacing;
             }
 
-            panelHeight = currentHeight;
+            GUI.EndScrollView();
         }
+
 
         static void DrawSceneItem(SceneBrowerData sceneData, Rect r, Event e, bool mouseInButton)
         {
